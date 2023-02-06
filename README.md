@@ -12,7 +12,7 @@ Supported machines:
 * Atari ST, 320x200 in 16 on screen from 512 palette colors
 * Amiga 500/1000, PAL 320x256 in 32 colors or in HAM6 encoding, 4096 palette colors
 
-Graphic exports:
+Graphics exports:
 
 * PRG, Koala Paint, ArtStudio for C64
 * ZX SCR format
@@ -20,7 +20,7 @@ Graphic exports:
 * DEGAS for Atari
 * IFF format for Delux Paint – Amiga
 
-Options brief:
+Options:
 
 * VIVID – first pass dithering, colors of the original picture are replaced by retro machine palette, dithered.
 * Color distance – how distance in color cube is measured: euclidean, redmean simple approximation (percepted), pick highest luminance color.
