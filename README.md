@@ -34,6 +34,7 @@ Try all possible options available.
 * 320x200 - use 2 colors in 8x8 screen cell
 * 160x200 - use 4 colors in 4x8 screen cell, averege or brightest color are choosed when shrinking width 320->160
 
+Export to executable PRG or to Art Studio (hires) Koala Paint (multicolor).
 ![Hires](venusC64.png)
 
 ### ZX
@@ -42,6 +43,7 @@ Try all possible options available.
 
 * try REAL colors - produces more tinty picture insted of hue explosion :)
 
+Export to native SCR snapshoot.
 ![REAL colors](venusZX.png)
 
 ### CPC
@@ -54,6 +56,7 @@ Try all possible options available.
 * 320x200 - use 4 colors on whole screen
 * 160x200 - use 16 colors on whole screen
 
+Export to Advanced Art Studio with standalone palette file. All files generated with AMSDOS headers.
 ![16 colors](venusCPC.png)
 
 ### Atari ST
@@ -65,6 +68,7 @@ Try all possible options available.
 
 * 320x200 - use 16 colors, palette as a result of Kohonen orginal pixel classification
 
+Export to DEGAS paint program.
 ![16 colors](venusST.png)
 
 ### Amiga 500
@@ -77,4 +81,5 @@ Try all possible options available.
 * 320x256 - use 32 colors, palette as a result of Kohonen orginal pixel classification
 * 320x256 - use HAM coding, 16 color palette as a result of Kohonen classification, best neuron takes all
 
+Export to Delux Paint IFF file format.
 ![HAM encoding](venusAMIGA.png)
