@@ -4,7 +4,7 @@ RetroPIC is a simple graphics converter for retro machines. It can turn your mod
 
 Accepts JPG, PNG file formats and RGB, BGR pixel formats.
 
-You can download executable jar [herere](tropic.jar)
+You can download executable jar [here](tropic.jar)
 
 ## Supported machines
 
