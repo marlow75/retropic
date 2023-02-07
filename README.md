@@ -33,7 +33,7 @@ Try all options available.
 * VIVID – first pass dithering, colors of the original picture are replaced by retro machine palette, dithered.
 
 * 320x200 - use 2 colors in 8x8 screen cell.
-* 160x200 - use 4 colors in 4x8 screen cell, average or brightest color are choosed when shrinking to 320->160.
+* 160x200 - use 4 colors in 4x8 screen cell, average or brightest color are choosen when shrinking to 320->160.
 
 Exports to executable PRG or to Art Studio (hires) and Koala Paint (multicolor).
 
