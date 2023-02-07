@@ -22,9 +22,9 @@ Accepts JPG, PNG file formats, RGB, BGR pixel formats.
 
 ## Conversion options
 
-Try all possible options available.
+Try all TAB options available.
 
-* Color distance – how color distance in a RGB cube is measured: euclidean, redmean simple approximation (percepted), pick highest luminance color.
+* Color distance – how color distance in the RGB cube is measured: euclidean, redmean simple approximation (percepted), pick highest luminance color.
 
 ### C64
 
@@ -34,7 +34,8 @@ Try all possible options available.
 * 320x200 - use 2 colors in 8x8 screen cell
 * 160x200 - use 4 colors in 4x8 screen cell, averege or brightest color are choosed when shrinking width 320->160
 
-Export to executable PRG or to Art Studio (hires) Koala Paint (multicolor).
+Exports to executable PRG or to Art Studio (hires) Koala Paint (multicolor).
+
 ![Hires](venusC64.png)
 
 ### ZX
@@ -43,7 +44,7 @@ Export to executable PRG or to Art Studio (hires) Koala Paint (multicolor).
 
 * try REAL colors - produces more tinty picture insted of hue explosion :)
 
-Export to native SCR snapshoot.
+Exports to native SCR snapshoot.
 ![REAL colors](venusZX.png)
 
 ### CPC
@@ -69,6 +70,7 @@ Export to Advanced Art Studio with standalone palette file. All files generated 
 * 320x200 - use 16 colors, palette as a result of Kohonen orginal pixel classification
 
 Export to DEGAS paint program.
+
 ![16 colors](venusST.png)
 
 ### Amiga 500
@@ -82,4 +84,5 @@ Export to DEGAS paint program.
 * 320x256 - use HAM coding, 16 color palette as a result of Kohonen classification, best neuron takes all
 
 Export to Delux Paint IFF file format.
+
 ![HAM encoding](venusAMIGA.png)
