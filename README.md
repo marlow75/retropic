@@ -60,6 +60,7 @@ Exports to native SCR snapshoot.
 * 160x200 - use 16 colors on whole screen, average or brightest color are choosen when shrinking to 320->160
 
 Export to Advanced Art Studio with standalone palette file. All files generated with AMSDOS headers.
+
 ![16 colors](venusCPC.png)
 
 ### Atari ST
