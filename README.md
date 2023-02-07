@@ -47,6 +47,7 @@ Exports to executable PRG or to Art Studio (hires) Koala Paint (multicolor).
 * 256x192 - use 2 colors in 8x8 screen cell
 
 Exports to native SCR snapshoot.
+
 ![REAL colors](venusZX.png)
 
 ### Amstrad CPC
