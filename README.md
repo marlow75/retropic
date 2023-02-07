@@ -2,7 +2,7 @@
 
 RetroPIC is a simple graphics converter for retro machines. It can turn your modern picture into a retro graphic, displayed on real C64 or Amiga.
 
-Accepts JPG, PNG file formats, RGB, BGR pixel formats.
+Accepts JPG, PNG file formats and RGB, BGR pixel formats.
 
 ## Supported machines
 
@@ -26,7 +26,7 @@ Try all TAB options available.
 
 * Color distance – how color distance in the RGB cube is measured: euclidean, redmean simple approximation (percepted), pick highest luminance color.
 
-### C64
+### Commodore C64
 
 16 colors total, 4 modes, 2 usefull for graphics
 
@@ -38,16 +38,18 @@ Exports to executable PRG or to Art Studio (hires) Koala Paint (multicolor).
 
 ![Hires](venusC64.png)
 
-### ZX
+### ZX Spectrum 48/+
 
 8 colors total, 1 screen mode
 
 * try REAL colors - produces more tinty picture insted of hue explosion :)
 
+* 256x192 - use 2 colors in 8x8 screen cell
+
 Exports to native SCR snapshoot.
 ![REAL colors](venusZX.png)
 
-### CPC
+### Amstrad CPC
 
 27 colors total, 3 modes, 2 usefull
 
