@@ -32,7 +32,7 @@ Try all TAB options available.
 
 * VIVID – first pass dithering, colors of the original picture are replaced by retro machine palette, dithered.
 * 320x200 - use 2 colors in 8x8 screen cell
-* 160x200 - use 4 colors in 4x8 screen cell, averege or brightest color are choosed when shrinking width 320->160
+* 160x200 - use 4 colors in 4x8 screen cell, average or brightest color are choosed when shrinking to 320->160
 
 Exports to executable PRG or to Art Studio (hires) Koala Paint (multicolor).
 
@@ -57,7 +57,7 @@ Exports to native SCR snapshoot.
 * replace brightest - replaces brightest color with dimmed yellow
 
 * 320x200 - use 4 colors on whole screen
-* 160x200 - use 16 colors on whole screen
+* 160x200 - use 16 colors on whole screen, average or brightest color are choosen when shrinking to 320->160
 
 Export to Advanced Art Studio with standalone palette file. All files generated with AMSDOS headers.
 ![16 colors](venusCPC.png)
