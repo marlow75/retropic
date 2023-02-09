@@ -46,7 +46,7 @@ Exports to executable PRG or to Art Studio (hires) and Koala Paint (multicolor).
 
 8 colors total, 1 screen mode.
 
-* try REAL colors - produces more tinty picture insted of hue explosion :)
+* try apple dithering - produces more tinty picture insted of hue explosion.
 
 * 256x192 - use 2 colors in 8x8 screen cell
 
