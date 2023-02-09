@@ -26,7 +26,8 @@ You can download executable jar [here](retropic.jar).
 
 Try all options available.
 
-* Color distance – how color distance in the RGB cube is measured: euclidean, redmean simple approximation (percepted), picks highest luminance color.
+* Color distance – how color distance in the RGB cube is measured: euclidean, redmean simple approximation (percepted), picking highest luminance color.
+* Dithering - all pictures are dithered using Floyds-Steinberg or Atkinson algorythms.
 
 ### Commodore C64
 
