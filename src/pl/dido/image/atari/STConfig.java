@@ -9,7 +9,7 @@ public class STConfig extends Config {
 	public STConfig() {
 		super();
 		
-		vivid = true;
-		replace_colors = false;
+		dithering = true;
+		replace_colors = true;
 	}
 }

@@ -61,7 +61,7 @@ public class ZXSpectrumRenderer extends AbstractRenderer {
 
 	@Override
 	protected void imageDithering() {
-		if (config.vivid)
+		if (config.dithering)
 			super.imageDithering();
 	}
 
@@ -258,24 +258,7 @@ public class ZXSpectrumRenderer extends AbstractRenderer {
 
 	@Override
 	protected String getTitle() {
-		String title = "ZX 256x192x2 ";
-
-		if (config.vivid)
-			title += "vivid ";
-
-		switch (config.color_alg) {
-		case EUCLIDEAN:
-			title += "euclidean";
-			break;
-		case LUMA_WEIGHTED:
-			title += "luma";
-			break;
-		default:
-			title += "percepted";
-			break;
-		}
-
-		return title;
+		return "ZX 256x192x2 ";
 	}
 
 	@Override

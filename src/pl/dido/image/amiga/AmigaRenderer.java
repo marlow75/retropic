@@ -33,7 +33,7 @@ public class AmigaRenderer extends AbstractCachedRenderer {
 
 	@Override
 	protected void imageDithering() {
-		if (config.vivid)
+		if (config.dithering)
 			super.imageDithering();
 	}
 
@@ -517,33 +517,7 @@ public class AmigaRenderer extends AbstractCachedRenderer {
 
 	@Override
 	protected String getTitle() {
-		String title = "A500 320x256";
-
-		switch (((AmigaConfig) config).color_mode) {
-		case STD32:
-			title += "x32 ";
-			break;
-		case HAM6:
-			title += " HAM ";
-			break;
-		}
-
-		if (config.vivid)
-			title += "vivid ";
-
-		switch (config.color_alg) {
-		case EUCLIDEAN:
-			title += "euclidean";
-			break;
-		case LUMA_WEIGHTED:
-			title += "luma";
-			break;
-		default:
-			title += "percepted";
-			break;
-		}
-
-		return title;
+		return "A500 320x256";
 	}
 
 	@Override

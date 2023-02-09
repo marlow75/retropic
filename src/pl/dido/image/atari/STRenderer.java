@@ -31,7 +31,7 @@ public class STRenderer extends AbstractCachedRenderer {
 
 	@Override
 	protected void imageDithering() {
-		if (config.vivid)
+		if (config.dithering)
 			super.imageDithering();
 	}
 
@@ -267,24 +267,7 @@ public class STRenderer extends AbstractCachedRenderer {
 
 	@Override
 	protected String getTitle() {
-		String title = "ST 320x200x16 ";
-
-		if (config.vivid)
-			title += "vivid ";
-
-		switch (config.color_alg) {
-		case EUCLIDEAN:
-			title += "euclidean";
-			break;
-		case LUMA_WEIGHTED:
-			title += "luma";
-			break;
-		default:
-			title += "percepted";
-			break;
-		}
-
-		return title;
+		return "ST 320x200x16 ";
 	}
 
 	@Override

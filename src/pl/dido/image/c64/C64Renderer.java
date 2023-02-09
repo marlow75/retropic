@@ -29,17 +29,19 @@ public class C64Renderer extends AbstractRenderer {
 
 	protected int bitmap[] = new int[40 * 200];
 	protected int screen[] = new int[1000];
+
 	protected int nibble[] = new int[1000];
 	protected int backgroundColor = 0;
 
 	public C64Renderer(final BufferedImage image, final String fileName, final C64Config config) {
 		super(image, fileName, config);
-		 palette = new int[16][3];
+
+		palette = new int[16][3];
 	}
 
 	@Override
 	protected void imageDithering() {
-		if (config.vivid)
+		if (config.dithering)
 			super.imageDithering();
 	}
 
@@ -215,74 +217,6 @@ public class C64Renderer extends AbstractRenderer {
 		}
 	}
 
-	protected void hiresLumaWithoutDithering() {
-		for (int y = 0; y < 200; y += 8) {
-			final int p = y * 320 * 3;
-
-			for (int x = 0; x < 40; x++) {
-				final int offset = p + x * 8 * 3;
-
-				// 8x8 tile
-				float min = 255;
-				float max = 0;
-
-				int f = 0, n = 0;
-
-				for (int ty = 0; ty < 8; ty++) {
-					for (int tx = 0; tx < 24; tx += 3) {
-						final int position = offset + ty * 320 * 3 + tx;
-
-						final int r = pixels[position] & 0xff;
-						final int g = pixels[position + 1] & 0xff;
-						final int b = pixels[position + 2] & 0xff;
-
-						final float luma = getLumaByCM(r, g, b);
-
-						if (luma > max) {
-							max = luma;
-							f = getColorIndex(r, g, b);
-						}
-
-						if (luma < min) {
-							min = luma;
-							n = getColorIndex(r, g, b);
-						}
-					}
-				}
-
-				for (int ty = 0; ty < 8; ty++) {
-					for (int tx = 0; tx < 24; tx += 3) {
-						final int position = offset + ty * 320 * 3 + tx;
-
-						final int r = pixels[position] & 0xff;
-						final int g = pixels[position + 1] & 0xff;
-						final int b = pixels[position + 2] & 0xff;
-						
-						final int cf[] = palette[f];
-						final int fr = cf[0];
-						final int fg = cf[1];
-						final int fb = cf[2];
-
-						final int cn[] = palette[n]; 
-						final int nr = cn[0];
-						final int ng = cn[1];
-						final int nb = cn[2];
-
-						final float d1 = getDistanceByCM(r, g, b, fr, fg, fb);
-						final float d2 = getDistanceByCM(r, g, b, nr, ng, nb);
-
-						int k = d1 < d2 ? k = f : n;
-						final int c[] = palette[k];
-						
-						pixels[position] = (byte) c[0];
-						pixels[position + 1] = (byte) c[1];
-						pixels[position + 2] = (byte) c[2];
-					}
-				}
-			}
-		}
-	}
-
 	protected void hiresLumaDithered() {
 		final int work[] = new int[64 * 3];
 		int bitmapIndex = 0;
@@ -354,7 +288,7 @@ public class C64Renderer extends AbstractRenderer {
 						final int fg = cf[1];
 						final int fb = cf[2];
 
-						final int cn[] = palette[n]; 
+						final int cn[] = palette[n];
 						int nr = cn[0];
 						int ng = cn[1];
 						int nb = cn[2];
@@ -378,7 +312,7 @@ public class C64Renderer extends AbstractRenderer {
 
 						bitcount += 1;
 						final int position = offset + y0 * 320 * 3 + x0;
-						
+
 						pixels[position] = (byte) nr;
 						pixels[position + 1] = (byte) ng;
 						pixels[position + 2] = (byte) nb;
@@ -478,9 +412,9 @@ public class C64Renderer extends AbstractRenderer {
 		}
 
 		final int work[] = new int[32 * 3];
-		sr /= 320 * 200;
-		sg /= 320 * 200;
-		sb /= 320 * 200;
+		sr /= 160 * 200;
+		sg /= 160 * 200;
+		sb /= 160 * 200;
 
 		// 4x8 tile palette
 		final int tilePalette[][] = new int[4][3];
@@ -490,10 +424,10 @@ public class C64Renderer extends AbstractRenderer {
 			final int p1 = y * 160 * 3;
 
 			for (int x = 0; x < 40; x++) {
+				final int occurrence[] = new int[16];
+				
 				final int o1 = p1 + x * 4 * 3;
 				int index = 0;
-
-				final int occurrence[] = new int[16];
 
 				// common color
 				tilePalette[0][0] = sr;
@@ -516,7 +450,7 @@ public class C64Renderer extends AbstractRenderer {
 					}
 				}
 
-				int m1 = 0, m2 = 0, m3 = 0;
+				int m1 = 0, m2 = 0, m3 = Integer.MAX_VALUE;
 				int i1 = 0, i2 = 0, i3 = 0;
 
 				// 3 most popular colors
@@ -722,42 +656,7 @@ public class C64Renderer extends AbstractRenderer {
 
 	@Override
 	protected String getTitle() {
-		String title = "C64 ";
-
-		switch (((C64Config) config).screen_mode) {
-		case HIRES:
-			title += "320x200x2 ";
-			break;
-		default:
-			title += "160x200x4 ";
-			switch (((C64Config) config).pixel_merge) {
-			case AVERAGE:
-				title += "average pixel ";
-				break;
-			default:
-				title += "brightest pixel ";
-				break;
-
-			}
-			break;
-		}
-
-		if (config.vivid)
-			title += "vivid ";
-
-		switch (config.color_alg) {
-		case EUCLIDEAN:
-			title += "euclidean";
-			break;
-		case LUMA_WEIGHTED:
-			title += "luma";
-			break;
-		default:
-			title += "percepted";
-			break;
-		}
-
-		return title;
+		return "C64 ";
 	}
 
 	@Override

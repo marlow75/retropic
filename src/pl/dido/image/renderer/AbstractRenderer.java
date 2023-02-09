@@ -21,6 +21,8 @@ public abstract class AbstractRenderer extends Thread {
 
 	protected int palette[][];
 	protected byte pixels[];
+	
+	protected int[] work = null; 
 
 	protected int width;
 	protected int height;
@@ -35,7 +37,7 @@ public abstract class AbstractRenderer extends Thread {
 
 	protected String fileName;
 	protected boolean windowVisible = false;
-
+	
 	public AbstractRenderer(final BufferedImage image, final String fileName, final Config config) {
 		// copy of configuration
 		try {
@@ -65,7 +67,7 @@ public abstract class AbstractRenderer extends Thread {
 		width = image.getWidth();
 		height = image.getHeight();
 		
-		frame = new JFrame(getTitle());
+		frame = new JFrame(getTitle() + config.getConfigString());
 		frame.setJMenuBar(getMenuBar());
 		frame.setIconImage(Toolkit.getDefaultToolkit().getImage(Utils.getResourceAsURL("retro.png")));
 
@@ -135,21 +137,23 @@ public abstract class AbstractRenderer extends Thread {
 	protected abstract int getWidth();
 
 	protected void imageDithering() {
-		final int[] work = Utils.copy2Int(pixels);
+		final int work[] = Utils.copy2Int(pixels);
 
 		int r0, g0, b0;
-		int r_error = 0, g_error = 0, b_error = 0;
+		int r_error = 0, g_error = 0, b_error = 0;	
 
 		final int width3 = width * 3;
 
 		for (int y = 0; y < height; y++) {
 			final int k = y * width3;
 			final int k1 = ((y + 1) * width3);
+			final int k2 = ((y + 2) * width3);
 			
 			for (int x = 0; x < width3; x += 3) {
 
 				final int pyx = k + x;
 				final int py1x = k1 + x;
+				final int py2x = k2 + x;
 
 				r0 = work[pyx];
 				g0 = work[pyx + 1];
@@ -170,26 +174,66 @@ public abstract class AbstractRenderer extends Thread {
 				g_error = Utils.saturate(g0 - g);
 				b_error = Utils.saturate(b0 - b);
 				
-				if (x < (width - 1) * 3) {
-					work[pyx + 3] += r_error * 7 / 16;
-					work[pyx + 3 + 1] += g_error * 7 / 16;
-					work[pyx + 3 + 2] += b_error * 7 / 16;
-				}
-
-				if (y < height - 1) {
-					work[py1x - 3] += r_error * 3 / 16;
-					work[py1x - 3 + 1] += g_error * 3 / 16;
-					work[py1x - 3 + 2] += b_error * 3 / 16;
-
-					work[py1x] += r_error * 5 / 16;
-					work[py1x + 1] += g_error * 5 / 16;
-					work[py1x + 2] += b_error * 5 / 16;
-
+				switch (config.dither_alg) {
+				case STD_FS:
 					if (x < (width - 1) * 3) {
-						work[py1x + 3] += r_error >> 4;
-						work[py1x + 3 + 1] += g_error >> 4;
-						work[py1x + 3 + 2] += b_error >> 4;
+						work[pyx + 3] += r_error * 7 / 16;
+						work[pyx + 3 + 1] += g_error * 7 / 16;
+						work[pyx + 3 + 2] += b_error * 7 / 16;
 					}
+
+					if (y < height - 1) {
+						work[py1x - 3] += r_error * 3 / 16;
+						work[py1x - 3 + 1] += g_error * 3 / 16;
+						work[py1x - 3 + 2] += b_error * 3 / 16;
+
+						work[py1x] += r_error * 5 / 16;
+						work[py1x + 1] += g_error * 5 / 16;
+						work[py1x + 2] += b_error * 5 / 16;
+
+						if (x < (width - 1) * 3) {
+							work[py1x + 3] += r_error >> 4;
+							work[py1x + 3 + 1] += g_error >> 4;
+							work[py1x + 3 + 2] += b_error >> 4;
+						}
+					}							
+					break;
+				case ATKINSON:
+					if (x < (width - 1) * 3) {
+						work[pyx + 3] += r_error * 1 / 8;
+						work[pyx + 3 + 1] += g_error * 1 / 8;
+						work[pyx + 3 + 2] += b_error * 1 / 8;
+						
+						if (x < (width - 2) * 3) {
+							work[pyx + 6] += r_error * 1 / 8;
+							work[pyx + 6 + 1] += g_error * 1 / 8;
+							work[pyx + 6 + 2] += b_error * 1 / 8;
+						}
+					}
+
+					if (y < height - 1) {
+						work[py1x - 3] += r_error * 1 / 8;
+						work[py1x - 3 + 1] += g_error * 1 / 8;
+						work[py1x - 3 + 2] += b_error * 1 / 8;
+
+						work[py1x] += r_error * 1 / 8;
+						work[py1x + 1] += g_error * 1 / 8;
+						work[py1x + 2] += b_error * 1 / 8;
+
+						if (x < (width - 1) * 3) {
+							work[py1x + 3] += r_error * 1 / 8;
+							work[py1x + 3 + 1] += g_error * 1 / 8;
+							work[py1x + 3 + 2] += b_error * 1 / 8;
+						}
+						
+						if (y < height - 2) {
+							work[py2x] += r_error * 1 / 8;
+							work[py2x + 1] += g_error * 1 / 8;
+							work[py2x + 2] += b_error * 1 / 8;							
+						}
+					}	
+					
+					break;					
 				}
 			}
 		}

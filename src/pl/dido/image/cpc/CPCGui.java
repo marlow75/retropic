@@ -11,7 +11,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
-import pl.dido.image.Config.NEAREST_COLOR;
+import pl.dido.image.GuiUtils;
 import pl.dido.image.utils.ImageCanvas;
 
 public class CPCGui {
@@ -20,15 +20,15 @@ public class CPCGui {
 		final JPanel cpcPanel = new JPanel();
 		cpcPanel.setLayout(null);
 
-		final JCheckBox chckbxVividCheckBox = new JCheckBox("dithering");
-		chckbxVividCheckBox.setToolTipText("Enables picture predithering");
-		chckbxVividCheckBox.setFont(new Font("Tahoma", Font.PLAIN, 16));
+		final JCheckBox chckbxVividCheckBox = new JCheckBox("apple dithering");
+		chckbxVividCheckBox.setToolTipText("Enables Atkinson predithering");
+		chckbxVividCheckBox.setFont(GuiUtils.std);
 		chckbxVividCheckBox.setBounds(20, 23, 171, 44);
-		chckbxVividCheckBox.setSelected(config.vivid);
+		chckbxVividCheckBox.setSelected(config.dithering);
 		
 		chckbxVividCheckBox.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				config.vivid = !config.vivid;
+				config.dithering = !config.dithering;
 			}});
 		
 		cpcPanel.add(chckbxVividCheckBox);
@@ -39,7 +39,7 @@ public class CPCGui {
 
 		final JCheckBox chkReplaceBox = new JCheckBox("replace brightest");
 		chkReplaceBox.setToolTipText("Replaces brightest with dimmed yellow");
-		chkReplaceBox.setFont(new Font("Tahoma", Font.PLAIN, 16));
+		chkReplaceBox.setFont(GuiUtils.std);
 		chkReplaceBox.setBounds(20, 76, 169, 23);
 		chkReplaceBox.setSelected(config.replace_white);
 		chkReplaceBox.addActionListener(new ActionListener() {
@@ -56,7 +56,7 @@ public class CPCGui {
 
 		final JRadioButton rdbtnHiresButton = new JRadioButton("320x200 mode1 - 4 colors");
 		rdbtnHiresButton.setToolTipText("Mode 1, colors 211");
-		rdbtnHiresButton.setFont(new Font("Tahoma", Font.PLAIN, 16));
+		rdbtnHiresButton.setFont(GuiUtils.std);
 		rdbtnHiresButton.setBounds(46, 130, 250, 57);
 		rdbtnHiresButton.setSelected(config.screen_mode == CPCConfig.SCREEN_MODE.MODE1);
 		rdbtnHiresButton.addActionListener(new ActionListener() {
@@ -68,7 +68,7 @@ public class CPCGui {
 		
 		final JRadioButton rdbtnMulticolorButton = new JRadioButton("160x200 mode0 - 16 colors");
 		rdbtnMulticolorButton.setToolTipText("Mode 0, colors 322 + most popular");
-		rdbtnMulticolorButton.setFont(new Font("Tahoma", Font.PLAIN, 16));
+		rdbtnMulticolorButton.setFont(GuiUtils.std);
 		rdbtnMulticolorButton.setBounds(46, 193, 331, 23);
 		rdbtnMulticolorButton.setSelected(config.screen_mode == CPCConfig.SCREEN_MODE.MODE0);
 		rdbtnMulticolorButton.addActionListener(new ActionListener() {
@@ -81,51 +81,8 @@ public class CPCGui {
 		final ButtonGroup groupResolution = new ButtonGroup();
 		groupResolution.add(rdbtnHiresButton);
 		groupResolution.add(rdbtnMulticolorButton);
-		
-		final JLabel lblColorLabel = new JLabel("Color distance:");
-		lblColorLabel.setFont(new Font("Tahoma", Font.BOLD, 16));
-		lblColorLabel.setBounds(20, 256, 198, 16);
-		cpcPanel.add(lblColorLabel);
-		
-		final JRadioButton rdbtnEuclideanButton = new JRadioButton("simple euclidean");
-		rdbtnEuclideanButton.setToolTipText("Simple euclidean distance");
-		rdbtnEuclideanButton.setFont(new Font("Tahoma", Font.PLAIN, 16));
-		rdbtnEuclideanButton.setBounds(46, 287, 172, 18);
-		rdbtnEuclideanButton.setSelected(config.color_alg == NEAREST_COLOR.EUCLIDEAN);
-		rdbtnEuclideanButton.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				config.color_alg = NEAREST_COLOR.EUCLIDEAN;		
-			}});
-		cpcPanel.add(rdbtnEuclideanButton);
-		
-		final JRadioButton rdbtnPerceptedButton = new JRadioButton("percepted");
-		rdbtnPerceptedButton.setToolTipText("Perception weighted distance");
-		rdbtnPerceptedButton.setFont(new Font("Tahoma", Font.PLAIN, 16));
-		rdbtnPerceptedButton.setBounds(222, 287, 113, 18);
-		rdbtnPerceptedButton.setSelected(config.color_alg == NEAREST_COLOR.PERCEPTED);
-		rdbtnPerceptedButton.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				config.color_alg = NEAREST_COLOR.PERCEPTED;		
-			}});
 
-		cpcPanel.add(rdbtnPerceptedButton);
-		
-		final JRadioButton rdbtnLumaButton = new JRadioButton("luma weighted");
-		rdbtnLumaButton.setToolTipText("Luma weighted euclidean");
-		rdbtnLumaButton.setFont(new Font("Tahoma", Font.PLAIN, 16));
-		rdbtnLumaButton.setBounds(347, 287, 139, 18);
-		rdbtnLumaButton.setSelected(config.color_alg == NEAREST_COLOR.LUMA_WEIGHTED);
-		rdbtnLumaButton.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				config.color_alg = NEAREST_COLOR.LUMA_WEIGHTED;		
-			}});
-
-		cpcPanel.add(rdbtnLumaButton);
-		
-		final ButtonGroup groupDistance = new ButtonGroup();
-		groupDistance.add(rdbtnEuclideanButton);
-		groupDistance.add(rdbtnPerceptedButton);
-		groupDistance.add(rdbtnLumaButton);
+		GuiUtils.addColorControls(cpcPanel, config);
 		
 		final JRadioButton rdbtnAverageMergeButton = new JRadioButton("averge merge");
 		rdbtnAverageMergeButton.setToolTipText("calculate average color");

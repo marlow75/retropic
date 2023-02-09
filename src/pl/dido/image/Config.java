@@ -3,14 +3,14 @@ package pl.dido.image;
 public class Config implements Cloneable {
 
 	public enum DITHERING {
-		STD_FS
+		STD_FS, ATKINSON
 	};
 
 	public enum NEAREST_COLOR {
 		EUCLIDEAN, PERCEPTED, LUMA_WEIGHTED
 	};
 
-	public boolean vivid;
+	public boolean dithering;
 	public static String default_path;
 	public static String export_path;
 
@@ -21,10 +21,38 @@ public class Config implements Cloneable {
 		dither_alg = DITHERING.STD_FS;
 		color_alg = NEAREST_COLOR.PERCEPTED;
 
-		vivid = false;
+		dithering = false;
 
 		default_path = "pic";
 		export_path = "export";
+	}
+	
+	public String getConfigString() {
+		String configString = "";
+		
+		if (dithering)
+			switch (dither_alg) {
+			case ATKINSON:
+				configString += "apple ";
+				break;
+			case STD_FS:
+				configString += "floyds ";
+				break;
+			}
+
+		switch (color_alg) {
+		case EUCLIDEAN:
+			configString += "euclidean";
+			break;
+		case LUMA_WEIGHTED:
+			configString += "luma";
+			break;
+		case PERCEPTED:
+			configString += "percepted";
+			break;
+		}
+
+		return configString;
 	}
 
 	@Override

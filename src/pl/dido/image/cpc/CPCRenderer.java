@@ -52,7 +52,7 @@ public class CPCRenderer extends AbstractRenderer {
 
 	@Override
 	protected void imageDithering() {
-		if (config.vivid)
+		if (config.dithering)
 			super.imageDithering();
 	}
 
@@ -466,41 +466,7 @@ public class CPCRenderer extends AbstractRenderer {
 
 	@Override
 	protected String getTitle() {
-		String title = "CPC ";
-
-		switch (((CPCConfig) config).screen_mode) {
-		case MODE1:
-			title += "320x200x4 ";
-			break;
-		default:
-			title += "160x200x16 ";
-			switch (((CPCConfig) config).pixel_merge) {
-			case AVERAGE:
-				title += "average pixel ";
-				break;
-			default:
-				title += "brightest pixel ";
-				break;
-			}
-			break;
-		}
-		
-		if (config.vivid)
-			title += "vivid ";
-
-		switch (config.color_alg) {
-		case EUCLIDEAN:
-			title += "euclidean";
-			break;
-		case LUMA_WEIGHTED:
-			title += "luma";
-			break;
-		default:
-			title += "percepted";
-			break;
-		}
-
-		return title;
+		return "CPC ";
 	}
 
 	@Override

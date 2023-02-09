@@ -16,12 +16,36 @@ public class CPCConfig extends Config {
 	public boolean replace_white;
 	
 	public CPCConfig() {
-		color_alg = NEAREST_COLOR.PERCEPTED;			
-		vivid = true;
+		color_alg = NEAREST_COLOR.PERCEPTED;
+		dither_alg = DITHERING.ATKINSON;
+		dithering = true;
 		
 		screen_mode = SCREEN_MODE.MODE1;
 		pixel_merge = PIXEL_MERGE.AVERAGE;
 		
 		replace_white = false;
+	}
+	
+	@Override
+	public String getConfigString() {
+		String configString = "";
+		switch (screen_mode) {
+		case MODE1:
+			configString += "320x200x4 ";
+			break;
+		default:
+			configString += "160x200x16 ";
+			switch (pixel_merge) {
+			case AVERAGE:
+				configString += "average pixel ";
+				break;
+			default:
+				configString += "brightest pixel ";
+				break;
+			}
+			break;
+		}
+		
+		return configString + super.getConfigString();
 	}
 }

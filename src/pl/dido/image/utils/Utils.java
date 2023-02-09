@@ -12,6 +12,191 @@ import java.nio.file.Paths;
 
 public class Utils {
 
+	protected final static int qIteration(final int iteration, final int partition[][], int partitionIndex, 
+			final int[] red, final int[] green, final int[] blue, final int begin, final int end) {
+		
+		if (iteration == 3)
+			return partitionIndex;
+
+		if (iteration == 2) {
+			partition[partitionIndex][0] = begin;
+			partition[partitionIndex][1] = end;
+			
+			partitionIndex++;
+		}
+
+		int ar = 0, ag = 0, ab = 0;
+		int r_min = red[begin], r_max = r_min;
+
+		int g_min = green[begin], g_max = g_min;
+		int b_min = blue[begin], b_max = b_min;
+
+		for (int i = begin; i < end; i++) {
+			ar += red[i];
+			ag += green[i];
+			ab += blue[i];
+		}
+
+		final int len = end - begin;
+		ar /= len; ag /= len; ab /= len;
+
+		int rv = 0, gv = 0, bv = 0;
+
+		for (int i = begin; i < end; i++) {
+			int p = red[i];
+
+			if (p > r_max)
+				r_max = p;
+			else
+			if (p < r_min)
+				r_min = p;
+
+			rv += (p - ar) * (p - ar);
+			p = green[i];
+
+			if (p > g_max)
+				g_max = p;
+			else
+			if (p < g_min)
+				g_min = p;
+
+			gv += (p - ag) * (p - ag);
+			p = blue[i];
+
+			if (p > b_max)
+				b_max = p;
+			else
+			if (p < b_min)
+				b_min = p;
+
+			bv += (p - ab) * (p - ab);
+		}
+
+		rv *= r_max - r_min;
+		gv *= g_max - g_min;
+		bv *= b_max - b_min;
+
+		int result = rv > gv ? rv : gv;
+		result = result > bv ? result : bv;
+
+		if (gv == result)
+			Utils.qsort(green, blue, red, begin, end);
+		else 
+		if (rv == result)
+			Utils.qsort(red, green, blue, begin, end);
+		else 
+		if (bv == result)
+			Utils.qsort(blue, green, red, begin, end);
+		
+		final int cutPoint = len >> 1;
+		partitionIndex = qIteration(iteration + 1, partition, partitionIndex, red, green, blue, begin, begin + cutPoint - 1);
+		return qIteration(iteration + 1, partition, partitionIndex, red, green, blue, begin + cutPoint, end);
+	}
+
+	public static final int[][] colorQuantization(final int[] work, final int colors, final int red[], final int green[], final int blue[]) {		
+		final int partition[][] = new int[colors][2];
+		final int size = work.length / 3;
+		
+		int r_min = 255, r_max = 0;
+		int g_min = 255, g_max = 0;
+		int b_min = 255, b_max = 0;
+
+		int ar = 0, ag = 0, ab = 0;
+
+		// color range
+		for (int i = 0, j = 0; j < size; i += 3, j++) {
+			int p = work[i];
+			red[j] = p;
+			ar += p;
+
+			if (p > r_max)
+				r_max = p;
+			else
+			if (p < r_min)
+				r_min = p;
+
+			p = work[i + 1];
+			green[j] = p;
+			ag += p;
+
+			if (p > g_max)
+				g_max = p;
+			else
+			if (p < g_min)
+				g_min = p;
+
+			p = work[i + 2];
+			blue[j] = p;
+			ab += p;
+
+			if (p > b_max)
+				b_max = p;
+			else
+			if (p < b_min)
+				b_min = p;
+		}
+
+		ar /= size;
+		ag /= size;
+		ab /= size;
+
+		int rv = 0, gv = 0, bv = 0;
+
+		// variance calculation
+		for (int j = 0; j < size; j++) {
+			int p = red[j];
+			rv += (ar - p) * (ar - p);
+
+			p = green[j];
+			gv += (ag - p) * (ag - p);
+
+			p = blue[j];
+			bv += (ab - p) * (ab - p);
+		}
+
+		rv *= r_max - r_min;
+		gv *= g_max - g_min;
+		bv *= b_max - b_min;
+
+		int result = rv > gv ? rv : gv;
+		result = result > bv ? result : bv;
+
+		final int len = green.length - 1;
+
+		if (gv == result)
+			Utils.qsort(green, blue, red, 0, len);
+		else if (rv == result)
+			Utils.qsort(red, green, blue, 0, len);	
+		else if (bv == result)
+			Utils.qsort(blue, green, red, 0, len);
+
+		final int cutPoint = len >> 1;
+
+		final int partitionIndex = qIteration(1, partition, 0, red, green, blue, 0, cutPoint - 1);
+		qIteration(1, partition, partitionIndex, red, green, blue, cutPoint, len);
+		
+		final int palette[][] = new int[colors][3];
+		for (int i = 0; i < colors; i++) {
+			final int begin = partition[i][0];
+			final int end = partition[i][1];
+
+			int sr = 0, sg = 0, sb = 0;
+
+			for (int j = begin; j < end; j++) {
+				sr += red[j];
+				sg += green[j];
+				sb += blue[j];
+			}
+			final int sum = end - begin;
+
+			palette[i][0] = sr / sum;
+			palette[i][1] = sg / sum;
+			palette[i][2] = sb / sum;
+		}
+
+		return palette;
+	}
+
 	private final static int partition(final int a[], final int b[], final int c[], final int begin, final int end) {
 		final int pivot = a[end];
 		int i = begin - 1;

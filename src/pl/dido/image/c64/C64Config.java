@@ -24,9 +24,34 @@ public class C64Config extends Config {
 		screen_mode = SCREEN_MODE.HIRES;
 		color_alg = NEAREST_COLOR.PERCEPTED;
 		
-		vivid = true;
+		dithering = true;
 		luma_pixels = LUMA_PIXELS.OUTER;
 		
 		pixel_merge = PIXEL_MERGE.AVERAGE;
+	}
+	
+	@Override
+	public String getConfigString() {
+		String configString = "";
+		
+		switch (screen_mode) {
+		case HIRES:
+			configString += "320x200x2 ";
+			break;
+		default:
+			configString += "160x200x4 ";
+			switch (pixel_merge) {
+			case AVERAGE:
+				configString += "average ";
+				break;
+			default:
+				configString += "brightest ";
+				break;
+
+			}
+			break;
+		}
+		
+		return configString + super.getConfigString();
 	}
 }

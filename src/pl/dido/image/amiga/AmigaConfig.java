@@ -13,6 +13,22 @@ public class AmigaConfig extends Config {
 	public AmigaConfig() {
 		super();
 		color_mode = COLOR_MODE.STD32;
-		vivid = true;
+		dithering = true;
+	}
+
+	@Override
+	public String getConfigString() {
+		String configString = "";
+		
+		switch (color_mode) {
+		case STD32:
+			configString += "x32 ";
+			break;
+		case HAM6:
+			configString += " HAM ";
+			break;
+		}
+
+		return configString + super.getConfigString();
 	}
 }
