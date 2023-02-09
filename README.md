@@ -32,7 +32,7 @@ Try all options available.
 
 16 colors total, 4 modes, 2 usefull for graphics.
 
-* VIVID – first pass dithering, colors of the original picture are replaced by retro machine palette, dithered.
+* none, floyds, apple – first pass dithering, colors of the original picture are replaced by retro machine palette.
 
 * 320x200 - use 2 colors in 8x8 screen cell.
 * 160x200 - use 4 colors in 4x8 screen cell, average or brightest color are choosen when shrinking to 320->160.
@@ -57,7 +57,7 @@ Exports to native SCR snapshoot.
 
 27 colors total, 3 modes, 2 usefull.
 
-* dithering – first pass dithering, colors of the original picture are replaced by retro machine palette
+* dithering – first pass Atkinson dithering, colors of the original picture are replaced by retro machine palette
 * replace brightest - replaces brightest color with dimmed yellow
 
 * 320x200 - use 4 colors on whole screen
@@ -71,7 +71,7 @@ Export to Advanced Art Studio with standalone palette file. All files generated 
 
 512 colors total, 3 modes, 2 usefull for graphics.
 
-* VIVID – first pass dithering, colors of the original picture are replaced by retro machine palette, dithered.
+* dithered - first pass floyds dithering, colors of the original picture are replaced by retro machine palette, dithered.
 * adjust contrast - gives more or less contrast - replaces colors.
 
 * 320x200 - use 16 colors, palette is result of Kohonen pixel classification.
@@ -84,8 +84,7 @@ Export to DEGAS paint program.
 
 4096 colors total, 2 modes usefull for graphics.
 
-* VIVID – first pass dithering, colors of the original picture are replaced by retro machine palette, dithered.
-* adjust contrast - gives more or less contrast - replaces colors.
+* none, floyds, apple – first pass dithering, colors of the original picture are replaced by retro machine palette.
 
 * 320x256 - use 32 colors, palette is result of Kohonen pixel classification.
 * 320x256 - use HAM coding, 16 color palette as a result of Kohonen classification, best neuron takes all.
