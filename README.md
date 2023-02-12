@@ -1,6 +1,6 @@
 # RetroPIC
 
-RetroPIC is a simple graphics converter for retro machines. It can turn your modern picture into a retro graphic, displayed on real C64 or Amiga.
+RetroPIC is a simple graphics converter for retro machines. It can turn your modern picture into a retro graphic which can be displayed on real C64 or Amiga. Just drag and drop your picture on the machine options panel.
 
 Accepts JPG, PNG file formats and RGB, BGR pixel formats.
 
@@ -13,6 +13,7 @@ You can download executable jar [here](retropic.jar).
 * Amstrad CPC series mode0, mode1.
 * Atari ST, 320x200 in 16 on screen from 512 palette colors.
 * Amiga 500/1000, PAL 320x256 in 32 colors or in HAM6 encoding, 4096 palette colors.
+* Amiga 1200/4000, PAL 320x256 in 256 colors or in HAM8 encoding, 16M palette colors.
 
 ## Graphics formats
 
@@ -27,7 +28,7 @@ You can download executable jar [here](retropic.jar).
 Try all options available.
 
 * Color distance – how color distance in the RGB cube is measured: euclidean, redmean simple approximation (percepted), picking highest luminance color.
-* Dithering - all pictures are dithered using Floyds-Steinberg or Atkinson algorythms.
+* Dithering - pictures are dithered using Floyds-Steinberg or Atkinson algorythms.
 
 ### Commodore C64
 
@@ -88,8 +89,21 @@ Export to DEGAS paint program.
 * none, floyds, apple – first pass dithering, colors of the original picture are replaced by retro machine palette.
 
 * 320x256 - use 32 colors, palette is result of Kohonen pixel classification.
-* 320x256 - use HAM coding, 16 color palette as a result of Kohonen classification, best neuron takes all.
+* 320x256 - use HAM6 coding, 16 color palette as a result of Kohonen classification, best neuron takes all.
 
 Export to Delux Paint IFF file format.
 
-![HAM encoding](venusAMIGA.png)
+![HAM6 encoding](venusAMIGA.png)
+
+### Amiga 1200
+
+16M colors total, 2 modes usefull for graphics.
+
+* none, floyds, apple – first pass dithering used only for 256 colors pictures. Colors of the original picture are replaced by retro machine palette.
+
+* 320x256 - use 256 colors, palette is result of Kohonen pixel classification.
+* 320x256 - use HAM8 coding, 64 color palette as a result of Kohonen classification, best neuron takes all.
+
+Export to Delux Paint IFF file format.
+
+![HAM8 encoding](venusAMIGA1200.png)
