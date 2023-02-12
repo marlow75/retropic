@@ -8,11 +8,20 @@ import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.SystemColor;
 import java.awt.Toolkit;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
@@ -28,9 +37,12 @@ import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import pl.dido.image.amiga.AmigaConfig;
-import pl.dido.image.amiga.AmigaGui;
-import pl.dido.image.amiga.AmigaRenderer;
+import pl.dido.image.amiga1200.Amiga1200Config;
+import pl.dido.image.amiga1200.Amiga1200Gui;
+import pl.dido.image.amiga1200.Amiga1200Renderer;
+import pl.dido.image.amiga500.Amiga500Config;
+import pl.dido.image.amiga500.Amiga500Gui;
+import pl.dido.image.amiga500.Amiga500Renderer;
 import pl.dido.image.atari.STConfig;
 import pl.dido.image.atari.STGui;
 import pl.dido.image.atari.STRenderer;
@@ -55,7 +67,8 @@ public class RetroPIC {
 	protected CPCConfig cpcConfig = new CPCConfig();
 	protected STConfig stConfig = new STConfig();
 
-	protected AmigaConfig amigaConfig = new AmigaConfig();
+	protected Amiga500Config amiga500Config = new Amiga500Config();
+	protected Amiga1200Config amiga1200Config = new Amiga1200Config();
 
 	public static void main(final String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -83,20 +96,22 @@ public class RetroPIC {
 		tabbedPane.setFont(new Font("Tahoma", Font.PLAIN, 16));
 
 		final Button btnLoad = new Button("Load file...");
-		
+
 		frame.getContentPane().add(tabbedPane, BorderLayout.CENTER);
 		tabbedPane.addTab("Commodore 64", null, C64Gui.c64Tab(c64Config), null);
 		tabbedPane.addTab("ZX Spectrum 48/+", null, ZXGui.zxTab(zxConfig), null);
 		tabbedPane.addTab("Amstrad CPC", null, CPCGui.cpcTab(cpcConfig), null);
 		tabbedPane.addTab("Atari ST", null, STGui.stTab(stConfig), null);
-		tabbedPane.addTab("Amiga 500", null, AmigaGui.amigaTab(amigaConfig), null);
+		tabbedPane.addTab("Amiga 500", null, Amiga500Gui.amigaTab(amiga500Config), null);
+		tabbedPane.addTab("Amiga 1200", null, Amiga1200Gui.amigaTab(amiga1200Config), null);
 		tabbedPane.addTab("About", null, AboutGui.aboutTab(), null);
+		
 		tabbedPane.addChangeListener(new ChangeListener() {
-		      public void stateChanged(final ChangeEvent changeEvent) {
-		          final JTabbedPane sourceTabbedPane = (JTabbedPane) changeEvent.getSource();
-		          final int index = sourceTabbedPane.getSelectedIndex();
-		          btnLoad.setVisible(!"About".equals(tabbedPane.getTitleAt(index)));
-		      }
+			public void stateChanged(final ChangeEvent changeEvent) {
+				final JTabbedPane sourceTabbedPane = (JTabbedPane) changeEvent.getSource();
+				final int index = sourceTabbedPane.getSelectedIndex();
+				btnLoad.setVisible(!"About".equals(tabbedPane.getTitleAt(index)));
+			}
 		});
 
 		btnLoad.setBackground(new Color(0, 128, 128));
@@ -138,6 +153,53 @@ public class RetroPIC {
 				System.exit(0);
 			}
 		});
+
+		new DropTarget(frame, new DropTargetListener() {
+			
+			@Override
+			public void drop(final DropTargetDropEvent event) {
+				event.acceptDrop(DnDConstants.ACTION_COPY);
+				
+				final Transferable transferable = event.getTransferable();
+				final DataFlavor[] flavors = transferable.getTransferDataFlavors();
+
+				// Loop through the flavors - dragged objects
+				for (final DataFlavor flavor : flavors) {
+
+					try {
+						if (flavor.isFlavorJavaFileListType()) {
+							@SuppressWarnings("unchecked")
+							final List<File> files = (List<File>) transferable.getTransferData(flavor);
+							loadImage(files.get(0), tabbedPane.getSelectedIndex());
+						}
+					} catch (final Exception e) {
+						// nothing
+					}
+				}
+
+				event.dropComplete(true);
+			}
+
+			@Override
+			public void dragEnter(final DropTargetDragEvent dtde) {
+				// nothing		
+			}
+
+			@Override
+			public void dragExit(final DropTargetEvent dte) {
+				// nothing		
+			}
+
+			@Override
+			public void dragOver(final DropTargetDragEvent dtde) {
+				// nothing		
+			}
+
+			@Override
+			public void dropActionChanged(final DropTargetDragEvent dtde) {
+				// nothing		
+			}		
+		});
 	}
 
 	public void loadImage(final File selectedFile, final int selectedTab) {
@@ -161,7 +223,10 @@ public class RetroPIC {
 					new STRenderer(img, selectedFile.getName(), stConfig).start();
 					break;
 				case 4:
-					new AmigaRenderer(img, selectedFile.getName(), amigaConfig).start();
+					new Amiga500Renderer(img, selectedFile.getName(), amiga500Config).start();
+					break;
+				case 5:
+					new Amiga1200Renderer(img, selectedFile.getName(), amiga1200Config).start();
 					break;
 				}
 				break;

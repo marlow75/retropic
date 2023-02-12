@@ -7,9 +7,8 @@ public class STConfig extends Config {
 	public boolean replace_colors;
 	
 	public STConfig() {
-		super();
-		
+		super();		
 		dithering = true;
-		replace_colors = true;
+		replace_colors = false;
 	}
 }

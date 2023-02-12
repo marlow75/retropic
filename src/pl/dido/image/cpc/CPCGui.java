@@ -33,14 +33,14 @@ public class CPCGui {
 		
 		cpcPanel.add(chckbxVividCheckBox);
 
-		final Canvas c64Logo = new ImageCanvas("amstrad.png");
-		c64Logo.setBounds(300, 0, 200, 150);
-		cpcPanel.add(c64Logo);
+		final Canvas cpcLogo = new ImageCanvas("amstrad.png");
+		cpcLogo.setBounds(290, 0, 200, 150);
+		cpcPanel.add(cpcLogo);
 
 		final JCheckBox chkReplaceBox = new JCheckBox("replace brightest");
 		chkReplaceBox.setToolTipText("Replaces brightest with dimmed yellow");
 		chkReplaceBox.setFont(GuiUtils.std);
-		chkReplaceBox.setBounds(20, 76, 169, 23);
+		chkReplaceBox.setBounds(20, 70, 169, 23);
 		chkReplaceBox.setSelected(config.replace_white);
 		chkReplaceBox.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {

@@ -9,9 +9,6 @@ public abstract class AbstractCachedRenderer extends AbstractRenderer {
 
 	protected int pictureColors[][];
 	protected ColorCache cache;
-	
-	protected int missed = 0;
-	protected int hits = 0;
 		
 	public AbstractCachedRenderer(final BufferedImage image, final String fileName, final Config config) {
 		super(image, fileName, config);

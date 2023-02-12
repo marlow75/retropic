@@ -1,7 +1,7 @@
 package pl.dido.image.utils;
 
 public class ColorCache {
-	// two way associative cache
+	// two way associative fastest cache
 	private final int way0[]; // cache 0 way
 	private final int way1[]; // cache 1 way
 

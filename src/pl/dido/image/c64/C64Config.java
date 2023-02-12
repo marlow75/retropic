@@ -22,12 +22,13 @@ public class C64Config extends Config {
 	public C64Config() {
 		super();
 		screen_mode = SCREEN_MODE.HIRES;
-		color_alg = NEAREST_COLOR.PERCEPTED;
+		color_alg = NEAREST_COLOR.PERCEPTED;		
 		
 		dithering = true;
-		luma_pixels = LUMA_PIXELS.OUTER;
+		dither_alg = DITHERING.ATKINSON;
 		
-		pixel_merge = PIXEL_MERGE.AVERAGE;
+		luma_pixels = LUMA_PIXELS.OUTER;		
+		pixel_merge = PIXEL_MERGE.AVERAGE;		
 	}
 	
 	@Override

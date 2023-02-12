@@ -61,16 +61,20 @@ public class CPCRenderer extends AbstractRenderer {
 		switch (image.getType()) {
 		case BufferedImage.TYPE_3BYTE_BGR:
 			for (int i = 0; i < colors.length; i++) {
-				palette[i][0] = (colors[i] & 0x0000ff); // blue
-				palette[i][1] = (colors[i] & 0x00ff00) >> 8; // green
-				palette[i][2] = (colors[i] & 0xff0000) >> 16; // red
+				final int pixel[] = palette[i];
+				
+				pixel[0] = (colors[i] & 0x0000ff); // blue
+				pixel[1] = (colors[i] & 0x00ff00) >> 8; // green
+				pixel[2] = (colors[i] & 0xff0000) >> 16; // red
 			}
 			break;
 		case BufferedImage.TYPE_INT_RGB:
 			for (int i = 0; i < colors.length; i++) {
-				palette[i][0] = (colors[i] & 0xff0000) >> 16; // red
-				palette[i][1] = (colors[i] & 0x00ff00) >> 8; // green
-				palette[i][2] = (colors[i] & 0x0000ff); // blue
+				final int pixel[] = palette[i];
+				
+				pixel[0] = (colors[i] & 0xff0000) >> 16; // red
+				pixel[1] = (colors[i] & 0x00ff00) >> 8; // green
+				pixel[2] = (colors[i] & 0x0000ff); // blue
 			}
 			break;
 		default:
@@ -84,10 +88,10 @@ public class CPCRenderer extends AbstractRenderer {
 
 		switch (((CPCConfig) config).screen_mode) {
 		case MODE1:
-			mode1Dithered();
+			mode1();
 			break;
 		case MODE0:
-			mode0Dithered();
+			mode0();
 			break;
 		}
 	}
@@ -250,7 +254,7 @@ public class CPCRenderer extends AbstractRenderer {
 		}
 	}
 
-	protected void mode1Dithered() {
+	protected void mode1() {
 		final int[] work = Utils.copy2Int(pixels);
 
 		int r0, g0, b0;
@@ -276,8 +280,8 @@ public class CPCRenderer extends AbstractRenderer {
 				b0 = work[pyx + 2];
 
 				final int color = getColorIndex(pictureColors, r0, g0, b0);
-
 				final int c[] = pictureColors[color];
+
 				final int r = c[0];
 				final int g = c[1];
 				final int b = c[2];
@@ -285,7 +289,7 @@ public class CPCRenderer extends AbstractRenderer {
 				work[pyx] = r;
 				work[pyx + 1] = g;
 				work[pyx + 2] = b;
-
+				
 				pixels[pyx] = (byte) r;
 				pixels[pyx + 1] = (byte) g;
 				pixels[pyx + 2] = (byte) b;
@@ -332,7 +336,7 @@ public class CPCRenderer extends AbstractRenderer {
 		}
 	}
 
-	protected void mode0Dithered() {
+	protected void mode0() {
 		final int[] newPixels = new int[160 * 200 * 3]; // 160x200
 		int bit0 = 128, bit1 = 8, bit2 = 0, bit3 = 0;
 		
@@ -402,8 +406,8 @@ public class CPCRenderer extends AbstractRenderer {
 				}
 
 				final int c[] = pictureColors[color];
-				newPixels[pl] = c[0];
 				
+				newPixels[pl] = c[0];				
 				newPixels[pl + 1] = c[1];
 				newPixels[pl + 2] = c[2];
 			}

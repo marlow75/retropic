@@ -446,7 +446,8 @@ public class C64Renderer extends AbstractRenderer {
 						work[index++] = g;
 						work[index++] = b;
 
-						occurrence[getColorIndex(r, g, b)]++;
+						final int color = getColorIndex(r, g, b);						
+						occurrence[color]++;
 					}
 				}
 

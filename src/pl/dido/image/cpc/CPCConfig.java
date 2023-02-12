@@ -15,8 +15,7 @@ public class CPCConfig extends Config {
 	public PIXEL_MERGE pixel_merge;
 	public boolean replace_white;
 	
-	public CPCConfig() {
-		color_alg = NEAREST_COLOR.PERCEPTED;
+	public CPCConfig() {	
 		dither_alg = DITHERING.ATKINSON;
 		dithering = true;
 		
@@ -24,6 +23,7 @@ public class CPCConfig extends Config {
 		pixel_merge = PIXEL_MERGE.AVERAGE;
 		
 		replace_white = false;
+		color_alg = NEAREST_COLOR.PERCEPTED;
 	}
 	
 	@Override
