@@ -3,6 +3,7 @@ package pl.dido.image.renderer;
 import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
@@ -67,13 +68,15 @@ public abstract class AbstractRenderer extends Thread {
 		width = image.getWidth();
 		height = image.getHeight();
 		
+		final int scale = getScale();
+		
 		frame = new JFrame(getTitle() + config.getConfigString());
 		frame.setJMenuBar(getMenuBar());
 		frame.setIconImage(Toolkit.getDefaultToolkit().getImage(Utils.getResourceAsURL("retro.png")));
 
 		frame.addWindowListener(new ImageWindowListener(this));
 
-		frame.setSize(width * 2, height * 2);
+		frame.setSize(width * scale, height * scale);
 		frame.setLocationRelativeTo(null);
 
 		frame.setResizable(false);
@@ -81,7 +84,7 @@ public abstract class AbstractRenderer extends Thread {
 
 		canvas = new PictureCanvas();
 
-		canvas.setSize(width * 2, height * 2);
+		canvas.setSize(width * scale, height * scale);
 		canvas.setBackground(Color.BLACK);
 		canvas.setVisible(true);
 		canvas.setFocusable(false);
@@ -120,11 +123,25 @@ public abstract class AbstractRenderer extends Thread {
 			imageDithering();
 			imagePostproces();
 
+			addWaterMark();
 			// show image after
 			showImage();
 		} finally {
 			canvas.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		}
+	}
+
+	protected void addWaterMark() {		
+		final Graphics gfx = image.createGraphics(); 
+		
+		gfx.setColor(Color.WHITE);
+		gfx.setFont(new Font("Tahoma", Font.BOLD, 8));
+		gfx.drawString("RetroPIC", width - 40, height - 5);
+		gfx.dispose();
+	}
+	
+	protected int getScale() {
+		return 2;
 	}
 
 	protected abstract void imagePostproces();
@@ -150,7 +167,6 @@ public abstract class AbstractRenderer extends Thread {
 			final int k2 = ((y + 2) * width3);
 			
 			for (int x = 0; x < width3; x += 3) {
-
 				final int pyx = k + x;
 				final int py1x = k1 + x;
 				final int py2x = k2 + x;
