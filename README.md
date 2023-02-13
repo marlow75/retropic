@@ -13,7 +13,7 @@ You can download executable jar [here](retropic.jar).
 * Amstrad CPC series mode0, mode1.
 * Atari ST, 320x200 in 16 on screen from 512 palette colors.
 * Amiga 500/1000, PAL 320x256 in 32 colors or in HAM6 encoding, 4096 palette colors.
-* Amiga 1200/4000, PAL 320x256 in 256 colors or in HAM8 encoding, 16M palette colors.
+* Amiga 1200/4000, PAL 640x512 in 256 colors or in HAM8 encoding, 16M palette colors.
 
 ## Graphics formats
 
@@ -101,8 +101,8 @@ Export to Delux Paint IFF file format.
 
 * none, floyds, apple – first pass dithering used only for 256 colors pictures. Colors of the original picture are replaced by retro machine palette.
 
-* 320x256 - use 256 colors, palette is result of Kohonen pixel classification.
-* 320x256 - use HAM8 coding, 64 color palette as a result of Kohonen classification, best neuron takes all.
+* 640x512 (lace) - use 256 colors, palette is result of Kohonen pixel classification.
+* 640x512 (lace) - use HAM8 coding, 64 color palette as a result of Kohonen classification, best neuron takes all.
 
 Export to Delux Paint IFF file format.
 
