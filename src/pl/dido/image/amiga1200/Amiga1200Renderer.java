@@ -40,6 +40,11 @@ public class Amiga1200Renderer extends AbstractCachedRenderer {
 	protected void setupPalette() {
 		// do not generate palette
 	}
+	
+	@Override
+	protected int getScale() {
+		return 1;
+	}
 
 	@Override
 	protected void imagePostproces() {
@@ -53,7 +58,7 @@ public class Amiga1200Renderer extends AbstractCachedRenderer {
 			ham8Encoded();
 			break;
 		case STD256:
-			training = new SOMFixedPalette(16, 16, 8); // 16x16 = 256 colors (8 bits)
+			training = new SOMFixedPalette(16, 16, 8, 4); // 16x16 = 256 colors (8 bits)
 			pictureColors = training.train(pixels);
 
 			standard256();
@@ -492,16 +497,16 @@ public class Amiga1200Renderer extends AbstractCachedRenderer {
 
 	@Override
 	protected String getTitle() {
-		return "A1200 320x256";
+		return "A1200 640x512";
 	}
 
 	@Override
 	protected int getHeight() {
-		return 256;
+		return 512;
 	}
 
 	@Override
 	protected int getWidth() {
-		return 320;
+		return 640;
 	}
 }
