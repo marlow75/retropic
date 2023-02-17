@@ -19,7 +19,6 @@ import javax.swing.KeyStroke;
 import pl.dido.image.Config;
 import pl.dido.image.renderer.AbstractCachedRenderer;
 import pl.dido.image.utils.SOMFixedPalette;
-import pl.dido.image.utils.SOMWinnerFixedPalette;
 import pl.dido.image.utils.Utils;
 
 public class Amiga1200Renderer extends AbstractCachedRenderer {
@@ -40,24 +39,34 @@ public class Amiga1200Renderer extends AbstractCachedRenderer {
 	protected void setupPalette() {
 		// do not generate palette
 	}
-	
+
 	@Override
 	protected int getScale() {
-		return 1;
+		switch (((Amiga1200Config) config).video_mode) {
+		case HAM8_320x256:
+		case STD_320x256:
+			return 2;
+		default:
+			return 1;
+		}
 	}
 
 	@Override
 	protected void imagePostproces() {
 		final SOMFixedPalette training;
 
-		switch (((Amiga1200Config) config).color_mode) {
-		case HAM8:
-			training = new SOMWinnerFixedPalette(8, 8, 8); // 8x8 = 64 colors (8 bit per component)
+		switch (((Amiga1200Config) config).video_mode) {
+		case HAM8_320x256:
+		case HAM8_320x512:
+		case HAM8_640x512:
+			training = new SOMFixedPalette(8, 8, 8, 4); // 8x8 = 64 colors (8 bit per component)
 			pictureColors = training.train(pixels);
 
 			ham8Encoded();
 			break;
-		case STD256:
+		case STD_320x256:
+		case STD_320x512:
+		case STD_640x512:
 			training = new SOMFixedPalette(16, 16, 8, 4); // 16x16 = 256 colors (8 bits)
 			pictureColors = training.train(pixels);
 
@@ -67,11 +76,11 @@ public class Amiga1200Renderer extends AbstractCachedRenderer {
 	}
 
 	protected void standard256() {
-		final int[] work = Utils.copy2Int(pixels);
+		final float[] work = Utils.copy2float(pixels);
 		bitplanes = new int[(width >> 4) * height][8]; // 8 planes
 
 		int r0, g0, b0;
-		int r_error = 0, g_error = 0, b_error = 0;
+		float r_error = 0, g_error = 0, b_error = 0;
 
 		final int width3 = width * 3;
 		int index = 0, shift = 15; // 16
@@ -86,9 +95,9 @@ public class Amiga1200Renderer extends AbstractCachedRenderer {
 				final int py1x = k1 + x;
 				final int py2x = k2 + x;
 
-				r0 = work[pyx];
-				g0 = work[pyx + 1];
-				b0 = work[pyx + 2];
+				r0 = Utils.saturate((int) work[pyx]);
+				g0 = Utils.saturate((int) work[pyx + 1]);
+				b0 = Utils.saturate((int) work[pyx + 2]);
 
 				final int color = getColorIndex(pictureColors, r0, g0, b0); // 256 colors
 				final int c[] = pictureColors[color];
@@ -100,7 +109,7 @@ public class Amiga1200Renderer extends AbstractCachedRenderer {
 				pixels[pyx] = (byte) r;
 				pixels[pyx + 1] = (byte) g;
 				pixels[pyx + 2] = (byte) b;
-				
+
 				bitplanes[index][7] |= ((color & 128) >> 7) << shift;
 				bitplanes[index][6] |= ((color & 64) >> 6) << shift;
 				bitplanes[index][5] |= ((color & 32) >> 5) << shift;
@@ -117,9 +126,9 @@ public class Amiga1200Renderer extends AbstractCachedRenderer {
 					shift--;
 
 				if (config.dithering) {
-					r_error = Utils.saturate(r0 - r);
-					g_error = Utils.saturate(g0 - g);
-					b_error = Utils.saturate(b0 - b);
+					r_error = r0 - r;
+					g_error = g0 - g;
+					b_error = b0 - b;
 
 					switch (config.dither_alg) {
 					case STD_FS:
@@ -128,7 +137,6 @@ public class Amiga1200Renderer extends AbstractCachedRenderer {
 							work[pyx + 3 + 1] += g_error * 7 / 16;
 							work[pyx + 3 + 2] += b_error * 7 / 16;
 						}
-
 						if (y < height - 1) {
 							work[py1x - 3] += r_error * 3 / 16;
 							work[py1x - 3 + 1] += g_error * 3 / 16;
@@ -157,7 +165,6 @@ public class Amiga1200Renderer extends AbstractCachedRenderer {
 								work[pyx + 6 + 2] += b_error * 1 / 8;
 							}
 						}
-
 						if (y < height - 1) {
 							work[py1x - 3] += r_error * 1 / 8;
 							work[py1x - 3 + 1] += g_error * 1 / 8;
@@ -179,7 +186,6 @@ public class Amiga1200Renderer extends AbstractCachedRenderer {
 								work[py2x + 2] += b_error * 1 / 8;
 							}
 						}
-
 						break;
 					}
 				}
@@ -188,10 +194,10 @@ public class Amiga1200Renderer extends AbstractCachedRenderer {
 	}
 
 	protected void ham8Encoded() {
-		final int[] work = Utils.copy2Int(pixels);
+		final float[] work = Utils.copy2float(pixels);
 		bitplanes = new int[(width >> 4) * height][8]; // 8 planes
 
-		int r0, g0, b0, r, g, b;
+		int r0, g0, b0, r = 0, g = 0, b = 0;
 		final int width3 = width * 3;
 
 		int index = 0, shift = 15; // WORD
@@ -209,23 +215,28 @@ public class Amiga1200Renderer extends AbstractCachedRenderer {
 		}
 
 		for (int y = 0; y < height; y++) {
-			int oc[] = null;
+			boolean nextPixel = false;
 			final int k = y * width3;
+			
+			final int k1 = (y + 1) * width3;
+			final int k2 = (y + 2) * width3;
 
 			for (int x = 0; x < width3; x += 3) {
 				final int pyx = k + x;
+				final int py1x = k1 + x;
+				
+				final int py2x = k2 + x;
 
 				// get picture RGB components
-				r0 = work[pyx];
-				g0 = work[pyx + 1];
-				b0 = work[pyx + 2];
+				r0 = Utils.saturate((int) work[pyx]);
+				g0 = Utils.saturate((int) work[pyx + 1]);
+				b0 = Utils.saturate((int) work[pyx + 2]);
 
 				// find closest palette color
-				final int color = getColorIndex(pictureColors, r0, g0, b0); // 64 color palette
-				final int pc[] = pictureColors[color];
+				int action = getColorIndex(pictureColors, r0, g0, b0); // 64 color palette
+				final int pc[] = pictureColors[action];
 
-				int action = color & 0x3f;
-				if (oc != null) { // it's not first pixel in a row so use best matching color
+				if (nextPixel) { // it's not first pixel in a row so use best matching color
 					// distance to palette match
 					final float dpc = getDistanceByCM(r0, g0, b0, pc[0], pc[1], pc[2]);
 
@@ -236,14 +247,11 @@ public class Amiga1200Renderer extends AbstractCachedRenderer {
 					int ri = -1;
 					int gi = -1;
 					int bi = -1;
-					r = oc[0];
-					g = oc[1];
-					b = oc[2]; // old color components
 
 					// calculate all color change possibilities and measure distances
 					for (int i = 0; i < 64; i++) {
 						// scaled color
-						final int scaled = (int) (i * 3.98f);
+						final int scaled = (int) Math.ceil(i * 3.98f);
 
 						// which component change gets minimum error?
 						final float dr = getDistanceByCM(r0, g0, b0, scaled, g, b);
@@ -272,32 +280,39 @@ public class Amiga1200Renderer extends AbstractCachedRenderer {
 					if (ham < dpc) {
 						// HAM is best, alter color
 						if (ham == min_r) {
-							// red]
-							oc[0] = ri;
+							// red
+							r = ri;
 							action = modifyRed | (ri >> 2);
 						} else if (ham == min_g) {
 							// green
-							oc[1] = gi;
+							g = gi;
 							action = 0b11000000 | (gi >> 2);
 						} else if (ham == min_b) {
 							// blue
-							oc[2] = bi;
+							b = bi;
 							action = modifyBlue | (bi >> 2);
 						}
 					} else {
-						oc[0] = pc[0];
-						oc[1] = pc[1];
-						oc[2] = pc[2];
+						r = pc[0];
+						g = pc[1];
+						b = pc[2];
 					}
-				} else
-					oc = pc.clone();
+				} else {
+					nextPixel = true;
+					r = pc[0];
+					g = pc[1];
+					b = pc[2];
+				}
 
 				bitplanes[index][7] |= ((action & 128) >> 7) << shift;
 				bitplanes[index][6] |= ((action & 64) >> 6) << shift;
+
 				bitplanes[index][5] |= ((action & 32) >> 5) << shift;
 				bitplanes[index][4] |= ((action & 16) >> 4) << shift;
+				
 				bitplanes[index][3] |= ((action & 8) >> 3) << shift;
 				bitplanes[index][2] |= ((action & 4) >> 2) << shift;
+				
 				bitplanes[index][1] |= ((action & 2) >> 1) << shift;
 				bitplanes[index][0] |= (action & 1) << shift;
 				
@@ -307,17 +322,76 @@ public class Amiga1200Renderer extends AbstractCachedRenderer {
 				} else
 					shift--;
 
-				r = oc[0];
-				g = oc[1];
-				b = oc[2];
-
 				pixels[pyx] = (byte) r;
 				pixels[pyx + 1] = (byte) g;
 				pixels[pyx + 2] = (byte) b;
+				
+				float r_error = r0 - r;
+				float g_error = g0 - g;
+				float b_error = b0 - b;
+				
+				switch (config.dither_alg) {
+				case STD_FS:
+					if (x < (width - 1) * 3) {
+						work[pyx + 3]     += r_error * 7 / 16;
+						work[pyx + 3 + 1] += g_error * 7 / 16;
+						work[pyx + 3 + 2] += b_error * 7 / 16;
+					}
+					if (y < height - 1) {
+						work[py1x - 3]     += r_error * 3 / 16;
+						work[py1x - 3 + 1] += g_error * 3 / 16;
+						work[py1x - 3 + 2] += b_error * 3 / 16;
+
+						work[py1x]     += r_error * 5 / 16;
+						work[py1x + 1] += g_error * 5 / 16;
+						work[py1x + 2] += b_error * 5 / 16;
+
+						if (x < (width - 1) * 3) {
+							work[py1x + 3]     += r_error / 16;
+							work[py1x + 3 + 1] += g_error / 16;
+							work[py1x + 3 + 2] += b_error / 16;
+						}
+					}							
+					break;
+				case ATKINSON:
+					if (x < (width - 1) * 3) {
+						work[pyx + 3]     += r_error * 1 / 8;
+						work[pyx + 3 + 1] += g_error * 1 / 8;
+						work[pyx + 3 + 2] += b_error * 1 / 8;
+						
+						if (x < (width - 2) * 3) {
+							work[pyx + 6]     += r_error * 1 / 8;
+							work[pyx + 6 + 1] += g_error * 1 / 8;
+							work[pyx + 6 + 2] += b_error * 1 / 8;
+						}
+					}
+					if (y < height - 1) {
+						work[py1x - 3]     += r_error * 1 / 8;
+						work[py1x - 3 + 1] += g_error * 1 / 8;
+						work[py1x - 3 + 2] += b_error * 1 / 8;
+
+						work[py1x]     += r_error * 1 / 8;
+						work[py1x + 1] += g_error * 1 / 8;
+						work[py1x + 2] += b_error * 1 / 8;
+
+						if (x < (width - 1) * 3) {
+							work[py1x + 3]     += r_error * 1 / 8;
+							work[py1x + 3 + 1] += g_error * 1 / 8;
+							work[py1x + 3 + 2] += b_error * 1 / 8;
+						}
+						
+						if (y < height - 2) {
+							work[py2x]     += r_error * 1 / 8;
+							work[py2x + 1] += g_error * 1 / 8;
+							work[py2x + 2] += b_error * 1 / 8;
+						}
+					}					
+					break;					
+				}
 			}
 		}
 	}
-
+	
 	@Override
 	protected JMenuBar getMenuBar() {
 		final JMenu menuFile = new JMenu("File");
@@ -386,7 +460,7 @@ public class Amiga1200Renderer extends AbstractCachedRenderer {
 		return mem.toByteArray();
 	}
 
-	protected byte[] getSTDBitmap() throws IOException {
+	protected byte[] getBitmap() throws IOException {
 		final ByteArrayOutputStream mem = new ByteArrayOutputStream(width * height); // 8 bit planes
 
 		final int size = width >> 4;
@@ -403,7 +477,7 @@ public class Amiga1200Renderer extends AbstractCachedRenderer {
 		return mem.toByteArray();
 	}
 
-	protected byte[] getILBMHD() throws IOException {
+	protected byte[] getILBMHD(final int aspectX, final int aspectY) throws IOException {
 		final ByteArrayOutputStream mem = new ByteArrayOutputStream(28);
 
 		mem.write(bigEndianWORD(width));
@@ -417,8 +491,8 @@ public class Amiga1200Renderer extends AbstractCachedRenderer {
 		mem.write(0); // compress 0 = none
 		mem.write(0); // padding
 		mem.write(bigEndianWORD(0)); // transparent background color
-		mem.write(1); // aspect X
-		mem.write(1); // aspect Y
+		mem.write(aspectX); // aspect X
+		mem.write(aspectY); // aspect Y
 		mem.write(bigEndianWORD(width)); // page width
 		mem.write(bigEndianWORD(height)); // page height
 
@@ -476,17 +550,42 @@ public class Amiga1200Renderer extends AbstractCachedRenderer {
 			final BufferedOutputStream chk = new BufferedOutputStream(new FileOutputStream(path + fileName + ".iff"),
 					8192);
 
-			switch (((Amiga1200Config) config).color_mode) {
-			case HAM8:
-				chk.write(getILBMFormat(chunk("BMHD", getILBMHD()), chunk("CMAP", getCMAP()),
-						chunk("CAMG", bigEndianDWORD(0x800)), chunk("BODY", getSTDBitmap()))); // HAM8 has same bitmap planes
+			int videoMode = 0, aspectX = 0, aspectY = 0;
+			switch (((Amiga1200Config) config).video_mode) {
+			case STD_320x256:
+				videoMode = 0x0000;
+				aspectX = 44;
+				aspectY = 44;
 				break;
-			case STD256:
-				chk.write(getILBMFormat(chunk("BMHD", getILBMHD()), chunk("CMAP", getCMAP()),
-						chunk("CAMG", bigEndianDWORD(0x1000)), chunk("BODY", getSTDBitmap())));
+			case HAM8_320x256:
+				videoMode = 0x0800;
+				aspectX = 44;
+				aspectY = 44;
+				break;
+			case HAM8_320x512:
+				videoMode = 0x0804;
+				aspectX = 22;
+				aspectY = 44;
+				break;
+			case STD_320x512:
+				videoMode = 0x0004;
+				aspectX = 22;
+				aspectY = 44;
+				break;
+			case HAM8_640x512:
+				videoMode = 0x8804;
+				aspectX = 44;
+				aspectY = 44;
+				break;
+			case STD_640x512:
+				videoMode = 0x8004;
+				aspectX = 44;
+				aspectY = 44;
 				break;
 			}
 
+			chk.write(getILBMFormat(chunk("BMHD", getILBMHD(aspectX, aspectY)), chunk("CMAP", getCMAP()),
+					chunk("CAMG", bigEndianDWORD(videoMode)), chunk("BODY", getBitmap())));
 			chk.close();
 
 			frame.setTitle(frame.getTitle() + " SAVED");
@@ -497,16 +596,40 @@ public class Amiga1200Renderer extends AbstractCachedRenderer {
 
 	@Override
 	protected String getTitle() {
-		return "A1200 640x512";
+		return "A1200 " + getWidth() + "x" + getHeight();
 	}
 
 	@Override
 	protected int getHeight() {
-		return 512;
+		switch (((Amiga1200Config) config).video_mode) {
+		case HAM8_320x256:
+		case STD_320x256:
+			return 256;
+
+		case HAM8_320x512:
+		case HAM8_640x512:
+		case STD_640x512:
+		case STD_320x512:
+			return 512;
+		}
+
+		return -1;
 	}
 
 	@Override
 	protected int getWidth() {
-		return 640;
+		switch (((Amiga1200Config) config).video_mode) {
+		case HAM8_320x256:
+		case STD_320x256:
+		case HAM8_320x512:
+		case STD_320x512:
+			return 320;
+
+		case HAM8_640x512:
+		case STD_640x512:
+			return 640;
+		}
+
+		return -1;
 	}
 }

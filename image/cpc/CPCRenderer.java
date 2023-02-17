@@ -18,7 +18,7 @@ import javax.swing.KeyStroke;
 import pl.dido.image.Config;
 import pl.dido.image.renderer.AbstractRenderer;
 import pl.dido.image.utils.ChecksumOutputStream;
-import pl.dido.image.utils.SOMWinnerFixedPalette;
+import pl.dido.image.utils.SOMFixedPalette;
 import pl.dido.image.utils.Utils;
 
 public class CPCRenderer extends AbstractRenderer {
@@ -98,16 +98,16 @@ public class CPCRenderer extends AbstractRenderer {
 
 	private int[][] modePalette(final CPCConfig.SCREEN_MODE mode) {
 		final int p[][];
-		final SOMWinnerFixedPalette som;
+		final SOMFixedPalette som;
 		
 		switch (mode) {
 		case MODE0:
-			som = new SOMWinnerFixedPalette(4, 4, 2);
+			som = new SOMFixedPalette(4, 4, 2);
 			p = som.train(pixels);
 
 			break;
 		default:
-			som = new SOMWinnerFixedPalette(2, 2, 2);
+			som = new SOMFixedPalette(2, 2, 2);
 			p = som.train(pixels);
 
 			break;
@@ -255,7 +255,7 @@ public class CPCRenderer extends AbstractRenderer {
 	}
 
 	protected void mode1() {
-		final int[] work = Utils.copy2Int(pixels);
+		final float[] work = Utils.copy2float(pixels);
 
 		int r0, g0, b0;
 		int r_error = 0, g_error = 0, b_error = 0;
@@ -275,9 +275,9 @@ public class CPCRenderer extends AbstractRenderer {
 				final int pyx = y * width3 + x;
 				final int py1x = (y + 1) * width3 + x;
 
-				r0 = work[pyx];
-				g0 = work[pyx + 1];
-				b0 = work[pyx + 2];
+				r0 = Utils.saturate((int) work[pyx]);
+				g0 = Utils.saturate((int) work[pyx + 1]);
+				b0 = Utils.saturate((int) work[pyx + 2]);
 
 				final int color = getColorIndex(pictureColors, r0, g0, b0);
 				final int c[] = pictureColors[color];
@@ -307,27 +307,27 @@ public class CPCRenderer extends AbstractRenderer {
 					bit1 >>= 1;
 				}
 
-				r_error = Utils.saturate(r0 - r);
-				g_error = Utils.saturate(g0 - g);
-				b_error = Utils.saturate(b0 - b);
+				r_error = r0 - r;
+				g_error = g0 - g;
+				b_error = b0 - b;
 
 				if (x < (width - 1) * 3) {
-					work[pyx + 3] += r_error * 7 / 16;
+					work[pyx + 3]     += r_error * 7 / 16;
 					work[pyx + 3 + 1] += g_error * 7 / 16;
 					work[pyx + 3 + 2] += b_error * 7 / 16;
 				}
 
 				if (y < height - 1) {
-					work[py1x - 3] += r_error * 3 / 16;
+					work[py1x - 3]     += r_error * 3 / 16;
 					work[py1x - 3 + 1] += g_error * 3 / 16;
 					work[py1x - 3 + 2] += b_error * 3 / 16;
 
-					work[py1x] += r_error * 5 / 16;
+					work[py1x] 	   += r_error * 5 / 16;
 					work[py1x + 1] += g_error * 5 / 16;
 					work[py1x + 2] += b_error * 5 / 16;
 
 					if (x < (width - 1) * 3) {
-						work[py1x + 3] += r_error / 16;
+						work[py1x + 3] 	   += r_error / 16;
 						work[py1x + 3 + 1] += g_error / 16;
 						work[py1x + 3 + 2] += b_error / 16;
 					}
@@ -386,8 +386,8 @@ public class CPCRenderer extends AbstractRenderer {
 				}
 
 				final int color = getColorIndex(pictureColors, r, g, b);				
-				final int data = ((color & 1) == 1 ? bit0 : 0) | ((color & 2) == 2 ? bit1 : 0) 
-						| ((color & 4) == 4 ? bit2 : 0) | ((color & 8) == 8 ? bit3 : 0);
+				final int data = ((color & 1) != 0 ? bit0 : 0) | ((color & 2) != 0 ? bit1 : 0) 
+						| ((color & 4) != 0 ? bit2 : 0) | ((color & 8) != 0 ? bit3 : 0);
 
 				bitmap[offset + index] |= data;
 
@@ -407,7 +407,7 @@ public class CPCRenderer extends AbstractRenderer {
 
 				final int c[] = pictureColors[color];
 				
-				newPixels[pl] = c[0];				
+				newPixels[pl] = c[0];
 				newPixels[pl + 1] = c[1];
 				newPixels[pl + 2] = c[2];
 			}

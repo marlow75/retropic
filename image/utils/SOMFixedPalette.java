@@ -5,10 +5,10 @@ public class SOMFixedPalette {
 	protected float matrix[][][];
 	protected int width, height;
 
-	protected float rate = 0.6f; // defaults
-	protected float radius = 2f;
+	protected float rate = 0.4f; // defaults
+	protected float radius = 1.5f;
 
-	protected int epoch = 10;
+	protected int epoch = 20;
 	protected float scale;
 
 	protected int skip; // skip train data (large files)

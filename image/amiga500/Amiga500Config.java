@@ -4,15 +4,15 @@ import pl.dido.image.Config;
 
 public class Amiga500Config extends Config {
 	
-	public enum COLOR_MODE {
-		STD32, HAM6;
+	public enum VIDEO_MODE {
+		STD_320x256, HAM6_320x256, STD_320x512, HAM6_320x512;
 	};
 	
-	public COLOR_MODE color_mode;
+	public VIDEO_MODE video_mode;
 	
 	public Amiga500Config() {
 		super();
-		color_mode = COLOR_MODE.STD32;
+		video_mode = VIDEO_MODE.STD_320x256;
 		dithering = true;
 	}
 
@@ -20,11 +20,13 @@ public class Amiga500Config extends Config {
 	public String getConfigString() {
 		String configString = "";
 		
-		switch (color_mode) {
-		case STD32:
+		switch (video_mode) {
+		case STD_320x512:
+		case STD_320x256:
 			configString += "x32 ";
 			break;
-		case HAM6:
+		case HAM6_320x512:
+		case HAM6_320x256:
 			configString += " HAM ";
 			break;
 		}

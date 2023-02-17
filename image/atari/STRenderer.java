@@ -98,10 +98,10 @@ public class STRenderer extends AbstractCachedRenderer {
 	}
 
 	protected void doPicturePaletteDithering() {
-		final int[] work = Utils.copy2Int(pixels);
+		final float[] work = Utils.copy2float(pixels);
 
 		int r0, g0, b0;
-		int r_error = 0, g_error = 0, b_error = 0;
+		float r_error = 0, g_error = 0, b_error = 0;
 
 		final int width3 = width * 3;
 		int index = 0, shift = 15;
@@ -111,9 +111,9 @@ public class STRenderer extends AbstractCachedRenderer {
 				final int pyx = y * width3 + x;
 				final int py1x = (y + 1) * width3 + x;
 
-				r0 = work[pyx];
-				g0 = work[pyx + 1];
-				b0 = work[pyx + 2];
+				r0 = Utils.saturate((int) work[pyx]);
+				g0 = Utils.saturate((int) work[pyx + 1]);
+				b0 = Utils.saturate((int) work[pyx + 2]);
 
 				final int color = getColorIndex(pictureColors, r0, g0, b0);
 				final int c[] = pictureColors[color];
@@ -143,27 +143,26 @@ public class STRenderer extends AbstractCachedRenderer {
 				} else
 					shift--;
 
-				r_error = Utils.saturate(r0 - r);
-				g_error = Utils.saturate(g0 - g);
-				b_error = Utils.saturate(b0 - b);
+				r_error = r0 - r;
+				g_error = g0 - g;
+				b_error = b0 - b;
 
 				if (x < (width - 1) * 3) {
-					work[pyx + 3] += r_error * 7 / 16;
+					work[pyx + 3]     += r_error * 7 / 16;
 					work[pyx + 3 + 1] += g_error * 7 / 16;
 					work[pyx + 3 + 2] += b_error * 7 / 16;
 				}
-
 				if (y < height - 1) {
-					work[py1x - 3] += r_error * 3 / 16;
+					work[py1x - 3]     += r_error * 3 / 16;
 					work[py1x - 3 + 1] += g_error * 3 / 16;
 					work[py1x - 3 + 2] += b_error * 3 / 16;
 
-					work[py1x] += r_error * 5 / 16;
+					work[py1x]     += r_error * 5 / 16;
 					work[py1x + 1] += g_error * 5 / 16;
 					work[py1x + 2] += b_error * 5 / 16;
 
 					if (x < (width - 1) * 3) {
-						work[py1x + 3] += r_error / 16;
+						work[py1x + 3]     += r_error / 16;
 						work[py1x + 3 + 1] += g_error / 16;
 						work[py1x + 3 + 2] += b_error / 16;
 					}

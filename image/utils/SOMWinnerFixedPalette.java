@@ -2,9 +2,9 @@ package pl.dido.image.utils;
 
 public class SOMWinnerFixedPalette extends SOMFixedPalette {
 
-	public SOMWinnerFixedPalette(final int width, final int height, final float rate, final float radius,
+	public SOMWinnerFixedPalette(final int width, final int height, final float rate,
 			final int epoch, final int bits, final int skip) {
-		super(width, height, rate, radius, epoch, bits, skip);
+		super(width, height, rate, 0f, epoch, bits, skip);
 	}
 	
 	public SOMWinnerFixedPalette(final int width, final int height, final int bits) {

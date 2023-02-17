@@ -4,15 +4,22 @@ import java.awt.Canvas;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.ButtonGroup;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 
 import pl.dido.image.GuiUtils;
 import pl.dido.image.utils.ImageCanvas;
 
 public class Amiga500Gui {
+	
+	public static final String PAL320x256x32 = "PAL 320x256x32";
+	public static final String PAL320x512x32 = "PAL 320x512x32";
+	
+	public static final String PAL320x256_HAM = "PAL 320x256 HAM";
+	public static final String PAL320x512_HAM = "PAL 320x512 HAM";
+	
+	final private static String[] modesStrings = { PAL320x256x32, PAL320x512x32, PAL320x256_HAM, PAL320x512_HAM };
 
 	public static JPanel amigaTab(final Amiga500Config config) {
 		final JPanel panelAmiga = new JPanel();
@@ -28,34 +35,34 @@ public class Amiga500Gui {
 		lblConvertLabel.setBounds(20, 112, 250, 23);
 		panelAmiga.add(lblConvertLabel);
 
-		final JRadioButton rdbtnStdButton = new JRadioButton("PAL 320x256 - 32 colors");
-		rdbtnStdButton.setToolTipText("Standard PAL, 32 colors from 4096 palette");
-		rdbtnStdButton.setFont(GuiUtils.std);
-		rdbtnStdButton.setBounds(46, 130, 250, 57);
-		rdbtnStdButton.setSelected(config.color_mode == Amiga500Config.COLOR_MODE.STD32);
-		rdbtnStdButton.addActionListener(new ActionListener() {
+		final JComboBox<String> modesList = new JComboBox<String>(modesStrings);
+		modesList.setToolTipText("Choose available video mode");
+		modesList.setFont(GuiUtils.std);
+		modesList.setBounds(46, 150, 250, 40);
+		modesList.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				config.color_mode = Amiga500Config.COLOR_MODE.STD32;
-			}});
-
-		panelAmiga.add(rdbtnStdButton);
-		
-		final JRadioButton rdbtnHAMButton = new JRadioButton("PAL 320x256 - Hold And Modify");
-		rdbtnHAMButton.setToolTipText("Standard PAL HAM encoding");
-		rdbtnHAMButton.setFont(GuiUtils.std);
-		rdbtnHAMButton.setBounds(46, 193, 400, 23);
-		rdbtnHAMButton.setSelected(config.color_mode == Amiga500Config.COLOR_MODE.HAM6);
-		rdbtnHAMButton.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				config.color_mode = Amiga500Config.COLOR_MODE.HAM6;
-			}});
-
-		panelAmiga.add(rdbtnHAMButton);
-		
-		final ButtonGroup groupColor = new ButtonGroup();
-		groupColor.add(rdbtnStdButton);
-		groupColor.add(rdbtnHAMButton);				
 				
+				@SuppressWarnings("unchecked")
+				final JComboBox<String> cb = (JComboBox<String>)e.getSource();
+		        final String modeName = (String) cb.getSelectedItem();
+		        
+		        switch (modeName) {
+		        case PAL320x256x32:
+		        	config.video_mode = Amiga500Config.VIDEO_MODE.STD_320x256;
+		        	break;
+		        case PAL320x512x32:
+		        	config.video_mode = Amiga500Config.VIDEO_MODE.STD_320x512;
+		        	break;
+		        case PAL320x256_HAM:
+		        	config.video_mode = Amiga500Config.VIDEO_MODE.HAM6_320x256;
+		        	break;
+		        case PAL320x512_HAM:
+		        	config.video_mode = Amiga500Config.VIDEO_MODE.HAM6_320x512;
+		        	break;
+		        }
+		}});
+		
+		panelAmiga.add(modesList);				
 		GuiUtils.addColorControls(panelAmiga, config);
 						
 		return panelAmiga;

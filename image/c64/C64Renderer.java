@@ -218,7 +218,7 @@ public class C64Renderer extends AbstractRenderer {
 	}
 
 	protected void hiresLumaDithered() {
-		final int work[] = new int[64 * 3];
+		final float work[] = new float[64 * 3];
 		int bitmapIndex = 0;
 
 		for (int y = 0; y < 200; y += 8) {
@@ -262,8 +262,7 @@ public class C64Renderer extends AbstractRenderer {
 						if (luma > max) {
 							max = luma;
 							f = getColorIndex(r, g, b);
-						}
-
+						} else
 						if (luma < min) {
 							min = luma;
 							n = getColorIndex(r, g, b);
@@ -273,15 +272,17 @@ public class C64Renderer extends AbstractRenderer {
 
 				screen[(y >> 3) * 40 + (x >> 3)] = ((f & 0xf) << 4) | (n & 0xf);
 				int value = 0, bitcount = 0;
+				
+				float r_error, g_error, b_error;
 
 				for (int y0 = 0; y0 < 8; y0++)
 					for (int x0 = 0; x0 < 24; x0 += 3) {
 						final int pyx0 = y0 * 24 + x0;
 						final int py1x0 = (y0 + 1) * 24 + x0;
 
-						final int r = work[pyx0];
-						final int g = work[pyx0 + 1];
-						final int b = work[pyx0 + 2];
+						final int r = Utils.saturate((int) work[pyx0]);
+						final int g = Utils.saturate((int) work[pyx0 + 1]);
+						final int b = Utils.saturate((int) work[pyx0 + 2]);
 
 						final int cf[] = palette[f];
 						final int fr = cf[0];
@@ -317,27 +318,27 @@ public class C64Renderer extends AbstractRenderer {
 						pixels[position + 1] = (byte) ng;
 						pixels[position + 2] = (byte) nb;
 
-						final int r_error = Utils.saturate(r - nr);
-						final int g_error = Utils.saturate(g - ng);
-						final int b_error = Utils.saturate(b - nb);
+						r_error = r - nr;
+						g_error = g - ng;
+						b_error = b - nb;
 
 						if (x0 < 21) {
-							work[pyx0 + 3] += r_error * 7 / 16;
+							work[pyx0 + 3]     += r_error * 7 / 16;
 							work[pyx0 + 3 + 1] += g_error * 7 / 16;
 							work[pyx0 + 3 + 2] += b_error * 7 / 16;
 						}
 
 						if (y0 < 7) {
-							work[py1x0 - 3] += r_error * 3 / 16;
+							work[py1x0 - 3]     += r_error * 3 / 16;
 							work[py1x0 - 3 + 1] += g_error * 3 / 16;
 							work[py1x0 - 3 + 2] += b_error * 3 / 16;
 
-							work[py1x0] += r_error * 5 / 16;
+							work[py1x0]     += r_error * 5 / 16;
 							work[py1x0 + 1] += g_error * 5 / 16;
 							work[py1x0 + 2] += b_error * 5 / 16;
 
-							if (x0 < 21) {
-								work[py1x0 + 3] += r_error / 16;
+							if (x0 < 21) {								
+								work[py1x0 + 3] 	+= r_error / 16;
 								work[py1x0 + 3 + 1] += g_error / 16;
 								work[py1x0 + 3 + 2] += b_error / 16;
 							}
@@ -411,7 +412,7 @@ public class C64Renderer extends AbstractRenderer {
 			}
 		}
 
-		final int work[] = new int[32 * 3];
+		final float work[] = new float[32 * 3];
 		sr /= 160 * 200;
 		sg /= 160 * 200;
 		sb /= 160 * 200;
@@ -502,6 +503,8 @@ public class C64Renderer extends AbstractRenderer {
 				int position = (y >> 3) * 40 + x;
 				screen[position] = ((i1 & 0xf) << 4) | (i2 & 0xf);
 				nibble[position] = i3;
+				
+				float r_error, g_error, b_error;
 
 				int value = 0, bitcount = 0;
 				for (int y0 = 0; y0 < 8; y0++)
@@ -509,12 +512,13 @@ public class C64Renderer extends AbstractRenderer {
 						final int pyx0 = y0 * 12 + x0;
 						final int py1x0 = (y0 + 1) * 12 + x0;
 
-						final int r = work[pyx0];
-						final int g = work[pyx0 + 1];
-						final int b = work[pyx0 + 2];
+						final int r = Utils.saturate((int) work[pyx0]);
+						final int g = Utils.saturate((int) work[pyx0 + 1]);
+						final int b = Utils.saturate((int) work[pyx0 + 2]);
 
 						index = getColorIndex(tilePalette, r, g, b);
 						final int c[] = tilePalette[index]; 
+						
 						final int nr = c[0];
 						final int ng = c[1];
 						final int nb = c[2];
@@ -531,27 +535,26 @@ public class C64Renderer extends AbstractRenderer {
 
 						bitcount += 1;
 
-						final int r_error = Utils.saturate(r - nr);
-						final int g_error = Utils.saturate(g - ng);
-						final int b_error = Utils.saturate(b - nb);
+						r_error = r - nr;
+						g_error = g - ng;
+						b_error = b - nb;
 
 						if (x0 < 9) {
-							work[pyx0 + 3] += r_error * 7 / 16;
+							work[pyx0 + 3]     += r_error * 7 / 16;
 							work[pyx0 + 3 + 1] += g_error * 7 / 16;
 							work[pyx0 + 3 + 2] += b_error * 7 / 16;
 						}
-
 						if (y0 < 7) {
-							work[py1x0 - 3] += r_error * 3 / 16;
+							work[py1x0 - 3]     += r_error * 3 / 16;
 							work[py1x0 - 3 + 1] += g_error * 3 / 16;
 							work[py1x0 - 3 + 2] += b_error * 3 / 16;
 
-							work[py1x0] += r_error * 5 / 16;
+							work[py1x0] 	+= r_error * 5 / 16;
 							work[py1x0 + 1] += g_error * 5 / 16;
 							work[py1x0 + 2] += b_error * 5 / 16;
 
 							if (x0 < 9) {
-								work[py1x0 + 3] += r_error / 16;
+								work[py1x0 + 3] 	+= r_error / 16;
 								work[py1x0 + 3 + 1] += g_error / 16;
 								work[py1x0 + 3 + 2] += b_error / 16;
 							}

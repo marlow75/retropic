@@ -245,9 +245,9 @@ public class Utils {
 			qsort(a, b, c, partitionIndex + 1, end);
 		}
 	}
-
+	
 	public static final int saturate(final int i) {
-		return i > Byte.MAX_VALUE ? Byte.MAX_VALUE : i < Byte.MIN_VALUE ? Byte.MIN_VALUE : i;
+		return i > 255 ? 255 : i < 0 ? 0 : i;
 	}
 
 	public static final int[] copy2Int(final byte[] pixels) {
@@ -263,10 +263,24 @@ public class Utils {
 		
 		return array;
 	}
+	
+	public static final float[] copy2float(final byte[] pixels) {
+		final int len = pixels.length;
+		final float array[] = new float[len];
 
-	public static final int euclideanDistance(final int r, final int g, final int b, final int pr, final int pg,
+		for (int i = 0; i < len; i += 4) {
+			array[i]     = pixels[i] & 0xff;
+			array[i + 1] = pixels[i + 1] & 0xff;
+			array[i + 2] = pixels[i + 2] & 0xff;
+			array[i + 3] = pixels[i + 3] & 0xff;
+		}
+		
+		return array;
+	}
+
+	public static final float euclideanDistance(final int r, final int g, final int b, final int pr, final int pg,
 			final int pb) {
-		return ((r - pr) * (r - pr)) + ((g - pg) * (g - pg)) + ((b - pb) * (b - pb));
+		return (((r - pr) * (r - pr)) + ((g - pg) * (g - pg)) + ((b - pb) * (b - pb)));
 	}
 
 	public static final float perceptedDistance(final int r, final int g, final int b, final int pr, final int pg,

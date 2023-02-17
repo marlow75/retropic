@@ -82,9 +82,11 @@ public abstract class AbstractRenderer extends Thread {
 		frame.setVisible(true);
 
 		canvas = new PictureCanvas();
-
+		frame.setLocationRelativeTo(null);
+		
 		canvas.setSize(width * scale, height * scale);
 		canvas.setBackground(Color.BLACK);
+		
 		canvas.setVisible(true);
 		canvas.setFocusable(false);
 
@@ -151,13 +153,13 @@ public abstract class AbstractRenderer extends Thread {
 	
 	protected abstract int getHeight();
 	protected abstract int getWidth();
-
+	
 	protected void imageDithering() {
-		final int work[] = Utils.copy2Int(pixels);
+		final float work[] = Utils.copy2float(pixels);
 		final int width3 = width * 3;
 		
 		int r0, g0, b0;
-		int r_error = 0, g_error = 0, b_error = 0;	
+		float r_error = 0, g_error = 0, b_error = 0;
 
 		for (int y = 0; y < height; y++) {
 			final int k = y * width3;
@@ -169,9 +171,9 @@ public abstract class AbstractRenderer extends Thread {
 				final int py1x = k1 + x;
 				final int py2x = k2 + x;
 
-				r0 = work[pyx];
-				g0 = work[pyx + 1];
-				b0 = work[pyx + 2];
+				r0 = Utils.saturate((int) work[pyx]);
+				g0 = Utils.saturate((int) work[pyx + 1]);
+				b0 = Utils.saturate((int) work[pyx + 2]);
 
 				final int color = getColorIndex(r0, g0, b0);
 				final int pixel[] = palette[color];
@@ -180,33 +182,32 @@ public abstract class AbstractRenderer extends Thread {
 				final int g = pixel[1];
 				final int b = pixel[2];
 
-				pixels[pyx] = (byte) r;
+				pixels[pyx]     = (byte) r;
 				pixels[pyx + 1] = (byte) g;
 				pixels[pyx + 2] = (byte) b;
 
-				r_error = Utils.saturate(r0 - r);
-				g_error = Utils.saturate(g0 - g);
-				b_error = Utils.saturate(b0 - b);
+				r_error = r0 - r;
+				g_error = g0 - g;
+				b_error = b0 - b;
 				
 				switch (config.dither_alg) {
 				case STD_FS:
 					if (x < (width - 1) * 3) {
-						work[pyx + 3] += r_error * 7 / 16;
+						work[pyx + 3]     += r_error * 7 / 16;
 						work[pyx + 3 + 1] += g_error * 7 / 16;
 						work[pyx + 3 + 2] += b_error * 7 / 16;
 					}
-
 					if (y < height - 1) {
-						work[py1x - 3] += r_error * 3 / 16;
+						work[py1x - 3]     += r_error * 3 / 16;
 						work[py1x - 3 + 1] += g_error * 3 / 16;
 						work[py1x - 3 + 2] += b_error * 3 / 16;
 
-						work[py1x] += r_error * 5 / 16;
+						work[py1x]     += r_error * 5 / 16;
 						work[py1x + 1] += g_error * 5 / 16;
 						work[py1x + 2] += b_error * 5 / 16;
 
 						if (x < (width - 1) * 3) {
-							work[py1x + 3] += r_error / 16;
+							work[py1x + 3]     += r_error / 16;
 							work[py1x + 3 + 1] += g_error / 16;
 							work[py1x + 3 + 2] += b_error / 16;
 						}
@@ -214,39 +215,37 @@ public abstract class AbstractRenderer extends Thread {
 					break;
 				case ATKINSON:
 					if (x < (width - 1) * 3) {
-						work[pyx + 3] += r_error * 1 / 8;
+						work[pyx + 3]     += r_error * 1 / 8;
 						work[pyx + 3 + 1] += g_error * 1 / 8;
 						work[pyx + 3 + 2] += b_error * 1 / 8;
 						
 						if (x < (width - 2) * 3) {
-							work[pyx + 6] += r_error * 1 / 8;
+							work[pyx + 6]     += r_error * 1 / 8;
 							work[pyx + 6 + 1] += g_error * 1 / 8;
 							work[pyx + 6 + 2] += b_error * 1 / 8;
 						}
 					}
-
 					if (y < height - 1) {
-						work[py1x - 3] += r_error * 1 / 8;
+						work[py1x - 3]     += r_error * 1 / 8;
 						work[py1x - 3 + 1] += g_error * 1 / 8;
 						work[py1x - 3 + 2] += b_error * 1 / 8;
 
-						work[py1x] += r_error * 1 / 8;
+						work[py1x]     += r_error * 1 / 8;
 						work[py1x + 1] += g_error * 1 / 8;
 						work[py1x + 2] += b_error * 1 / 8;
 
 						if (x < (width - 1) * 3) {
-							work[py1x + 3] += r_error * 1 / 8;
+							work[py1x + 3]     += r_error * 1 / 8;
 							work[py1x + 3 + 1] += g_error * 1 / 8;
 							work[py1x + 3 + 2] += b_error * 1 / 8;
 						}
 						
 						if (y < height - 2) {
-							work[py2x] += r_error * 1 / 8;
+							work[py2x]     += r_error * 1 / 8;
 							work[py2x + 1] += g_error * 1 / 8;
-							work[py2x + 2] += b_error * 1 / 8;							
+							work[py2x + 2] += b_error * 1 / 8;
 						}
-					}	
-					
+					}					
 					break;					
 				}
 			}
