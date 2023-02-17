@@ -12,8 +12,8 @@ You can download executable jar [here](retropic.jar).
 * ZX Spectrum 48/+.
 * Amstrad CPC series mode0, mode1.
 * Atari ST, 320x200 in 16 on screen from 512 palette colors.
-* Amiga 500/1000, PAL 320x256 in 32 colors or in HAM6 encoding, 4096 palette colors.
-* Amiga 1200/4000, PAL 640x512 in 256 colors or in HAM8 encoding, 16M palette colors.
+* Amiga 500/1000, PAL 320x256 and 320x512 in 32 colors or in HAM6 encoding, 4096 palette colors.
+* Amiga 1200/4000, PAL 320x256, 320x512, 640x512 in 256 colors or in HAM8 encoding, 16M palette colors.
 
 ## Graphics formats
 
