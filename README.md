@@ -84,12 +84,12 @@ Export to DEGAS paint program.
 
 ### Amiga 500
 
-4096 colors total, 2 modes usefull for graphics.
+4096 colors total, 4 modes usefull for graphics.
 
 * none, floyds, apple – first pass dithering, colors of the original picture are replaced by retro machine palette.
 
-* 320x256 - use 32 colors, palette is result of Kohonen pixel classification.
-* 320x256 - use HAM6 coding, 16 color palette as a result of Kohonen classification, best neuron takes all.
+* 320x256, 320x512 (lace) - use 32 colors, palette is result of Kohonen pixel classification.
+* 320x256, 320x512 (lace) - use HAM6 coding, 16 color palette as a result of Kohonen classification.
 
 Export to Delux Paint IFF file format.
 
@@ -101,8 +101,8 @@ Export to Delux Paint IFF file format.
 
 * none, floyds, apple – first pass dithering used only for 256 colors pictures. Colors of the original picture are replaced by retro machine palette.
 
-* 640x512 (lace) - use 256 colors, palette is result of Kohonen pixel classification.
-* 640x512 (lace) - use HAM8 coding, 64 color palette as a result of Kohonen classification, best neuron takes all.
+* 320x256, 320x512 (lace), 640x512 (lace) - use 256 colors, palette is result of Kohonen pixel classification.
+* 320x256, 320x512 (lace), 640x512 (lace) - use HAM8 coding, 64 color palette as a result of Kohonen classification.
 
 Export to Delux Paint IFF file format.
 
