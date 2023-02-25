@@ -90,7 +90,7 @@ public class ZXSpectrumRenderer extends AbstractRenderer {
 	}
 
 	protected void hiresLumaDithered() {
-		final float work[] = new float[width * height * 3];
+		final int work[] = new int[width * height * 3];
 		int bitmapIndex = 0;
 
 		for (int y = 0; y < 192; y += 8) { // every 8 line

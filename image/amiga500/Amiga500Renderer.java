@@ -6,7 +6,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -18,6 +17,7 @@ import javax.swing.KeyStroke;
 
 import pl.dido.image.Config;
 import pl.dido.image.renderer.AbstractCachedRenderer;
+import pl.dido.image.utils.IFF;
 import pl.dido.image.utils.SOMFixedPalette;
 import pl.dido.image.utils.Utils;
 
@@ -235,20 +235,20 @@ public class Amiga500Renderer extends AbstractCachedRenderer {
 		for (int y = 0; y < height; y++) {
 			boolean nextPixel = false;
 			final int k = y * width3;
-			
+
 			final int k1 = (y + 1) * width3;
 			final int k2 = (y + 2) * width3;
 
 			for (int x = 0; x < width3; x += 3) {
 				final int pyx = k + x;
 				final int py1x = k1 + x;
-				
+
 				final int py2x = k2 + x;
 
 				// get picture RGB components
-				r0 = Utils.saturate((int)work[pyx]);
-				g0 = Utils.saturate((int)work[pyx + 1]);
-				b0 = Utils.saturate((int)work[pyx + 2]);
+				r0 = Utils.saturate((int) work[pyx]);
+				g0 = Utils.saturate((int) work[pyx + 1]);
+				b0 = Utils.saturate((int) work[pyx + 2]);
 
 				// find closest palette color
 				int action = getColorIndex(pictureColors, r0, g0, b0); // 16 color palette
@@ -317,7 +317,7 @@ public class Amiga500Renderer extends AbstractCachedRenderer {
 					}
 				} else {
 					nextPixel = true;
-					
+
 					r = pc[0];
 					g = pc[1];
 					b = pc[2];
@@ -341,73 +341,73 @@ public class Amiga500Renderer extends AbstractCachedRenderer {
 				pixels[pyx] = (byte) r;
 				pixels[pyx + 1] = (byte) g;
 				pixels[pyx + 2] = (byte) b;
-				
+
 				float r_error = r0 - r;
 				float g_error = g0 - g;
 				float b_error = b0 - b;
-				
+
 				switch (config.dither_alg) {
 				case STD_FS:
 					if (x < (width - 1) * 3) {
-						work[pyx + 3]     += r_error * 7 / 16;
+						work[pyx + 3] += r_error * 7 / 16;
 						work[pyx + 3 + 1] += g_error * 7 / 16;
 						work[pyx + 3 + 2] += b_error * 7 / 16;
 					}
 					if (y < height - 1) {
-						work[py1x - 3]     += r_error * 3 / 16;
+						work[py1x - 3] += r_error * 3 / 16;
 						work[py1x - 3 + 1] += g_error * 3 / 16;
 						work[py1x - 3 + 2] += b_error * 3 / 16;
 
-						work[py1x]     += r_error * 5 / 16;
+						work[py1x] += r_error * 5 / 16;
 						work[py1x + 1] += g_error * 5 / 16;
 						work[py1x + 2] += b_error * 5 / 16;
 
 						if (x < (width - 1) * 3) {
-							work[py1x + 3]     += r_error / 16;
+							work[py1x + 3] += r_error / 16;
 							work[py1x + 3 + 1] += g_error / 16;
 							work[py1x + 3 + 2] += b_error / 16;
 						}
-					}							
+					}
 					break;
 				case ATKINSON:
 					if (x < (width - 1) * 3) {
-						work[pyx + 3]     += r_error * 1 / 8;
+						work[pyx + 3] += r_error * 1 / 8;
 						work[pyx + 3 + 1] += g_error * 1 / 8;
 						work[pyx + 3 + 2] += b_error * 1 / 8;
-						
+
 						if (x < (width - 2) * 3) {
-							work[pyx + 6]     += r_error * 1 / 8;
+							work[pyx + 6] += r_error * 1 / 8;
 							work[pyx + 6 + 1] += g_error * 1 / 8;
 							work[pyx + 6 + 2] += b_error * 1 / 8;
 						}
 					}
 					if (y < height - 1) {
-						work[py1x - 3]     += r_error * 1 / 8;
+						work[py1x - 3] += r_error * 1 / 8;
 						work[py1x - 3 + 1] += g_error * 1 / 8;
 						work[py1x - 3 + 2] += b_error * 1 / 8;
 
-						work[py1x]     += r_error * 1 / 8;
+						work[py1x] += r_error * 1 / 8;
 						work[py1x + 1] += g_error * 1 / 8;
 						work[py1x + 2] += b_error * 1 / 8;
 
 						if (x < (width - 1) * 3) {
-							work[py1x + 3]     += r_error * 1 / 8;
+							work[py1x + 3] += r_error * 1 / 8;
 							work[py1x + 3 + 1] += g_error * 1 / 8;
 							work[py1x + 3 + 2] += b_error * 1 / 8;
 						}
-						
+
 						if (y < height - 2) {
-							work[py2x]     += r_error * 1 / 8;
+							work[py2x] += r_error * 1 / 8;
 							work[py2x + 1] += g_error * 1 / 8;
 							work[py2x + 2] += b_error * 1 / 8;
 						}
-					}					
-					break;					
+					}
+					break;
 				}
 			}
 		}
 	}
-	
+
 	@Override
 	protected JMenuBar getMenuBar() {
 		final JMenu menuFile = new JMenu("File");
@@ -439,141 +439,6 @@ public class Amiga500Renderer extends AbstractCachedRenderer {
 		return menuBar;
 	}
 
-	protected byte[] bigEndianDWORD(final int data) {
-		final byte p[] = new byte[4];
-
-		p[0] = (byte) ((data & 0xff000000) >> 24);
-		p[1] = (byte) ((data & 0xff0000) >> 16);
-		p[2] = (byte) ((data & 0xff00) >> 8);
-		p[3] = (byte) (data & 0xff);
-
-		return p;
-	}
-
-	protected byte[] bigEndianWORD(final int data) {
-		final byte p[] = new byte[2];
-
-		p[0] = (byte) ((data & 0xff00) >> 8);
-		p[1] = (byte) (data & 0xff);
-
-		return p;
-	}
-
-	protected byte[] chunk(final String name, final byte[]... data) throws IOException {
-		int size = 0;
-
-		for (final byte[] p : data)
-			size += p.length;
-
-		final ByteArrayOutputStream mem = new ByteArrayOutputStream(size);
-
-		mem.write(name.getBytes());
-		mem.write(bigEndianDWORD(size));
-
-		for (final byte[] p : data)
-			mem.write(p);
-
-		return mem.toByteArray();
-	}
-
-	protected byte[] getSTDBitmap() throws IOException {
-		final ByteArrayOutputStream mem = new ByteArrayOutputStream((width * height / 8) * 5); // 5 bit planes
-
-		final int size = width >> 4;
-		for (int y = 0; y < height; y++) {
-			for (int plane = 0; plane < 5; plane++)
-				for (int x = 0; x < size; x++) {
-					final int a = size * y + x;
-					final int d = bitplanes[a][plane]; // WORD 2xbytes
-
-					mem.write(bigEndianWORD(d));
-				}
-		}
-
-		return mem.toByteArray();
-	}
-
-	protected byte[] getHAM6Bitmap() throws IOException {
-		final ByteArrayOutputStream mem = new ByteArrayOutputStream((width * height / 8) * 6); // 6 bit planes
-
-		final int size = width >> 4;
-		for (int y = 0; y < height; y++) {
-			for (int plane = 0; plane < 6; plane++)
-				for (int x = 0; x < size; x++) {
-					final int a = size * y + x;
-					final int d = bitplanes[a][plane];
-
-					mem.write(bigEndianWORD(d));
-				}
-		}
-
-		return mem.toByteArray();
-	}
-
-	protected byte[] getILBMHD(final int aspectX, final int aspectY, final int bitplanes) throws IOException {
-		final ByteArrayOutputStream mem = new ByteArrayOutputStream(28);
-
-		mem.write(bigEndianWORD(width));
-		mem.write(bigEndianWORD(height));
-		mem.write(bigEndianWORD(0)); // position on screen X,Y
-		mem.write(bigEndianWORD(0));
-
-		mem.write(bitplanes); // hamcode
-
-		mem.write(0); // mask
-		mem.write(0); // compress 0 = none
-		mem.write(0); // padding
-		mem.write(bigEndianWORD(0)); // transparent background color
-		mem.write(aspectX); // aspect X
-		mem.write(aspectY); // aspect Y
-		mem.write(bigEndianWORD(width)); // page width
-		mem.write(bigEndianWORD(height)); // page height
-
-		return mem.toByteArray();
-	}
-
-	protected byte[] getILBMFormat(final byte[]... chunk) throws IOException {
-		final ByteArrayOutputStream mem = new ByteArrayOutputStream(64 * 1024);
-
-		mem.write("FORM".getBytes());
-
-		int size = 0;
-		for (final byte[] p : chunk)
-			size += p.length;
-
-		mem.write(bigEndianDWORD(size + 4)); // includes ILBM
-		mem.write("ILBM".getBytes()); // planar data
-
-		for (final byte[] p : chunk)
-			mem.write(p);
-
-		return mem.toByteArray();
-	}
-
-	protected byte[] getCMAP() throws IOException {
-		final int size = pictureColors.length;
-		final ByteArrayOutputStream mem = new ByteArrayOutputStream(size * 3);
-
-		for (int i = 0; i < size; i++) {
-			final int color[] = pictureColors[i];
-
-			switch (image.getType()) {
-			case BufferedImage.TYPE_3BYTE_BGR:
-				mem.write(color[2]);
-				mem.write(color[1]);
-				mem.write(color[0]);
-				break;
-			case BufferedImage.TYPE_INT_RGB:
-				mem.write(color[0]);
-				mem.write(color[1]);
-				mem.write(color[2]);
-				break;
-			}
-		}
-
-		return mem.toByteArray();
-	}
-
 	protected void exportIFF(final String path, String fileName) {
 		try {
 			if (fileName.length() > 8)
@@ -583,37 +448,39 @@ public class Amiga500Renderer extends AbstractCachedRenderer {
 			final BufferedOutputStream chk = new BufferedOutputStream(new FileOutputStream(path + fileName + ".iff"),
 					8192);
 
-			int videoMode = 0, aspectX = 0, aspectY = 0, bitplanes = 0;
+			int videoMode = 0, aspectX = 0, aspectY = 0, planes = 0;
 			switch (((Amiga500Config) config).video_mode) {
 			case STD_320x256:
 				videoMode = 0x0000;
 				aspectX = 44;
 				aspectY = 44;
-				bitplanes = 5;
+				planes = 5;
 				break;
 			case HAM6_320x256:
 				videoMode = 0x0800;
 				aspectX = 44;
 				aspectY = 44;
-				bitplanes = 6;
+				planes = 6;
 				break;
 			case STD_320x512:
 				videoMode = 0x0004;
 				aspectX = 22;
 				aspectY = 44;
-				bitplanes = 5;
+				planes = 5;
 				break;
 			case HAM6_320x512:
 				videoMode = 0x0804;
 				aspectX = 22;
 				aspectY = 44;
-				bitplanes = 6;
+				planes = 6;
 				break;
 			}
 
-			chk.write(getILBMFormat(chunk("BMHD", getILBMHD(aspectX, aspectY, bitplanes)), chunk("CMAP", getCMAP()),
-					chunk("CAMG", bigEndianDWORD(videoMode)),
-					chunk("BODY", (videoMode & 0x0800) != 0 ? getHAM6Bitmap() : getSTDBitmap())));
+			final boolean compressed = ((AmigaConfig)config).compressed;
+			chk.write(IFF.getILBMFormat(IFF.chunk("BMHD", IFF.getILBMHD(width, height, aspectX, aspectY, planes, compressed)), 
+					IFF.chunk("CMAP", IFF.getCMAP(pictureColors, image.getType())),
+					IFF.chunk("CAMG", IFF.bigEndianDWORD(videoMode)),
+					IFF.chunk("BODY", IFF.getBitmap(width, height, bitplanes, compressed))));
 
 			chk.close();
 

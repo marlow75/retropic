@@ -1,8 +1,8 @@
 package pl.dido.image.amiga1200;
 
-import pl.dido.image.Config;
+import pl.dido.image.amiga500.AmigaConfig;
 
-public class Amiga1200Config extends Config {
+public class Amiga1200Config extends AmigaConfig {
 	
 	public enum VIDEO_MODE {
 		STD_320x256, HAM8_320x256, STD_320x512, HAM8_320x512, STD_640x512, HAM8_640x512; 
