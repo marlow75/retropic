@@ -467,7 +467,7 @@ public class Amiga1200Renderer extends AbstractCachedRenderer {
 				break;
 			}
 
-			final boolean compressed = ((AmigaConfig) config).compressed;
+			final boolean compressed = ((AmigaConfig) config).rleCompress;
 			chk.write(IFF.getILBMFormat(IFF.chunk("BMHD", IFF.getILBMHD(width, height, aspectX, aspectY, 8, compressed)), 
 					IFF.chunk("CMAP", IFF.getCMAP(pictureColors, image.getType())),
 					IFF.chunk("CAMG", IFF.bigEndianDWORD(videoMode)), 

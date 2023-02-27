@@ -476,7 +476,7 @@ public class Amiga500Renderer extends AbstractCachedRenderer {
 				break;
 			}
 
-			final boolean compressed = ((AmigaConfig)config).compressed;
+			final boolean compressed = ((AmigaConfig)config).rleCompress;
 			chk.write(IFF.getILBMFormat(IFF.chunk("BMHD", IFF.getILBMHD(width, height, aspectX, aspectY, planes, compressed)), 
 					IFF.chunk("CMAP", IFF.getCMAP(pictureColors, image.getType())),
 					IFF.chunk("CAMG", IFF.bigEndianDWORD(videoMode)),

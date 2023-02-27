@@ -17,10 +17,10 @@ import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 
 import pl.dido.image.Config;
-import pl.dido.image.renderer.AbstractRenderer;
+import pl.dido.image.renderer.AbstractOldiesRenderer;
 import pl.dido.image.utils.Utils;
 
-public class ZXSpectrumRenderer extends AbstractRenderer {
+public class ZXSpectrumRenderer extends AbstractOldiesRenderer {
 
 	// ZX spectrum palette
 	private final static int colors[] = new int[] { 0x000000, 0x000000, 0x0000d8, 0x0000ff, 0xd80000, 0xff0000,

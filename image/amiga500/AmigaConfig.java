@@ -4,11 +4,11 @@ import pl.dido.image.Config;
 
 public class AmigaConfig extends Config {
 	
-	public boolean compressed;
+	public boolean rleCompress;
 	
 	public AmigaConfig() {
 		super();
 		
-		compressed = true;
+		rleCompress = true;
 	}
 }

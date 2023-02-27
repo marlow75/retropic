@@ -249,6 +249,10 @@ public class Utils {
 	public static final int saturate(final int i) {
 		return i > 255 ? 255 : i < 0 ? 0 : i;
 	}
+	
+	public static final int saturateByte(final int i) {
+		return i > Byte.MAX_VALUE ? Byte.MAX_VALUE : i < Byte.MIN_VALUE ? Byte.MIN_VALUE : i;
+	}
 
 	public static final int[] copy2Int(final byte[] pixels) {
 		final int len = pixels.length;

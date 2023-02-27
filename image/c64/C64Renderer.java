@@ -18,10 +18,10 @@ import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 
 import pl.dido.image.Config;
-import pl.dido.image.renderer.AbstractRenderer;
+import pl.dido.image.renderer.AbstractOldiesRenderer;
 import pl.dido.image.utils.Utils;
 
-public class C64Renderer extends AbstractRenderer {
+public class C64Renderer extends AbstractOldiesRenderer {
 
 	// C64 palette
 	private final static int colors[] = new int[] { 0, 0xFFFFFF, 0x68372B, 0x70A4B2, 0x6F3D86, 0x588D43, 0x352879,
@@ -262,8 +262,7 @@ public class C64Renderer extends AbstractRenderer {
 						if (luma > max) {
 							max = luma;
 							f = getColorIndex(r, g, b);
-						}
-
+						} else
 						if (luma < min) {
 							min = luma;
 							n = getColorIndex(r, g, b);
@@ -281,9 +280,9 @@ public class C64Renderer extends AbstractRenderer {
 						final int pyx0 = y0 * 24 + x0;
 						final int py1x0 = (y0 + 1) * 24 + x0;
 
-						final int r = Utils.saturate(work[pyx0]);
-						final int g = Utils.saturate(work[pyx0 + 1]);
-						final int b = Utils.saturate(work[pyx0 + 2]);
+						final int r = work[pyx0];
+						final int g = work[pyx0 + 1];
+						final int b = work[pyx0 + 2];
 
 						final int cf[] = palette[f];
 						final int fr = cf[0];
@@ -319,9 +318,9 @@ public class C64Renderer extends AbstractRenderer {
 						pixels[position + 1] = (byte) ng;
 						pixels[position + 2] = (byte) nb;
 
-						r_error = r - nr;
-						g_error = g - ng;
-						b_error = b - nb;
+						r_error = Utils.saturateByte(r - nr);
+						g_error = Utils.saturateByte(g - ng);
+						b_error = Utils.saturateByte(b - nb);
 
 						if (x0 < 21) {
 							work[pyx0 + 3] += r_error * 7 / 16;
@@ -413,7 +412,7 @@ public class C64Renderer extends AbstractRenderer {
 			}
 		}
 
-		final float work[] = new float[32 * 3];
+		final int work[] = new int[32 * 3];
 		sr /= 160 * 200;
 		sg /= 160 * 200;
 		sb /= 160 * 200;
@@ -513,9 +512,9 @@ public class C64Renderer extends AbstractRenderer {
 						final int pyx0 = y0 * 12 + x0;
 						final int py1x0 = (y0 + 1) * 12 + x0;
 
-						final int r = Utils.saturate((int) work[pyx0]);
-						final int g = Utils.saturate((int) work[pyx0 + 1]);
-						final int b = Utils.saturate((int) work[pyx0 + 2]);
+						final int r = work[pyx0];
+						final int g = work[pyx0 + 1];
+						final int b = work[pyx0 + 2];
 
 						index = getColorIndex(tilePalette, r, g, b);
 						final int c[] = tilePalette[index];
@@ -536,9 +535,9 @@ public class C64Renderer extends AbstractRenderer {
 
 						bitcount += 1;
 
-						r_error = r - nr;
-						g_error = g - ng;
-						b_error = b - nb;
+						r_error = Utils.saturateByte(r - nr);
+						g_error = Utils.saturateByte(g - ng);
+						b_error = Utils.saturateByte(b - nb);
 
 						if (x0 < 9) {
 							work[pyx0 + 3] += r_error * 7 / 16;

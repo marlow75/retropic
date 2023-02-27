@@ -92,7 +92,7 @@ public class RLECompression {
 		MODE mode = MODE.NONE;
 		
 		int counter = 0;
-		int k = 0, i = 0;		
+		int k = 0, i = 0;
 		byte data = 0;
 		
 		while (i < input.length) {
