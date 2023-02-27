@@ -17,7 +17,7 @@ You can download executable jar [here](retropic.jar).
 
 ## Graphics formats
 
-* PRG, Koala Paint, ArtStudio for C64
+* executable PRG, Koala Paint, ArtStudio for C64
 * ZX SCR format
 * ArtStudio for CPC machines
 * DEGAS for Atari
@@ -99,7 +99,7 @@ Export to Delux Paint IFF file format.
 
 16M colors total, 2 modes usefull for graphics.
 
-* none, floyds, apple – first pass dithering used only for 256 colors pictures. Colors of the original picture are replaced by retro machine palette.
+* none, floyds, apple – first pass dithering. Colors of the original picture are replaced by retro machine palette.
 
 * 320x256, 320x512 (lace), 640x512 (lace) - use 256 colors, palette is result of Kohonen pixel classification.
 * 320x256, 320x512 (lace), 640x512 (lace) - use HAM8 coding, 64 color palette as a result of Kohonen classification.
