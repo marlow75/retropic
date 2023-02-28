@@ -9,6 +9,6 @@ public class AmigaConfig extends Config {
 	public AmigaConfig() {
 		super();
 		
-		rleCompress = true;
+		rleCompress = false;
 	}
 }

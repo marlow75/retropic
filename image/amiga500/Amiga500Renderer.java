@@ -17,6 +17,7 @@ import javax.swing.KeyStroke;
 
 import pl.dido.image.Config;
 import pl.dido.image.renderer.AbstractCachedRenderer;
+import pl.dido.image.utils.HAMFixedPalette;
 import pl.dido.image.utils.IFF;
 import pl.dido.image.utils.SOMFixedPalette;
 import pl.dido.image.utils.Utils;
@@ -78,7 +79,8 @@ public class Amiga500Renderer extends AbstractCachedRenderer {
 		switch (((Amiga500Config) config).video_mode) {
 		case HAM6_320x256:
 		case HAM6_320x512:
-			training = new SOMFixedPalette(4, 4, 4); // 4x4 = 16 colors (4 bits)
+			training = new HAMFixedPalette(4, 4, 4); // 4x4 = 16 colors (4 bits)
+			//training = new SOMFixedPalette(4, 4, 4); // 4x4 = 16 colors (4 bits)
 			pictureColors = training.train(pixels);
 
 			ham6Encoded();
@@ -295,7 +297,7 @@ public class Amiga500Renderer extends AbstractCachedRenderer {
 					final float ham = Utils.min(min_r, min_g, min_b);
 
 					// check which color is best, palette or HAM?
-					if (ham < dpc) {
+					if (ham <= dpc) {
 						// HAM is best, alter color
 						if (ham == min_r) {
 							// red

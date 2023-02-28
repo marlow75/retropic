@@ -18,6 +18,7 @@ import javax.swing.KeyStroke;
 import pl.dido.image.Config;
 import pl.dido.image.amiga500.AmigaConfig;
 import pl.dido.image.renderer.AbstractCachedRenderer;
+import pl.dido.image.utils.HAMFixedPalette;
 import pl.dido.image.utils.IFF;
 import pl.dido.image.utils.SOMFixedPalette;
 import pl.dido.image.utils.Utils;
