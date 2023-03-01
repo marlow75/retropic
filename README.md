@@ -21,7 +21,7 @@ You can download executable jar [here](retropic.jar).
 * ZX SCR format
 * ArtStudio for CPC machines
 * DEGAS for Atari
-* IFF format for Delux Paint – Amiga (RLE)
+* IFF format for Delux Paint – Amiga (RLE option)
 
 ## Conversion options
 
