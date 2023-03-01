@@ -18,7 +18,6 @@ import javax.swing.KeyStroke;
 import pl.dido.image.Config;
 import pl.dido.image.amiga500.AmigaConfig;
 import pl.dido.image.renderer.AbstractCachedRenderer;
-import pl.dido.image.utils.HAMFixedPalette;
 import pl.dido.image.utils.IFF;
 import pl.dido.image.utils.SOMFixedPalette;
 import pl.dido.image.utils.Utils;
@@ -40,17 +39,6 @@ public class Amiga1200Renderer extends AbstractCachedRenderer {
 	@Override
 	protected void setupPalette() {
 		// do not generate palette
-	}
-
-	@Override
-	protected int getScale() {
-		switch (((Amiga1200Config) config).video_mode) {
-		case HAM8_320x256:
-		case STD_320x256:
-			return 2;
-		default:
-			return 1;
-		}
 	}
 
 	@Override
@@ -82,7 +70,6 @@ public class Amiga1200Renderer extends AbstractCachedRenderer {
 		bitplanes = new int[(width >> 4) * height][8]; // 8 planes
 
 		int r0, g0, b0;
-		float r_error = 0, g_error = 0, b_error = 0;
 
 		final int width3 = width * 3;
 		int index = 0, shift = 15; // 16
@@ -128,9 +115,9 @@ public class Amiga1200Renderer extends AbstractCachedRenderer {
 					shift--;
 
 				if (config.dithering) {
-					r_error = r0 - r;
-					g_error = g0 - g;
-					b_error = b0 - b;
+					final float r_error = r0 - r;
+					final float g_error = g0 - g;
+					final float b_error = b0 - b;
 
 					switch (config.dither_alg) {
 					case STD_FS:
@@ -253,7 +240,7 @@ public class Amiga1200Renderer extends AbstractCachedRenderer {
 					// calculate all color change possibilities and measure distances
 					for (int i = 0; i < 64; i++) {
 						// scaled color
-						final int scaled = (int) Math.ceil(i * 3.98f);
+						final int scaled = (int)(i * 4.048f);
 
 						// which component change gets minimum error?
 						final float dr = getDistanceByCM(r0, g0, b0, scaled, g, b);
@@ -518,5 +505,15 @@ public class Amiga1200Renderer extends AbstractCachedRenderer {
 		}
 
 		return -1;
+	}
+
+	@Override
+	protected int getScreenHeight() {		
+		return 512;
+	}
+
+	@Override
+	protected int getScreenWidth() {
+		return 640;
 	}
 }

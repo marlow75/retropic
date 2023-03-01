@@ -9,6 +9,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import pl.dido.image.GuiUtils;
+import pl.dido.image.amiga500.Amiga500Gui;
 import pl.dido.image.utils.ImageCanvas;
 
 public class Amiga1200Gui {
@@ -35,13 +36,13 @@ public class Amiga1200Gui {
 		
 		final JLabel lblConvertLabel = new JLabel("Converter mode:");
 		lblConvertLabel.setFont(GuiUtils.bold);
-		lblConvertLabel.setBounds(20, 112, 250, 23);
+		lblConvertLabel.setBounds(20, 100, 250, 23);
 		panelAmiga.add(lblConvertLabel);
 
 		final JComboBox<String> modesList = new JComboBox<String>(modesStrings);
 		modesList.setToolTipText("Choose available video mode");
 		modesList.setFont(GuiUtils.std);
-		modesList.setBounds(46, 150, 250, 40);
+		modesList.setBounds(46, 138, 250, 40);
 		modesList.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				
@@ -72,6 +73,8 @@ public class Amiga1200Gui {
 		}});
 		
 		panelAmiga.add(modesList);
+		panelAmiga.add(Amiga500Gui.getRLECheckBox(config));
+		
 		GuiUtils.addColorControls(panelAmiga, config);
 						
 		return panelAmiga;

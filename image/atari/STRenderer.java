@@ -42,12 +42,12 @@ public class STRenderer extends AbstractCachedRenderer {
 
 		for (int r = 0; r < 8; r++) {
 			final int rk = (int) (r * k);
-			
+
 			for (int g = 0; g < 8; g++) {
 				final int gk = (int) (g * k);
-				
+
 				for (int b = 0; b < 8; b++) {
-					final int c[] = palette[i]; 
+					final int c[] = palette[i];
 
 					c[0] = rk;
 					c[1] = gk;
@@ -101,15 +101,18 @@ public class STRenderer extends AbstractCachedRenderer {
 		final float[] work = Utils.copy2float(pixels);
 
 		int r0, g0, b0;
-		float r_error = 0, g_error = 0, b_error = 0;
 
 		final int width3 = width * 3;
 		int index = 0, shift = 15;
 
 		for (int y = 0; y < height; y++) {
+			final int k1 = (y + 1) * width3;
+			final int k2 = (y + 2) * width3;
+
 			for (int x = 0; x < width3; x += 3) {
 				final int pyx = y * width3 + x;
-				final int py1x = (y + 1) * width3 + x;
+				final int py1x = k1 + x;
+				final int py2x = k2 + x;
 
 				r0 = Utils.saturate((int) work[pyx]);
 				g0 = Utils.saturate((int) work[pyx + 1]);
@@ -135,7 +138,7 @@ public class STRenderer extends AbstractCachedRenderer {
 				bitplanes[index + 3] |= ((value & 8) >> 3) << shift;
 				bitplanes[index + 2] |= ((value & 4) >> 2) << shift;
 				bitplanes[index + 1] |= ((value & 2) >> 1) << shift;
-				bitplanes[index    ] |= (value & 1) << shift;
+				bitplanes[index] |= (value & 1) << shift;
 
 				if (shift == 0) {
 					shift = 15;
@@ -143,28 +146,68 @@ public class STRenderer extends AbstractCachedRenderer {
 				} else
 					shift--;
 
-				r_error = r0 - r;
-				g_error = g0 - g;
-				b_error = b0 - b;
+				if (config.dithering) {
+					final float r_error = r0 - r;
+					final float g_error = g0 - g;
+					final float b_error = b0 - b;
 
-				if (x < (width - 1) * 3) {
-					work[pyx + 3]     += r_error * 7 / 16;
-					work[pyx + 3 + 1] += g_error * 7 / 16;
-					work[pyx + 3 + 2] += b_error * 7 / 16;
-				}
-				if (y < height - 1) {
-					work[py1x - 3]     += r_error * 3 / 16;
-					work[py1x - 3 + 1] += g_error * 3 / 16;
-					work[py1x - 3 + 2] += b_error * 3 / 16;
+					switch (config.dither_alg) {
+					case STD_FS:
+						if (x < (width - 1) * 3) {
+							work[pyx + 3] += r_error * 7 / 16;
+							work[pyx + 3 + 1] += g_error * 7 / 16;
+							work[pyx + 3 + 2] += b_error * 7 / 16;
+						}
+						if (y < height - 1) {
+							work[py1x - 3] += r_error * 3 / 16;
+							work[py1x - 3 + 1] += g_error * 3 / 16;
+							work[py1x - 3 + 2] += b_error * 3 / 16;
 
-					work[py1x]     += r_error * 5 / 16;
-					work[py1x + 1] += g_error * 5 / 16;
-					work[py1x + 2] += b_error * 5 / 16;
+							work[py1x] += r_error * 5 / 16;
+							work[py1x + 1] += g_error * 5 / 16;
+							work[py1x + 2] += b_error * 5 / 16;
 
-					if (x < (width - 1) * 3) {
-						work[py1x + 3]     += r_error / 16;
-						work[py1x + 3 + 1] += g_error / 16;
-						work[py1x + 3 + 2] += b_error / 16;
+							if (x < (width - 1) * 3) {
+								work[py1x + 3] += r_error / 16;
+								work[py1x + 3 + 1] += g_error / 16;
+								work[py1x + 3 + 2] += b_error / 16;
+							}
+						}
+						break;
+					case ATKINSON:
+						if (x < (width - 1) * 3) {
+							work[pyx + 3] += r_error * 1 / 8;
+							work[pyx + 3 + 1] += g_error * 1 / 8;
+							work[pyx + 3 + 2] += b_error * 1 / 8;
+
+							if (x < (width - 2) * 3) {
+								work[pyx + 6] += r_error * 1 / 8;
+								work[pyx + 6 + 1] += g_error * 1 / 8;
+								work[pyx + 6 + 2] += b_error * 1 / 8;
+							}
+						}
+						if (y < height - 1) {
+							work[py1x - 3] += r_error * 1 / 8;
+							work[py1x - 3 + 1] += g_error * 1 / 8;
+							work[py1x - 3 + 2] += b_error * 1 / 8;
+
+							work[py1x] += r_error * 1 / 8;
+							work[py1x + 1] += g_error * 1 / 8;
+							work[py1x + 2] += b_error * 1 / 8;
+
+							if (x < (width - 1) * 3) {
+								work[py1x + 3] += r_error * 1 / 8;
+								work[py1x + 3 + 1] += g_error * 1 / 8;
+								work[py1x + 3 + 2] += b_error * 1 / 8;
+							}
+
+							if (y < height - 2) {
+								work[py2x] += r_error * 1 / 8;
+								work[py2x + 1] += g_error * 1 / 8;
+								work[py2x + 2] += b_error * 1 / 8;
+							}
+						}
+						break;
 					}
 				}
 			}
@@ -209,7 +252,8 @@ public class STRenderer extends AbstractCachedRenderer {
 				fileName = fileName.substring(0, 7);
 
 			fileName = fileName.toUpperCase().replaceAll("[_ ]", "-");
-			final BufferedOutputStream chk = new BufferedOutputStream(new FileOutputStream(path + fileName + ".PI1"), 8192);
+			final BufferedOutputStream chk = new BufferedOutputStream(new FileOutputStream(path + fileName + ".PI1"),
+					8192);
 
 			chk.write(0x0); // screen resolution
 			chk.write(0x0);
@@ -277,5 +321,15 @@ public class STRenderer extends AbstractCachedRenderer {
 	@Override
 	protected int getWidth() {
 		return 320;
+	}
+
+	@Override
+	protected int getScreenHeight() {
+		return 400;
+	}
+
+	@Override
+	protected int getScreenWidth() {
+		return 640;
 	}
 }

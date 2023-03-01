@@ -32,10 +32,8 @@ public class IFF {
 		for (final byte[] p : data)
 			size += p.length;
 		
-		if (size % 2 == 1)
-			size += 1;
-
-		final ByteArrayOutputStream mem = new ByteArrayOutputStream(size);
+		final boolean padding = (size % 2 == 1);
+		final ByteArrayOutputStream mem = new ByteArrayOutputStream(padding ? size + 1: size);
 
 		mem.write(name.getBytes());
 		mem.write(bigEndianDWORD(size));
@@ -43,11 +41,14 @@ public class IFF {
 		for (final byte[] p : data)
 			mem.write(p);
 
+		if (padding)
+			mem.write(0);
+		
 		return mem.toByteArray();
 	}
 
 	public static final byte[] getBitmap(final int width, final int height, final int bitplanes[][], final boolean compressed) throws IOException {		
-		final int planes = bitplanes[0].length;		
+		final int planes = bitplanes[0].length;
 		final int size = width >> 4;
 		
 		final ByteArrayOutputStream mem = new ByteArrayOutputStream((width * height / 8) * planes); // bitplanes

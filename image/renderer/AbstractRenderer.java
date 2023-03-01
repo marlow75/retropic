@@ -66,16 +66,14 @@ public abstract class AbstractRenderer extends Thread {
 	protected void initializeView() {
 		width = image.getWidth();
 		height = image.getHeight();
-		
-		final int scale = getScale();
-		
+				
 		frame = new JFrame(getTitle() + config.getConfigString());
 		frame.setJMenuBar(getMenuBar());
 		frame.setIconImage(Toolkit.getDefaultToolkit().getImage(Utils.getResourceAsURL("retro.png")));
 
 		frame.addWindowListener(new ImageWindowListener(this));
 
-		frame.setSize(width * scale, height * scale);
+		frame.setSize(getScreenWidth(), getScreenHeight());
 		frame.setLocationRelativeTo(null);
 
 		frame.setResizable(false);
@@ -84,7 +82,7 @@ public abstract class AbstractRenderer extends Thread {
 		canvas = new PictureCanvas();
 		frame.setLocationRelativeTo(null);
 		
-		canvas.setSize(width * scale, height * scale);
+		canvas.setSize(getScreenWidth(), getScreenHeight());
 		canvas.setBackground(Color.BLACK);
 		
 		canvas.setVisible(true);
@@ -121,7 +119,9 @@ public abstract class AbstractRenderer extends Thread {
 			canvas.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			setupPalette();
 
-			imageDithering();
+			if (config.dithering)
+				imageDithering();
+			
 			imagePostproces();
 
 			addWaterMark();
@@ -141,10 +141,6 @@ public abstract class AbstractRenderer extends Thread {
 		gfx.dispose();
 	}
 	
-	protected int getScale() {
-		return 2;
-	}
-
 	protected abstract void imagePostproces();
 	protected abstract void setupPalette();
 	
@@ -153,6 +149,9 @@ public abstract class AbstractRenderer extends Thread {
 	
 	protected abstract int getHeight();
 	protected abstract int getWidth();
+	
+	protected abstract int getScreenHeight();
+	protected abstract int getScreenWidth();
 	
 	protected void imageDithering() {
 		final float work[] = Utils.copy2float(pixels);

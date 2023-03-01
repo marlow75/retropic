@@ -38,20 +38,6 @@ public class Amiga500Renderer extends AbstractCachedRenderer {
 	}
 
 	@Override
-	protected int getScale() {
-		switch (((Amiga500Config) config).video_mode) {
-		case HAM6_320x256:
-		case STD_320x256:
-			return 2;
-		case HAM6_320x512:
-		case STD_320x512:
-			return 1;
-		}
-
-		return -1;
-	}
-
-	@Override
 	protected void setupPalette() {
 		int i = 0;
 		final float k = 255 / 16f;
@@ -80,7 +66,7 @@ public class Amiga500Renderer extends AbstractCachedRenderer {
 		case HAM6_320x256:
 		case HAM6_320x512:
 			training = new HAMFixedPalette(4, 4, 4); // 4x4 = 16 colors (4 bits)
-			//training = new SOMFixedPalette(4, 4, 4); // 4x4 = 16 colors (4 bits)
+			// training = new SOMFixedPalette(4, 4, 4); // 4x4 = 16 colors (4 bits)
 			pictureColors = training.train(pixels);
 
 			ham6Encoded();
@@ -100,7 +86,6 @@ public class Amiga500Renderer extends AbstractCachedRenderer {
 		bitplanes = new int[(width >> 4) * height][5]; // 5 planes
 
 		int r0, g0, b0;
-		float r_error = 0, g_error = 0, b_error = 0;
 
 		final int width3 = width * 3;
 		int index = 0, shift = 15; // 16
@@ -145,9 +130,9 @@ public class Amiga500Renderer extends AbstractCachedRenderer {
 					shift--;
 
 				if (config.dithering) {
-					r_error = r0 - r;
-					g_error = g0 - g;
-					b_error = b0 - b;
+					final float r_error = r0 - r;
+					final float g_error = g0 - g;
+					final float b_error = b0 - b;
 
 					switch (config.dither_alg) {
 					case STD_FS:
@@ -271,7 +256,7 @@ public class Amiga500Renderer extends AbstractCachedRenderer {
 					// calculate all color change possibilities and measure distances
 					for (int i = 0; i < 16; i++) {
 						// scaled color
-						final int scaled = (int) (i * 15.9f);
+						final int scaled = (int) (i * 17f);
 
 						// which component change gets minimum error?
 						final float dr = getDistanceByCM(r0, g0, b0, scaled, g, b);
@@ -344,67 +329,69 @@ public class Amiga500Renderer extends AbstractCachedRenderer {
 				pixels[pyx + 1] = (byte) g;
 				pixels[pyx + 2] = (byte) b;
 
-				float r_error = r0 - r;
-				float g_error = g0 - g;
-				float b_error = b0 - b;
+				if (config.dithering) {
+					float r_error = r0 - r;
+					float g_error = g0 - g;
+					float b_error = b0 - b;
 
-				switch (config.dither_alg) {
-				case STD_FS:
-					if (x < (width - 1) * 3) {
-						work[pyx + 3] += r_error * 7 / 16;
-						work[pyx + 3 + 1] += g_error * 7 / 16;
-						work[pyx + 3 + 2] += b_error * 7 / 16;
-					}
-					if (y < height - 1) {
-						work[py1x - 3] += r_error * 3 / 16;
-						work[py1x - 3 + 1] += g_error * 3 / 16;
-						work[py1x - 3 + 2] += b_error * 3 / 16;
-
-						work[py1x] += r_error * 5 / 16;
-						work[py1x + 1] += g_error * 5 / 16;
-						work[py1x + 2] += b_error * 5 / 16;
-
+					switch (config.dither_alg) {
+					case STD_FS:
 						if (x < (width - 1) * 3) {
-							work[py1x + 3] += r_error / 16;
-							work[py1x + 3 + 1] += g_error / 16;
-							work[py1x + 3 + 2] += b_error / 16;
+							work[pyx + 3] += r_error * 7 / 16;
+							work[pyx + 3 + 1] += g_error * 7 / 16;
+							work[pyx + 3 + 2] += b_error * 7 / 16;
 						}
-					}
-					break;
-				case ATKINSON:
-					if (x < (width - 1) * 3) {
-						work[pyx + 3] += r_error * 1 / 8;
-						work[pyx + 3 + 1] += g_error * 1 / 8;
-						work[pyx + 3 + 2] += b_error * 1 / 8;
+						if (y < height - 1) {
+							work[py1x - 3] += r_error * 3 / 16;
+							work[py1x - 3 + 1] += g_error * 3 / 16;
+							work[py1x - 3 + 2] += b_error * 3 / 16;
 
-						if (x < (width - 2) * 3) {
-							work[pyx + 6] += r_error * 1 / 8;
-							work[pyx + 6 + 1] += g_error * 1 / 8;
-							work[pyx + 6 + 2] += b_error * 1 / 8;
+							work[py1x] += r_error * 5 / 16;
+							work[py1x + 1] += g_error * 5 / 16;
+							work[py1x + 2] += b_error * 5 / 16;
+
+							if (x < (width - 1) * 3) {
+								work[py1x + 3] += r_error / 16;
+								work[py1x + 3 + 1] += g_error / 16;
+								work[py1x + 3 + 2] += b_error / 16;
+							}
 						}
-					}
-					if (y < height - 1) {
-						work[py1x - 3] += r_error * 1 / 8;
-						work[py1x - 3 + 1] += g_error * 1 / 8;
-						work[py1x - 3 + 2] += b_error * 1 / 8;
-
-						work[py1x] += r_error * 1 / 8;
-						work[py1x + 1] += g_error * 1 / 8;
-						work[py1x + 2] += b_error * 1 / 8;
-
+						break;
+					case ATKINSON:
 						if (x < (width - 1) * 3) {
-							work[py1x + 3] += r_error * 1 / 8;
-							work[py1x + 3 + 1] += g_error * 1 / 8;
-							work[py1x + 3 + 2] += b_error * 1 / 8;
-						}
+							work[pyx + 3] += r_error * 1 / 8;
+							work[pyx + 3 + 1] += g_error * 1 / 8;
+							work[pyx + 3 + 2] += b_error * 1 / 8;
 
-						if (y < height - 2) {
-							work[py2x] += r_error * 1 / 8;
-							work[py2x + 1] += g_error * 1 / 8;
-							work[py2x + 2] += b_error * 1 / 8;
+							if (x < (width - 2) * 3) {
+								work[pyx + 6] += r_error * 1 / 8;
+								work[pyx + 6 + 1] += g_error * 1 / 8;
+								work[pyx + 6 + 2] += b_error * 1 / 8;
+							}
 						}
+						if (y < height - 1) {
+							work[py1x - 3] += r_error * 1 / 8;
+							work[py1x - 3 + 1] += g_error * 1 / 8;
+							work[py1x - 3 + 2] += b_error * 1 / 8;
+
+							work[py1x] += r_error * 1 / 8;
+							work[py1x + 1] += g_error * 1 / 8;
+							work[py1x + 2] += b_error * 1 / 8;
+
+							if (x < (width - 1) * 3) {
+								work[py1x + 3] += r_error * 1 / 8;
+								work[py1x + 3 + 1] += g_error * 1 / 8;
+								work[py1x + 3 + 2] += b_error * 1 / 8;
+							}
+
+							if (y < height - 2) {
+								work[py2x] += r_error * 1 / 8;
+								work[py2x + 1] += g_error * 1 / 8;
+								work[py2x + 2] += b_error * 1 / 8;
+							}
+						}
+						break;
 					}
-					break;
 				}
 			}
 		}
@@ -478,8 +465,9 @@ public class Amiga500Renderer extends AbstractCachedRenderer {
 				break;
 			}
 
-			final boolean compressed = ((AmigaConfig)config).rleCompress;
-			chk.write(IFF.getILBMFormat(IFF.chunk("BMHD", IFF.getILBMHD(width, height, aspectX, aspectY, planes, compressed)), 
+			final boolean compressed = ((AmigaConfig) config).rleCompress;
+			chk.write(IFF.getILBMFormat(
+					IFF.chunk("BMHD", IFF.getILBMHD(width, height, aspectX, aspectY, planes, compressed)),
 					IFF.chunk("CMAP", IFF.getCMAP(pictureColors, image.getType())),
 					IFF.chunk("CAMG", IFF.bigEndianDWORD(videoMode)),
 					IFF.chunk("BODY", IFF.getBitmap(width, height, bitplanes, compressed))));
@@ -515,5 +503,15 @@ public class Amiga500Renderer extends AbstractCachedRenderer {
 	@Override
 	protected int getWidth() {
 		return 320;
+	}
+
+	@Override
+	protected int getScreenHeight() {
+		return 512;
+	}
+
+	@Override
+	protected int getScreenWidth() {
+		return 640;
 	}
 }

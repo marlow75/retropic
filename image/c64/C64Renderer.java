@@ -262,8 +262,7 @@ public class C64Renderer extends AbstractOldiesRenderer {
 						if (luma > max) {
 							max = luma;
 							f = getColorIndex(r, g, b);
-						} else
-						if (luma < min) {
+						} else if (luma < min) {
 							min = luma;
 							n = getColorIndex(r, g, b);
 						}
@@ -273,12 +272,15 @@ public class C64Renderer extends AbstractOldiesRenderer {
 				screen[(y >> 3) * 40 + (x >> 3)] = ((f & 0xf) << 4) | (n & 0xf);
 
 				int value = 0, bitcount = 0;
-				int r_error, g_error, b_error;
 
-				for (int y0 = 0; y0 < 8; y0++)
+				for (int y0 = 0; y0 < 8; y0++) {
+					final int k1 = (y0 + 1) * 24;
+					final int k2 = (y0 + 2) * 24;
+
 					for (int x0 = 0; x0 < 24; x0 += 3) {
 						final int pyx0 = y0 * 24 + x0;
-						final int py1x0 = (y0 + 1) * 24 + x0;
+						final int py1x0 = k1 + x0;
+						final int py2x0 = k2 + x0;
 
 						final int r = work[pyx0];
 						final int g = work[pyx0 + 1];
@@ -318,32 +320,74 @@ public class C64Renderer extends AbstractOldiesRenderer {
 						pixels[position + 1] = (byte) ng;
 						pixels[position + 2] = (byte) nb;
 
-						r_error = Utils.saturateByte(r - nr);
-						g_error = Utils.saturateByte(g - ng);
-						b_error = Utils.saturateByte(b - nb);
+						if (config.dithering) {
+							final int r_error = Utils.saturateByte(r - nr);
+							final int g_error = Utils.saturateByte(g - ng);
+							final int b_error = Utils.saturateByte(b - nb);
 
-						if (x0 < 21) {
-							work[pyx0 + 3] += r_error * 7 / 16;
-							work[pyx0 + 3 + 1] += g_error * 7 / 16;
-							work[pyx0 + 3 + 2] += b_error * 7 / 16;
-						}
+							switch (config.dither_alg) {
+							case STD_FS:
+								if (x0 < 21) {
+									work[pyx0 + 3] += r_error * 7 / 16;
+									work[pyx0 + 3 + 1] += g_error * 7 / 16;
+									work[pyx0 + 3 + 2] += b_error * 7 / 16;
+								}
 
-						if (y0 < 7) {
-							work[py1x0 - 3] += r_error * 3 / 16;
-							work[py1x0 - 3 + 1] += g_error * 3 / 16;
-							work[py1x0 - 3 + 2] += b_error * 3 / 16;
+								if (y0 < 7) {
+									work[py1x0 - 3] += r_error * 3 / 16;
+									work[py1x0 - 3 + 1] += g_error * 3 / 16;
+									work[py1x0 - 3 + 2] += b_error * 3 / 16;
 
-							work[py1x0] += r_error * 5 / 16;
-							work[py1x0 + 1] += g_error * 5 / 16;
-							work[py1x0 + 2] += b_error * 5 / 16;
+									work[py1x0] += r_error * 5 / 16;
+									work[py1x0 + 1] += g_error * 5 / 16;
+									work[py1x0 + 2] += b_error * 5 / 16;
 
-							if (x0 < 21) {
-								work[py1x0 + 3] += r_error / 16;
-								work[py1x0 + 3 + 1] += g_error / 16;
-								work[py1x0 + 3 + 2] += b_error / 16;
+									if (x0 < 21) {
+										work[py1x0 + 3] += r_error / 16;
+										work[py1x0 + 3 + 1] += g_error / 16;
+										work[py1x0 + 3 + 2] += b_error / 16;
+									}
+								}
+								break;
+							case ATKINSON:
+								if (x0 < 21) {
+									work[pyx0 + 3] += r_error * 1 / 8;
+									work[pyx0 + 3 + 1] += g_error * 1 / 8;
+									work[pyx0 + 3 + 2] += b_error * 1 / 8;
+
+									if (x0 < 18) {
+										work[pyx0 + 6] += r_error * 1 / 8;
+										work[pyx0 + 6 + 1] += g_error * 1 / 8;
+										work[pyx0 + 6 + 2] += b_error * 1 / 8;
+									}
+								}
+								if (y0 < 7) {
+									work[py1x0 - 3] += r_error * 1 / 8;
+									work[py1x0 - 3 + 1] += g_error * 1 / 8;
+									work[py1x0 - 3 + 2] += b_error * 1 / 8;
+
+									work[py1x0] += r_error * 1 / 8;
+									work[py1x0 + 1] += g_error * 1 / 8;
+									work[py1x0 + 2] += b_error * 1 / 8;
+
+									if (x0 < 21) {
+										work[py1x0 + 3] += r_error * 1 / 8;
+										work[py1x0 + 3 + 1] += g_error * 1 / 8;
+										work[py1x0 + 3 + 2] += b_error * 1 / 8;
+									}
+
+									if (y0 < 6) {
+										work[py2x0] += r_error * 1 / 8;
+										work[py2x0 + 1] += g_error * 1 / 8;
+										work[py2x0 + 2] += b_error * 1 / 8;
+									}
+								}
+
+								break;
 							}
 						}
 					}
+				}
 			}
 		}
 	}
@@ -504,13 +548,15 @@ public class C64Renderer extends AbstractOldiesRenderer {
 				screen[position] = ((i1 & 0xf) << 4) | (i2 & 0xf);
 				nibble[position] = i3;
 
-				int r_error, g_error, b_error;
-
 				int value = 0, bitcount = 0;
-				for (int y0 = 0; y0 < 8; y0++)
+				for (int y0 = 0; y0 < 8; y0++) {
+					final int k1 = (y0 + 1) * 12;
+					final int k2 = (y0 + 2) * 12;
+				
 					for (int x0 = 0; x0 < 12; x0 += 3) {
 						final int pyx0 = y0 * 12 + x0;
-						final int py1x0 = (y0 + 1) * 12 + x0;
+						final int py1x0 = k1 + x0;
+						final int py2x0 = k2 + x0;
 
 						final int r = work[pyx0];
 						final int g = work[pyx0 + 1];
@@ -535,31 +581,74 @@ public class C64Renderer extends AbstractOldiesRenderer {
 
 						bitcount += 1;
 
-						r_error = Utils.saturateByte(r - nr);
-						g_error = Utils.saturateByte(g - ng);
-						b_error = Utils.saturateByte(b - nb);
+						if (config.dithering) {
+							final int r_error = Utils.saturateByte(r - nr);
+							final int g_error = Utils.saturateByte(g - ng);
+							final int b_error = Utils.saturateByte(b - nb);
 
-						if (x0 < 9) {
-							work[pyx0 + 3] += r_error * 7 / 16;
-							work[pyx0 + 3 + 1] += g_error * 7 / 16;
-							work[pyx0 + 3 + 2] += b_error * 7 / 16;
-						}
-						if (y0 < 7) {
-							work[py1x0 - 3] += r_error * 3 / 16;
-							work[py1x0 - 3 + 1] += g_error * 3 / 16;
-							work[py1x0 - 3 + 2] += b_error * 3 / 16;
+							switch (config.dither_alg) {
 
-							work[py1x0] += r_error * 5 / 16;
-							work[py1x0 + 1] += g_error * 5 / 16;
-							work[py1x0 + 2] += b_error * 5 / 16;
+							case STD_FS:
+								if (x0 < 9) {
+									work[pyx0 + 3] += r_error * 7 / 16;
+									work[pyx0 + 3 + 1] += g_error * 7 / 16;
+									work[pyx0 + 3 + 2] += b_error * 7 / 16;
+								}
+								if (y0 < 7) {
+									work[py1x0 - 3] += r_error * 3 / 16;
+									work[py1x0 - 3 + 1] += g_error * 3 / 16;
+									work[py1x0 - 3 + 2] += b_error * 3 / 16;
 
-							if (x0 < 9) {
-								work[py1x0 + 3] += r_error / 16;
-								work[py1x0 + 3 + 1] += g_error / 16;
-								work[py1x0 + 3 + 2] += b_error / 16;
+									work[py1x0] += r_error * 5 / 16;
+									work[py1x0 + 1] += g_error * 5 / 16;
+									work[py1x0 + 2] += b_error * 5 / 16;
+
+									if (x0 < 9) {
+										work[py1x0 + 3] += r_error / 16;
+										work[py1x0 + 3 + 1] += g_error / 16;
+										work[py1x0 + 3 + 2] += b_error / 16;
+									}
+								}
+								break;
+							case ATKINSON:
+								if (x0 < 9) {
+									work[pyx0 + 3] += r_error * 1 / 8;
+									work[pyx0 + 3 + 1] += g_error * 1 / 8;
+									work[pyx0 + 3 + 2] += b_error * 1 / 8;
+
+									if (x0 < 6) {
+										work[pyx0 + 6] += r_error * 1 / 8;
+										work[pyx0 + 6 + 1] += g_error * 1 / 8;
+										work[pyx0 + 6 + 2] += b_error * 1 / 8;
+									}
+								}
+								if (y0 < 7) {
+									work[py1x0 - 3] += r_error * 1 / 8;
+									work[py1x0 - 3 + 1] += g_error * 1 / 8;
+									work[py1x0 - 3 + 2] += b_error * 1 / 8;
+
+									work[py1x0] += r_error * 1 / 8;
+									work[py1x0 + 1] += g_error * 1 / 8;
+									work[py1x0 + 2] += b_error * 1 / 8;
+
+									if (x0 < 9) {
+										work[py1x0 + 3] += r_error * 1 / 8;
+										work[py1x0 + 3 + 1] += g_error * 1 / 8;
+										work[py1x0 + 3 + 2] += b_error * 1 / 8;
+									}
+
+									if (y0 < 6) {
+										work[py2x0] += r_error * 1 / 8;
+										work[py2x0 + 1] += g_error * 1 / 8;
+										work[py2x0 + 2] += b_error * 1 / 8;
+									}
+								}
+
+								break;
 							}
 						}
 					}
+				}
 
 				index = 0;
 
@@ -671,5 +760,15 @@ public class C64Renderer extends AbstractOldiesRenderer {
 	@Override
 	protected int getWidth() {
 		return 320;
+	}
+
+	@Override
+	protected int getScreenHeight() {
+		return 400;
+	}
+
+	@Override
+	protected int getScreenWidth() {
+		return 640;
 	}
 }

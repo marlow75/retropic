@@ -1,9 +1,11 @@
 package pl.dido.image.amiga500;
 
 import java.awt.Canvas;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -32,13 +34,13 @@ public class Amiga500Gui {
 		
 		final JLabel lblConvertLabel = new JLabel("Converter mode:");
 		lblConvertLabel.setFont(GuiUtils.bold);
-		lblConvertLabel.setBounds(20, 112, 250, 23);
+		lblConvertLabel.setBounds(20, 100, 250, 23);
 		panelAmiga.add(lblConvertLabel);
 
 		final JComboBox<String> modesList = new JComboBox<String>(modesStrings);
 		modesList.setToolTipText("Choose available video mode");
 		modesList.setFont(GuiUtils.std);
-		modesList.setBounds(46, 150, 250, 40);
+		modesList.setBounds(46, 138, 250, 40);
 		modesList.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				
@@ -62,9 +64,27 @@ public class Amiga500Gui {
 		        }
 		}});
 		
-		panelAmiga.add(modesList);				
+		panelAmiga.add(modesList);
+		panelAmiga.add(getRLECheckBox(config));
+		
 		GuiUtils.addColorControls(panelAmiga, config);
 						
 		return panelAmiga;
+	}
+	
+	public static Component getRLECheckBox(final AmigaConfig config) {
+		final JCheckBox chckbxRLECheckBox = new JCheckBox("export with RLE compression");
+		
+		chckbxRLECheckBox.setToolTipText("Enables RLE compression");
+		chckbxRLECheckBox.setFont(GuiUtils.std);
+		chckbxRLECheckBox.setBounds(46, 190, 250, 44);
+		chckbxRLECheckBox.setSelected(config.dithering);
+		
+		chckbxRLECheckBox.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				config.rleCompress = !config.rleCompress;
+			}});
+		
+		return chckbxRLECheckBox;
 	}
 }

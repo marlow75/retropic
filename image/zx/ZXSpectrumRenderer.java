@@ -122,8 +122,7 @@ public class ZXSpectrumRenderer extends AbstractOldiesRenderer {
 						if (luma > max) {
 							max = luma;
 							f = getColorIndex(r, g, b);
-						} else
-						if (luma < min) {
+						} else if (luma < min) {
 							min = luma;
 							n = getColorIndex(r, g, b);
 						}
@@ -138,7 +137,6 @@ public class ZXSpectrumRenderer extends AbstractOldiesRenderer {
 				attribs[address] = ((paper & 0xf) << 3) | (ink & 0x7) | bright;
 
 				int value = 0, bitcount = 0;
-				int r_error, g_error, b_error;
 
 				for (int y0 = 0; y0 < 8; y0++)
 					for (int x0 = 0; x0 < 8 * 3; x0 += 3) {
@@ -180,29 +178,30 @@ public class ZXSpectrumRenderer extends AbstractOldiesRenderer {
 						pixels[pyx0 + 1] = (byte) ng;
 						pixels[pyx0 + 2] = (byte) nb;
 
-						r_error = r - nr;
-						g_error = g - ng;
-						b_error = b - nb;
-
-						if (x < 248) {
-							work[pyx0 + 3]     += r_error * 7 / 16;
-							work[pyx0 + 3 + 1] += g_error * 7 / 16;
-							work[pyx0 + 3 + 2] += b_error * 7 / 16;
-						}
-						if (y < 184) {
-							work[py1x0 - 3]     += r_error * 3 / 16;
-							work[py1x0 - 3 + 1] += g_error * 3 / 16;
-							work[py1x0 - 3 + 2] += b_error * 3 / 16;
-
-							work[py1x0] 	+= r_error * 5 / 16;
-							work[py1x0 + 1] += g_error * 5 / 16;
-							work[py1x0 + 2] += b_error * 5 / 16;
-
+						if (config.dithering) {
+							final int r_error = r - nr;
+							final int g_error = g - ng;
+							final int b_error = b - nb;
 
 							if (x < 248) {
-								work[py1x0 + 3] 	+= r_error / 16;
-								work[py1x0 + 3 + 1] += g_error / 16;
-								work[py1x0 + 3 + 2] += b_error / 16;
+								work[pyx0 + 3] += r_error * 7 / 16;
+								work[pyx0 + 3 + 1] += g_error * 7 / 16;
+								work[pyx0 + 3 + 2] += b_error * 7 / 16;
+							}
+							if (y < 184) {
+								work[py1x0 - 3] += r_error * 3 / 16;
+								work[py1x0 - 3 + 1] += g_error * 3 / 16;
+								work[py1x0 - 3 + 2] += b_error * 3 / 16;
+
+								work[py1x0] += r_error * 5 / 16;
+								work[py1x0 + 1] += g_error * 5 / 16;
+								work[py1x0 + 2] += b_error * 5 / 16;
+
+								if (x < 248) {
+									work[py1x0 + 3] += r_error / 16;
+									work[py1x0 + 3 + 1] += g_error / 16;
+									work[py1x0 + 3 + 2] += b_error / 16;
+								}
 							}
 						}
 					}
@@ -269,5 +268,15 @@ public class ZXSpectrumRenderer extends AbstractOldiesRenderer {
 	@Override
 	protected int getHeight() {
 		return 192;
+	}
+
+	@Override
+	protected int getScreenHeight() {
+		return 384;
+	}
+
+	@Override
+	protected int getScreenWidth() {
+		return 512;
 	}
 }
