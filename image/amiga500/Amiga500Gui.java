@@ -78,7 +78,7 @@ public class Amiga500Gui {
 		chckbxRLECheckBox.setToolTipText("Enables RLE compression");
 		chckbxRLECheckBox.setFont(GuiUtils.std);
 		chckbxRLECheckBox.setBounds(46, 190, 250, 44);
-		chckbxRLECheckBox.setSelected(config.dithering);
+		chckbxRLECheckBox.setSelected(config.rleCompress);
 		
 		chckbxRLECheckBox.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
