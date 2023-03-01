@@ -8,9 +8,9 @@ You can download executable jar [here](retropic.jar).
 
 ## Supported machines
 
-* C64, hires, multicolor.
-* ZX Spectrum 48/+.
-* Amstrad CPC series mode0, mode1.
+* C64, hires 320x200, multicolor 160x200.
+* ZX Spectrum 48/+ 256x192 in 8 colors.
+* Amstrad CPC series mode0 160x200 16 colors, mode1 320x200 in 4 colors.
 * Atari ST, 320x200 in 16 on screen from 512 palette colors.
 * Amiga 500/1000, PAL 320x256 and 320x512 in 32 colors or in HAM6 encoding, 4096 palette colors.
 * Amiga 1200/4000, PAL 320x256, 320x512, 640x512 in 256 colors or in HAM8 encoding, 16M palette colors.
@@ -34,7 +34,7 @@ Try all options available.
 
 16 colors total, 4 modes, 2 usefull for graphics.
 
-* none, floyds, apple – first pass dithering, colors of the original picture are replaced by retro machine palette.
+* none, floyds, apple – dithering, colors of the original picture are replaced by retro machine palette.
 
 * 320x200 - use 2 colors in 8x8 screen cell.
 * 160x200 - use 4 colors in 4x8 screen cell, average or brightest color are choosen when shrinking to 320->160.
@@ -59,7 +59,7 @@ Exports to native SCR snapshoot.
 
 27 colors total, 3 modes, 2 usefull.
 
-* dithering – first pass Atkinson dithering, colors of the original picture are replaced by retro machine palette
+* dithering – Atkinson dithering, colors of the original picture are replaced by retro machine palette
 * replace brightest - replaces brightest color with dimmed yellow
 
 * 320x200 - use 4 colors on whole screen
@@ -73,7 +73,7 @@ Export to Advanced Art Studio with standalone palette file. All files generated 
 
 512 colors total, 3 modes, 2 usefull for graphics.
 
-* dithered - first pass floyds dithering, colors of the original picture are replaced by retro machine palette, dithered.
+* none, floyds, apple – dithering, colors of the original picture are replaced by retro machine palette.
 * adjust contrast - gives more or less contrast - replaces colors.
 
 * 320x200 - use 16 colors, palette is result of Kohonen pixel classification.
@@ -86,10 +86,11 @@ Export to DEGAS paint program.
 
 4096 colors total, 4 modes usefull for graphics.
 
-* none, floyds, apple – first pass dithering, colors of the original picture are replaced by retro machine palette.
+* none, floyds, apple – dithering, colors of the original picture are replaced by retro machine palette.
 
 * 320x256, 320x512 (lace) - use 32 colors, palette is result of Kohonen pixel classification.
 * 320x256, 320x512 (lace) - use HAM6 coding, 16 color palette as a result of Kohonen classification.
+* export with RLE compression - use RLE compression run1byte.
 
 Export to Delux Paint IFF file format.
 
@@ -99,10 +100,11 @@ Export to Delux Paint IFF file format.
 
 16M colors total, 2 modes usefull for graphics.
 
-* none, floyds, apple – first pass dithering. Colors of the original picture are replaced by retro machine palette.
+* none, floyds, apple – dithering, colors of the original picture are replaced by retro machine palette.
 
 * 320x256, 320x512 (lace), 640x512 (lace) - use 256 colors, palette is result of Kohonen pixel classification.
 * 320x256, 320x512 (lace), 640x512 (lace) - use HAM8 coding, 64 color palette as a result of Kohonen classification.
+* export with RLE compression - use RLE compression run1byte.
 
 Export to Delux Paint IFF file format.
 
