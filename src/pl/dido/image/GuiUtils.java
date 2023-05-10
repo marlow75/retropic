@@ -23,7 +23,7 @@ public class GuiUtils {
 		panel.add(lblDitherLabel);
 		
 		final JRadioButton rdbtnNoDitherButton = new JRadioButton("none");
-		rdbtnNoDitherButton.setToolTipText("No predithering at all");
+		rdbtnNoDitherButton.setToolTipText("No dithering at all");
 		rdbtnNoDitherButton.setFont(std);
 		rdbtnNoDitherButton.setBounds(46, 33, 80, 44);
 		rdbtnNoDitherButton.setSelected(!config.dithering);

@@ -17,10 +17,10 @@ import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 
 import pl.dido.image.Config;
-import pl.dido.image.renderer.AbstractRenderer;
+import pl.dido.image.renderer.AbstractOldiesRenderer;
 import pl.dido.image.utils.Utils;
 
-public class ZXSpectrumRenderer extends AbstractRenderer {
+public class ZXSpectrumRenderer extends AbstractOldiesRenderer {
 
 	// ZX spectrum palette
 	private final static int colors[] = new int[] { 0x000000, 0x000000, 0x0000d8, 0x0000ff, 0xd80000, 0xff0000,
@@ -122,9 +122,7 @@ public class ZXSpectrumRenderer extends AbstractRenderer {
 						if (luma > max) {
 							max = luma;
 							f = getColorIndex(r, g, b);
-						}
-
-						if (luma < min) {
+						} else if (luma < min) {
 							min = luma;
 							n = getColorIndex(r, g, b);
 						}
@@ -145,9 +143,9 @@ public class ZXSpectrumRenderer extends AbstractRenderer {
 						final int pyx0 = offset + y0 * 256 * 3 + x0;
 						final int py1x0 = offset + (y0 + 1) * 256 * 3 + x0;
 
-						final int r = work[pyx0];
-						final int g = work[pyx0 + 1];
-						final int b = work[pyx0 + 2];
+						final int r = Utils.saturate((int) work[pyx0]);
+						final int g = Utils.saturate((int) work[pyx0 + 1]);
+						final int b = Utils.saturate((int) work[pyx0 + 2]);
 
 						final int fr = palette[f][0];
 						final int fg = palette[f][1];
@@ -180,29 +178,30 @@ public class ZXSpectrumRenderer extends AbstractRenderer {
 						pixels[pyx0 + 1] = (byte) ng;
 						pixels[pyx0 + 2] = (byte) nb;
 
-						final int r_error = Utils.saturate(r - nr);
-						final int g_error = Utils.saturate(g - ng);
-						final int b_error = Utils.saturate(b - nb);
-
-						if (x < 248) {
-							work[pyx0 + 3] += r_error * 7 / 16;
-							work[pyx0 + 3 + 1] += g_error * 7 / 16;
-							work[pyx0 + 3 + 2] += b_error * 7 / 16;
-						}
-
-						if (y < 184) {
-							work[py1x0 - 3] += r_error * 3 / 16;
-							work[py1x0 - 3 + 1] += g_error * 3 / 16;
-							work[py1x0 - 3 + 2] += b_error * 3 / 16;
-
-							work[py1x0] += r_error * 5 / 16;
-							work[py1x0 + 1] += g_error * 5 / 16;
-							work[py1x0 + 2] += b_error * 5 / 16;
+						if (config.dithering) {
+							final int r_error = r - nr;
+							final int g_error = g - ng;
+							final int b_error = b - nb;
 
 							if (x < 248) {
-								work[py1x0 + 3] += r_error >> 4;
-								work[py1x0 + 3 + 1] += g_error >> 4;
-								work[py1x0 + 3 + 2] += b_error >> 4;
+								work[pyx0 + 3] += r_error * 7 / 16;
+								work[pyx0 + 3 + 1] += g_error * 7 / 16;
+								work[pyx0 + 3 + 2] += b_error * 7 / 16;
+							}
+							if (y < 184) {
+								work[py1x0 - 3] += r_error * 3 / 16;
+								work[py1x0 - 3 + 1] += g_error * 3 / 16;
+								work[py1x0 - 3 + 2] += b_error * 3 / 16;
+
+								work[py1x0] += r_error * 5 / 16;
+								work[py1x0 + 1] += g_error * 5 / 16;
+								work[py1x0 + 2] += b_error * 5 / 16;
+
+								if (x < 248) {
+									work[py1x0 + 3] += r_error / 16;
+									work[py1x0 + 3 + 1] += g_error / 16;
+									work[py1x0 + 3 + 2] += b_error / 16;
+								}
 							}
 						}
 					}
@@ -224,6 +223,7 @@ public class ZXSpectrumRenderer extends AbstractRenderer {
 		return zx_address;
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	protected JMenuBar getMenuBar() {
 		final JMenu menuFile = new JMenu("File");
@@ -269,5 +269,15 @@ public class ZXSpectrumRenderer extends AbstractRenderer {
 	@Override
 	protected int getHeight() {
 		return 192;
+	}
+
+	@Override
+	protected int getScreenHeight() {
+		return 384;
+	}
+
+	@Override
+	protected int getScreenWidth() {
+		return 512;
 	}
 }

@@ -16,12 +16,13 @@ import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 
 import pl.dido.image.Config;
-import pl.dido.image.renderer.AbstractRenderer;
+import pl.dido.image.renderer.AbstractOldiesRenderer;
 import pl.dido.image.utils.ChecksumOutputStream;
+import pl.dido.image.utils.SOMFixedPalette;
 import pl.dido.image.utils.SOMWinnerFixedPalette;
 import pl.dido.image.utils.Utils;
 
-public class CPCRenderer extends AbstractRenderer {
+public class CPCRenderer extends AbstractOldiesRenderer {
 
 	// CPC palette 27 colors
 	private final static int colors[] = new int[] { 0x000000, 0x000080, 0x0000FF, 0x800000, 0x800080, 0x8000FF,
@@ -31,16 +32,8 @@ public class CPCRenderer extends AbstractRenderer {
 
 	protected int bitmap[] = new int[16384];
 	protected int pictureColors[][];
-	
+
 	protected int firmwareIndexes[];
-	
-	protected final static int[] allValues = new int [] { 0, 128, 255 };	
-	protected final static int[] upperColors = new int[] { 128, 255 };
-	protected final static int[] lowerColors = new int[] { 0, 128 };
-	
-	protected final static int[] color255 = new int[] { 255 };
-	protected final static int[] color128 = new int[] { 128 };
-	protected final static int[] color0 = new int[] { 0 };
 
 	protected int colorMapping[] = new int[] { 0x54, 0x44, 0x55, 0x5C, 0x58, 0x5D, 0x4C, 0x45, 0x4D, 0x56, 0x46, 0x57,
 			0x5E, 0x40, 0x5F, 0x4E, 0x47, 0x4F, 0x52, 0x42, 0x53, 0x5A, 0x59, 0x5B, 0x4A, 0x43, 0x4B };
@@ -62,7 +55,7 @@ public class CPCRenderer extends AbstractRenderer {
 		case BufferedImage.TYPE_3BYTE_BGR:
 			for (int i = 0; i < colors.length; i++) {
 				final int pixel[] = palette[i];
-				
+
 				pixel[0] = (colors[i] & 0x0000ff); // blue
 				pixel[1] = (colors[i] & 0x00ff00) >> 8; // green
 				pixel[2] = (colors[i] & 0xff0000) >> 16; // red
@@ -71,7 +64,7 @@ public class CPCRenderer extends AbstractRenderer {
 		case BufferedImage.TYPE_INT_RGB:
 			for (int i = 0; i < colors.length; i++) {
 				final int pixel[] = palette[i];
-				
+
 				pixel[0] = (colors[i] & 0xff0000) >> 16; // red
 				pixel[1] = (colors[i] & 0x00ff00) >> 8; // green
 				pixel[2] = (colors[i] & 0x0000ff); // blue
@@ -98,8 +91,8 @@ public class CPCRenderer extends AbstractRenderer {
 
 	private int[][] modePalette(final CPCConfig.SCREEN_MODE mode) {
 		final int p[][];
-		final SOMWinnerFixedPalette som;
-		
+		final SOMFixedPalette som;
+
 		switch (mode) {
 		case MODE0:
 			som = new SOMWinnerFixedPalette(4, 4, 2);
@@ -112,45 +105,45 @@ public class CPCRenderer extends AbstractRenderer {
 
 			break;
 		}
-		
-		final int size = p.length;		
+
+		final int size = p.length;
 		firmwareIndexes = new int[size];
 
 		for (int i = 0; i < size; i++) {
 			final int pixel[] = p[i];
 			final int index = getColorIndex(pixel[0], pixel[1], pixel[2]); // color
-			
+
 			pixel[0] = palette[index][0];
 			pixel[1] = palette[index][1];
 			pixel[2] = palette[index][2];
-					
+
 			firmwareIndexes[i] = index;
 		}
-		
+
 		if (((CPCConfig) config).replace_white) {
 			// replace brightest with white
 			float max = 0;
 			int index = 0;
-			
+
 			for (int i = 0; i < size; i++) {
 				final int c[] = p[i];
 				final float luma = getLumaByCM(c[0], c[1], c[2]);
-				
+
 				if (luma > max) {
 					max = luma;
 					index = i;
 				}
 			}
-			
+
 			final int c[] = p[index];
 			// dimmed white - yellow
 			c[0] = 128;
-			c[1] = 255;			
+			c[1] = 255;
 			c[2] = 255;
-			
+
 			firmwareIndexes[index] = 25;
 		}
-		
+
 		return p;
 	}
 
@@ -258,7 +251,6 @@ public class CPCRenderer extends AbstractRenderer {
 		final int[] work = Utils.copy2Int(pixels);
 
 		int r0, g0, b0;
-		int r_error = 0, g_error = 0, b_error = 0;
 
 		final int width3 = width * 3;
 		int bit0 = 128, bit1 = 8;
@@ -289,7 +281,7 @@ public class CPCRenderer extends AbstractRenderer {
 				work[pyx] = r;
 				work[pyx + 1] = g;
 				work[pyx + 2] = b;
-				
+
 				pixels[pyx] = (byte) r;
 				pixels[pyx + 1] = (byte) g;
 				pixels[pyx + 2] = (byte) b;
@@ -307,29 +299,30 @@ public class CPCRenderer extends AbstractRenderer {
 					bit1 >>= 1;
 				}
 
-				r_error = Utils.saturate(r0 - r);
-				g_error = Utils.saturate(g0 - g);
-				b_error = Utils.saturate(b0 - b);
-
-				if (x < (width - 1) * 3) {
-					work[pyx + 3] += r_error * 7 / 16;
-					work[pyx + 3 + 1] += g_error * 7 / 16;
-					work[pyx + 3 + 2] += b_error * 7 / 16;
-				}
-
-				if (y < height - 1) {
-					work[py1x - 3] += r_error * 3 / 16;
-					work[py1x - 3 + 1] += g_error * 3 / 16;
-					work[py1x - 3 + 2] += b_error * 3 / 16;
-
-					work[py1x] += r_error * 5 / 16;
-					work[py1x + 1] += g_error * 5 / 16;
-					work[py1x + 2] += b_error * 5 / 16;
-
+				if (config.dithering) {
+					final int r_error = Utils.saturateByte(r0 - r);
+					final int g_error = Utils.saturateByte(g0 - g);
+					final int b_error = Utils.saturateByte(b0 - b);
+	
 					if (x < (width - 1) * 3) {
-						work[py1x + 3] += r_error >> 4;
-						work[py1x + 3 + 1] += g_error >> 4;
-						work[py1x + 3 + 2] += b_error >> 4;
+						work[pyx + 3] += r_error * 7 / 16;
+						work[pyx + 3 + 1] += g_error * 7 / 16;
+						work[pyx + 3 + 2] += b_error * 7 / 16;
+					}
+					if (y < height - 1) {
+						work[py1x - 3] += r_error * 3 / 16;
+						work[py1x - 3 + 1] += g_error * 3 / 16;
+						work[py1x - 3 + 2] += b_error * 3 / 16;
+
+						work[py1x] += r_error * 5 / 16;
+						work[py1x + 1] += g_error * 5 / 16;
+						work[py1x + 2] += b_error * 5 / 16;
+
+						if (x < (width - 1) * 3) {
+							work[py1x + 3] += r_error / 16;
+							work[py1x + 3 + 1] += g_error / 16;
+							work[py1x + 3 + 2] += b_error / 16;
+						}
 					}
 				}
 			}
@@ -339,15 +332,15 @@ public class CPCRenderer extends AbstractRenderer {
 	protected void mode0() {
 		final int[] newPixels = new int[160 * 200 * 3]; // 160x200
 		int bit0 = 128, bit1 = 8, bit2 = 0, bit3 = 0;
-		
+
 		// shrinking 320x200 -> 160x200
 		for (int y = 0; y < 200; y++) {
 			final int p1 = y * 320 * 3;
 			final int p2 = y * 160 * 3;
-			
+
 			final int i = y >> 3;
 			final int j = y - (i << 3);
-			
+
 			int index = 0;
 			final int offset = i * 80 + j * 2048;
 
@@ -385,9 +378,9 @@ public class CPCRenderer extends AbstractRenderer {
 					break;
 				}
 
-				final int color = getColorIndex(pictureColors, r, g, b);				
-				final int data = ((color & 1) == 1 ? bit0 : 0) | ((color & 2) == 2 ? bit1 : 0) 
-						| ((color & 4) == 4 ? bit2 : 0) | ((color & 8) == 8 ? bit3 : 0);
+				final int color = getColorIndex(pictureColors, r, g, b);
+				final int data = ((color & 1) != 0 ? bit0 : 0) | ((color & 2) != 0 ? bit1 : 0)
+						| ((color & 4) != 0 ? bit2 : 0) | ((color & 8) != 0 ? bit3 : 0);
 
 				bitmap[offset + index] |= data;
 
@@ -406,8 +399,8 @@ public class CPCRenderer extends AbstractRenderer {
 				}
 
 				final int c[] = pictureColors[color];
-				
-				newPixels[pl] = c[0];				
+
+				newPixels[pl] = c[0];
 				newPixels[pl + 1] = c[1];
 				newPixels[pl + 2] = c[2];
 			}
@@ -430,6 +423,7 @@ public class CPCRenderer extends AbstractRenderer {
 			}
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	protected JMenuBar getMenuBar() {
 		final JMenu menuFile = new JMenu("File");
@@ -481,5 +475,15 @@ public class CPCRenderer extends AbstractRenderer {
 	@Override
 	protected int getWidth() {
 		return 320;
+	}
+
+	@Override
+	protected int getScreenHeight() {
+		return 400;
+	}
+
+	@Override
+	protected int getScreenWidth() {
+		return 640;
 	}
 }

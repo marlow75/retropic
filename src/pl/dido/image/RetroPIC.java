@@ -37,12 +37,12 @@ import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import pl.dido.image.amiga1200.Amiga1200Config;
-import pl.dido.image.amiga1200.Amiga1200Gui;
-import pl.dido.image.amiga1200.Amiga1200Renderer;
-import pl.dido.image.amiga500.Amiga500Config;
-import pl.dido.image.amiga500.Amiga500Gui;
-import pl.dido.image.amiga500.Amiga500Renderer;
+import pl.dido.image.amiga.Amiga1200Config;
+import pl.dido.image.amiga.Amiga1200Gui;
+import pl.dido.image.amiga.Amiga1200Renderer;
+import pl.dido.image.amiga.Amiga500Config;
+import pl.dido.image.amiga.Amiga500Gui;
+import pl.dido.image.amiga.Amiga500Renderer;
 import pl.dido.image.atari.STConfig;
 import pl.dido.image.atari.STGui;
 import pl.dido.image.atari.STRenderer;
@@ -77,7 +77,7 @@ public class RetroPIC {
 					final RetroPIC window = new RetroPIC();
 					window.frame.setVisible(true);
 					window.frame.setLocationRelativeTo(null);
-				} catch (Exception e) {
+				} catch (final Exception e) {
 					e.printStackTrace();
 				}
 			}

@@ -11,17 +11,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class Utils {
-
-	protected final static int qIteration(final int iteration, final int partition[][], int partitionIndex, 
+	protected final static int qIteration(final int iteration, final int partition[][], int partitionIndex,
 			final int[] red, final int[] green, final int[] blue, final int begin, final int end) {
-		
+
 		if (iteration == 3)
 			return partitionIndex;
 
 		if (iteration == 2) {
 			partition[partitionIndex][0] = begin;
 			partition[partitionIndex][1] = end;
-			
+
 			partitionIndex++;
 		}
 
@@ -38,7 +37,9 @@ public class Utils {
 		}
 
 		final int len = end - begin;
-		ar /= len; ag /= len; ab /= len;
+		ar /= len;
+		ag /= len;
+		ab /= len;
 
 		int rv = 0, gv = 0, bv = 0;
 
@@ -47,8 +48,7 @@ public class Utils {
 
 			if (p > r_max)
 				r_max = p;
-			else
-			if (p < r_min)
+			else if (p < r_min)
 				r_min = p;
 
 			rv += (p - ar) * (p - ar);
@@ -56,8 +56,7 @@ public class Utils {
 
 			if (p > g_max)
 				g_max = p;
-			else
-			if (p < g_min)
+			else if (p < g_min)
 				g_min = p;
 
 			gv += (p - ag) * (p - ag);
@@ -65,8 +64,7 @@ public class Utils {
 
 			if (p > b_max)
 				b_max = p;
-			else
-			if (p < b_min)
+			else if (p < b_min)
 				b_min = p;
 
 			bv += (p - ab) * (p - ab);
@@ -81,22 +79,22 @@ public class Utils {
 
 		if (gv == result)
 			Utils.qsort(green, blue, red, begin, end);
-		else 
-		if (rv == result)
+		else if (rv == result)
 			Utils.qsort(red, green, blue, begin, end);
-		else 
-		if (bv == result)
+		else if (bv == result)
 			Utils.qsort(blue, green, red, begin, end);
-		
+
 		final int cutPoint = len >> 1;
-		partitionIndex = qIteration(iteration + 1, partition, partitionIndex, red, green, blue, begin, begin + cutPoint - 1);
+		partitionIndex = qIteration(iteration + 1, partition, partitionIndex, red, green, blue, begin,
+				begin + cutPoint - 1);
 		return qIteration(iteration + 1, partition, partitionIndex, red, green, blue, begin + cutPoint, end);
 	}
 
-	public static final int[][] colorQuantization(final int[] work, final int colors, final int red[], final int green[], final int blue[]) {		
+	public static final int[][] medianCut(final int[] work, final int colors, final int red[], final int green[],
+			final int blue[]) {
 		final int partition[][] = new int[colors][2];
 		final int size = work.length / 3;
-		
+
 		int r_min = 255, r_max = 0;
 		int g_min = 255, g_max = 0;
 		int b_min = 255, b_max = 0;
@@ -111,8 +109,7 @@ public class Utils {
 
 			if (p > r_max)
 				r_max = p;
-			else
-			if (p < r_min)
+			else if (p < r_min)
 				r_min = p;
 
 			p = work[i + 1];
@@ -121,8 +118,7 @@ public class Utils {
 
 			if (p > g_max)
 				g_max = p;
-			else
-			if (p < g_min)
+			else if (p < g_min)
 				g_min = p;
 
 			p = work[i + 2];
@@ -131,8 +127,7 @@ public class Utils {
 
 			if (p > b_max)
 				b_max = p;
-			else
-			if (p < b_min)
+			else if (p < b_min)
 				b_min = p;
 		}
 
@@ -166,7 +161,7 @@ public class Utils {
 		if (gv == result)
 			Utils.qsort(green, blue, red, 0, len);
 		else if (rv == result)
-			Utils.qsort(red, green, blue, 0, len);	
+			Utils.qsort(red, green, blue, 0, len);
 		else if (bv == result)
 			Utils.qsort(blue, green, red, 0, len);
 
@@ -174,7 +169,7 @@ public class Utils {
 
 		final int partitionIndex = qIteration(1, partition, 0, red, green, blue, 0, cutPoint - 1);
 		qIteration(1, partition, partitionIndex, red, green, blue, cutPoint, len);
-		
+
 		final int palette[][] = new int[colors][3];
 		for (int i = 0; i < colors; i++) {
 			final int begin = partition[i][0];
@@ -247,6 +242,10 @@ public class Utils {
 	}
 
 	public static final int saturate(final int i) {
+		return i > 255 ? 255 : i < 0 ? 0 : i;
+	}
+
+	public static final int saturateByte(final int i) {
 		return i > Byte.MAX_VALUE ? Byte.MAX_VALUE : i < Byte.MIN_VALUE ? Byte.MIN_VALUE : i;
 	}
 
@@ -255,18 +254,32 @@ public class Utils {
 		final int array[] = new int[len];
 
 		for (int i = 0; i < len; i += 4) {
-			array[i]     = pixels[i] & 0xff;
+			array[i] = pixels[i] & 0xff;
 			array[i + 1] = pixels[i + 1] & 0xff;
 			array[i + 2] = pixels[i + 2] & 0xff;
 			array[i + 3] = pixels[i + 3] & 0xff;
 		}
-		
+
 		return array;
 	}
 
-	public static final int euclideanDistance(final int r, final int g, final int b, final int pr, final int pg,
+	public static final float[] copy2float(final byte[] pixels) {
+		final int len = pixels.length;
+		final float array[] = new float[len];
+
+		for (int i = 0; i < len; i += 4) {
+			array[i] = pixels[i] & 0xff;
+			array[i + 1] = pixels[i + 1] & 0xff;
+			array[i + 2] = pixels[i + 2] & 0xff;
+			array[i + 3] = pixels[i + 3] & 0xff;
+		}
+
+		return array;
+	}
+
+	public static final float euclideanDistance(final int r, final int g, final int b, final int pr, final int pg,
 			final int pb) {
-		return ((r - pr) * (r - pr)) + ((g - pg) * (g - pg)) + ((b - pb) * (b - pb));
+		return (((r - pr) * (r - pr)) + ((g - pg) * (g - pg)) + ((b - pb) * (b - pb)));
 	}
 
 	public static final float perceptedDistance(final int r, final int g, final int b, final int pr, final int pg,
@@ -276,26 +289,26 @@ public class Utils {
 		return (((2 + delta / 256) * (r - pr) * (r - pr)) + (4 * (g - pg) * (g - pg))
 				+ ((2 + (255 - delta) / 256) * (b - pb) * (b - pb)));
 	}
-
+	
 	public static final float getLuma(final int r, final int g, final int b) {
 		return 0.299f * r + 0.587f * g + 0.114f * b;
 	}
 
-	public static final float euclideanDistance(final float pr, final float pg, final float pb, 
-			final float r, final float g, final float b) {
+	public static final float euclideanDistance(final float pr, final float pg, final float pb, final float r,
+			final float g, final float b) {
 		return ((r - pr) * (r - pr)) + ((g - pg) * (g - pg)) + ((b - pb) * (b - pb));
 	}
-	
+
 	public static final int max(final int a, final int b, final int c) {
 		final int w = a > b ? a : b;
 		return w > c ? w : c;
 	}
-	
+
 	public static final float min(final float a, final float b, final float c) {
 		final float w = a < b ? a : b;
 		return w < c ? w : c;
 	}
-	
+
 	public static final BufferedImage scale(final BufferedImage image, final int maxX, final int maxY) {
 		final int x = image.getWidth();
 		final int y = image.getHeight();
@@ -321,12 +334,9 @@ public class Utils {
 		final ClassLoader classLoader = Utils.class.getClassLoader();
 		return classLoader.getResource(fileName);
 	}
-	
+
 	public static String createDirectory(final String directory) throws IOException {
 		final Path path = Paths.get(directory);
-		if (!Files.isDirectory(path))
-			return Files.createDirectory(path).toString();
-		else
-			return path.toString();
+		return (!Files.isDirectory(path)) ? Files.createDirectory(path).toString() : path.toString();
 	}
 }
