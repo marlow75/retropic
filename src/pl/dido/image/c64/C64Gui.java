@@ -31,7 +31,7 @@ public class C64Gui {
 		rdbtnHiresButton.setToolTipText(
 				"High resolution mode. Two colors, first with most luminance and second with lowest");
 		rdbtnHiresButton.setFont(GuiUtils.std);
-		rdbtnHiresButton.setBounds(46, 112, 331, 23);
+		rdbtnHiresButton.setBounds(46, 102, 331, 23);
 		rdbtnHiresButton.setSelected(config.screen_mode == SCREEN_MODE.HIRES);
 		rdbtnHiresButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
@@ -44,7 +44,7 @@ public class C64Gui {
 		rdbtnMulticolorButton.setToolTipText(
 				"Multicolour mode, colors are chosen by how frequently they apears");
 		rdbtnMulticolorButton.setFont(GuiUtils.std);
-		rdbtnMulticolorButton.setBounds(46, 193, 331, 23);
+		rdbtnMulticolorButton.setBounds(46, 173, 331, 23);
 		rdbtnMulticolorButton.setSelected(config.screen_mode == SCREEN_MODE.MULTICOLOR);
 		rdbtnMulticolorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
@@ -52,14 +52,28 @@ public class C64Gui {
 			}});
 
 		panelC64.add(rdbtnMulticolorButton);
+		
+		final JRadioButton rdbtnPetsciiButton = new JRadioButton("40x25 PETSCII - color popularity");
+		rdbtnPetsciiButton.setToolTipText(
+				"Multicolour mode, colors are chosen by how frequently they apears");
+		rdbtnPetsciiButton.setFont(GuiUtils.std);
+		rdbtnPetsciiButton.setBounds(46, 226, 331, 23);
+		rdbtnPetsciiButton.setSelected(config.screen_mode == SCREEN_MODE.PETSCII);
+		rdbtnPetsciiButton.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				config.screen_mode = SCREEN_MODE.PETSCII;
+			}});
+
+		panelC64.add(rdbtnPetsciiButton);
 
 		final ButtonGroup groupResolution = new ButtonGroup();
 		groupResolution.add(rdbtnHiresButton);
 		groupResolution.add(rdbtnMulticolorButton);
+		groupResolution.add(rdbtnPetsciiButton);
 
 		final JRadioButton rdbtnOuterButton = new JRadioButton("8x8 outer pixels");
 		rdbtnOuterButton.setToolTipText("Gets luminance values at the edges");
-		rdbtnOuterButton.setBounds(148, 147, 139, 23);
+		rdbtnOuterButton.setBounds(148, 135, 139, 23);
 		rdbtnOuterButton.setSelected(config.luma_pixels == LUMA_PIXELS.OUTER);
 		rdbtnOuterButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
@@ -70,7 +84,7 @@ public class C64Gui {
 
 		final JRadioButton rdbtnInnerButton = new JRadioButton("8x8 even pixels");
 		rdbtnInnerButton.setToolTipText("Gets luminance values of even pixels");
-		rdbtnInnerButton.setBounds(337, 147, 119, 23);
+		rdbtnInnerButton.setBounds(337, 135, 119, 23);
 		rdbtnInnerButton.setSelected(config.luma_pixels == LUMA_PIXELS.INNER);
 		rdbtnInnerButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
@@ -84,11 +98,11 @@ public class C64Gui {
 		groupLuminance.add(rdbtnInnerButton);
 
 		final Canvas mesh1 = new ImageCanvas("mesh1.png");
-		mesh1.setBounds(290, 130, 58, 57);
+		mesh1.setBounds(290, 120, 58, 57);
 		panelC64.add(mesh1);
 
 		final Canvas mesh2 = new ImageCanvas("mesh2.png");
-		mesh2.setBounds(102, 130, 59, 57);
+		mesh2.setBounds(102, 120, 59, 57);
 		panelC64.add(mesh2);
 
 		final Canvas c64Logo = new ImageCanvas("c64.png");
@@ -98,7 +112,7 @@ public class C64Gui {
 		GuiUtils.addColorControls(panelC64, config);
 		
 		final JRadioButton rdbtnAverageMergeButton = new JRadioButton("averge merge");
-		rdbtnAverageMergeButton.setBounds(111, 226, 113, 18);
+		rdbtnAverageMergeButton.setBounds(111, 203, 113, 18);
 		rdbtnAverageMergeButton.setToolTipText("calculate average color");
 		rdbtnAverageMergeButton.setSelected(config.pixel_merge == PIXEL_MERGE.AVERAGE);
 		rdbtnAverageMergeButton.addActionListener(new ActionListener() {
@@ -110,7 +124,7 @@ public class C64Gui {
 				
 		final JRadioButton rdbtnBrightestMergeRadioButton = new JRadioButton("brightest merge");
 		rdbtnBrightestMergeRadioButton.setToolTipText("gets brightest pixel");
-		rdbtnBrightestMergeRadioButton.setBounds(298, 228, 152, 18);
+		rdbtnBrightestMergeRadioButton.setBounds(298, 203, 152, 18);
 		rdbtnBrightestMergeRadioButton.setSelected(config.pixel_merge == PIXEL_MERGE.BRIGHTEST);
 		rdbtnBrightestMergeRadioButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {

@@ -223,7 +223,6 @@ public class ZXSpectrumRenderer extends AbstractOldiesRenderer {
 		return zx_address;
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
 	protected JMenuBar getMenuBar() {
 		final JMenu menuFile = new JMenu("File");

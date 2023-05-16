@@ -423,7 +423,6 @@ public class CPCRenderer extends AbstractOldiesRenderer {
 			}
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
 	protected JMenuBar getMenuBar() {
 		final JMenu menuFile = new JMenu("File");
