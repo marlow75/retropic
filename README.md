@@ -8,7 +8,7 @@ You can download executable jar [here](retropic.jar).
 
 ## Supported machines
 
-* C64, hires 320x200, multicolor 160x200.
+* C64, hires 320x200, multicolor 160x200, standard text mode 40x25
 * ZX Spectrum 48/+ 256x192 in 8 colors.
 * Amstrad CPC series mode0 160x200 16 colors, mode1 320x200 in 4 colors.
 * Atari ST, 320x200 in 16 on screen from 512 palette colors.
@@ -32,23 +32,24 @@ Try all options available.
 
 ### Commodore C64
 
-16 colors total, 4 modes, 2 usefull for graphics.
+16 colors total, 4 modes, 2 usefull for graphics, experimental use of standard text mode.
 
 * none, floyds, apple – dithering, colors of the original picture are replaced by retro machine palette.
 
 * 320x200 - use 2 colors in 8x8 screen cell.
 * 160x200 - use 4 colors in 4x8 screen cell, average or brightest color are choosen when shrinking to 320->160.
+* 40x25   - use 2 colors in 8x8 screen cell and PETSCII character (experimental).
 
 Exports to executable PRG or to Art Studio (hires) and Koala Paint (multicolor).
 
 ![Hires](venusC64.png)
+![Hires](heroC64.png)
 
 ### ZX Spectrum 48/+
 
 8 colors total, 1 screen mode.
 
 * try apple dithering - produces more tinty picture insted of hue explosion.
-
 * 256x192 - use 2 colors in 8x8 screen cell
 
 Exports to native SCR snapshoot.
