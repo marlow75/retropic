@@ -317,11 +317,9 @@ public abstract class AbstractRenderer extends Thread {
 
 	protected int getPerceptedColorIndex(final int palette[][], final int r, final int g, final int b) {
 		int index = 0;
-		
 		float min = Float.MAX_VALUE;
-		final int len = palette.length;
 
-		for (int i = len; i-- > 0;) { // euclidean distance
+		for (int i = palette.length; i-- > 0;) { // euclidean distance
 			final int color[] = palette[i];
 			final float distance = perceptedDistanceCM(r, g, b, color[0], color[1], color[2]);
 

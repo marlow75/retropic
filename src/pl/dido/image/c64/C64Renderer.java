@@ -51,6 +51,8 @@ public class C64Renderer extends AbstractOldiesRenderer {
 	protected void imageDithering() {
 		if (config.dithering)
 			super.imageDithering();
+
+		super.showImage();
 	}
 
 	@Override
@@ -247,7 +249,7 @@ public class C64Renderer extends AbstractOldiesRenderer {
 
 			// first background color
 			out.write(backgroundColor & 0xf);
-			
+
 			// bitmap
 			for (int i = 0; i < 1000; i++)
 				out.write(screen[i] & 0xff);
@@ -722,7 +724,7 @@ public class C64Renderer extends AbstractOldiesRenderer {
 			}
 		}
 	}
-	
+
 	protected void petscii() {
 		// matches pattern with petscii
 		final NeuralNetwork neural = new NeuralNetwork();
@@ -740,19 +742,19 @@ public class C64Renderer extends AbstractOldiesRenderer {
 		// tiles screen and pattern
 		final int work[] = new int[64 * 3];
 		final float tile[] = new float[64];
-		
+
 		// calculate average
-		int nr = 0, ng = 0, nb = 0, count = 0;
+		int nr, ng, nb, count = 0;
 		final int occurrence[] = new int[16];
-		
+
 		for (int i = 0; i < pixels.length; i += 3) {
-			nr = pixels[i];
-			ng = pixels[i + 1];
-			nb = pixels[i + 2];
-			
+			nr = pixels[i] & 0xff;
+			ng = pixels[i + 1] & 0xff;
+			nb = pixels[i + 2] & 0xff;
+
 			occurrence[getColorIndex(palette, nr, ng, nb)]++;
 		}
-		
+
 		// get maximum occurrence
 		int k = 0;
 		for (int i = 0; i < 16; i++)
@@ -762,22 +764,24 @@ public class C64Renderer extends AbstractOldiesRenderer {
 			}
 
 		// most occurrence color as background
-		backgroundColor = k;
-		
+		backgroundColor = (count - occurrence[0]) / (float)count > 0.5f ? k: 0;
+
 		nr = palette[backgroundColor][0];
 		ng = palette[backgroundColor][1];
 		nb = palette[backgroundColor][2];
+
+		final float backLuma = getLumaByCM(nr, ng, nb);
 
 		for (int y = 0; y < 200; y += 8) {
 			final int p = y * 320 * 3;
 
 			for (int x = 0; x < 320; x += 8) {
 				final int offset = p + x * 3;
-				float max = 0;
 
 				int index = 0, f = 0;
+				float max_distance = 0;
 
-				// 8x8 tile
+				// pickup brightest color in 8x8 tile
 				for (int y0 = 0; y0 < 8; y0++) {
 					for (int x0 = 0; x0 < 24; x0 += 3) {
 						final int position = offset + y0 * 320 * 3 + x0;
@@ -790,11 +794,10 @@ public class C64Renderer extends AbstractOldiesRenderer {
 						work[index++] = g;
 						work[index++] = b;
 
-						// get most bright
-						final float luma = getLumaByCM(r, g, b);
-						if (luma > max) {
-							max = luma;
-							f = getColorIndex(r, g, b);
+						final float distance = Math.abs(getLumaByCM(r, g, b) - backLuma);
+						if (max_distance < distance) {
+							max_distance = distance;
+							f = getColorIndex(palette, r, g, b);
 						}
 					}
 				}
@@ -814,11 +817,11 @@ public class C64Renderer extends AbstractOldiesRenderer {
 						final int b = work[pyx0 + 2];
 
 						// fore or background color?
-						final float d1 = getDistanceByCM(r, g, b, fr, fg, fb);
-						final float d2 = getDistanceByCM(r, g, b, nr, ng, nb);
+						final float df = getDistanceByCM(r, g, b, fr, fg, fb);
+						final float db = getDistanceByCM(r, g, b, nr, ng, nb);
 
 						// ones as color of the bright pixels
-						tile[x0 + y0 * 8] = (d1 <= d2) ? 1 : 0;
+						tile[y0 * 8 + x0] = (df < db) ? 1 : 0;
 					}
 
 				// pattern match character
@@ -834,9 +837,9 @@ public class C64Renderer extends AbstractOldiesRenderer {
 						code = i;
 						value = result[i];
 					}
-				
+
 				// colors
-				final int address = (y >> 3) * 40 + (x >> 3);				
+				final int address = (y >> 3) * 40 + (x >> 3);
 				nibble[address] = f;
 				screen[address] = code;
 
