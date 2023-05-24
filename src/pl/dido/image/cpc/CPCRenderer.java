@@ -25,10 +25,10 @@ import pl.dido.image.utils.Utils;
 public class CPCRenderer extends AbstractOldiesRenderer {
 
 	// CPC palette 27 colors
-	private final static int colors[] = new int[] { 0x000000, 0x000080, 0x0000FF, 0x800000, 0x800080, 0x8000FF,
-			0xFF0000, 0xFF0080, 0xFF00FF, 0x008000, 0x008080, 0x0080FF, 0x808000, 0x808080, 0x8080FF, 0xFF8000,
-			0xFF8080, 0xFF80FF, 0x00FF00, 0x00FF80, 0x00FFFF, 0x80FF00, 0x80FF80, 0x80FFFF, 0xFFFF00, 0xFFFF80,
-			0xFFFFFF };
+	private final static int colors[] = new int[] { 0x000201, 0x00026B, 0x0C02F4, 0x6C0201, 0x690268, 0x6C02F2,
+			0xF30506, 0xF00268, 0xF302F4, 0x027801, 0x007868, 0x0C7BF4, 0x6E7B01, 0x6E7D6B, 0x6E7BF6, 0xF37D0D,
+			0xF37D6B, 0xFA80F9, 0x02F001, 0x00F36B, 0x0FF3F2, 0x71F504, 0x71F36B, 0x71F3F4, 0xF3F30D, 0xF3F36D,
+			0xFFF3F9};
 
 	protected int bitmap[] = new int[16384];
 	protected int pictureColors[][];
@@ -122,26 +122,38 @@ public class CPCRenderer extends AbstractOldiesRenderer {
 
 		if (((CPCConfig) config).replace_white) {
 			// replace brightest with white
+			float min = Float.MAX_VALUE;
 			float max = 0;
-			int index = 0;
+			int ix = 0, im = 0;
 
 			for (int i = 0; i < size; i++) {
 				final int c[] = p[i];
 				final float luma = getLumaByCM(c[0], c[1], c[2]);
 
+				if (luma < min) {
+					min = luma;
+					im = i;
+				}
+				
 				if (luma > max) {
 					max = luma;
-					index = i;
+					ix = i;
 				}
 			}
 
-			final int c[] = p[index];
+			int c[] = p[ix];
 			// dimmed white - yellow
-			c[0] = 128;
+			c[0] = 255;
 			c[1] = 255;
 			c[2] = 255;
+			
+			c = p[im];
+			c[0] = 0;
+			c[1] = 0;
+			c[2] = 0;
 
-			firmwareIndexes[index] = 25;
+			firmwareIndexes[ix] = 25;
+			firmwareIndexes[im] = 0;
 		}
 
 		return p;
@@ -266,6 +278,7 @@ public class CPCRenderer extends AbstractOldiesRenderer {
 			for (int x = 0; x < width3; x += 3) {
 				final int pyx = y * width3 + x;
 				final int py1x = (y + 1) * width3 + x;
+				final int py2x = (y + 2) * width3 + x;
 
 				r0 = work[pyx];
 				g0 = work[pyx + 1];
@@ -303,27 +316,40 @@ public class CPCRenderer extends AbstractOldiesRenderer {
 					final int r_error = Utils.saturateByte(r0 - r);
 					final int g_error = Utils.saturateByte(g0 - g);
 					final int b_error = Utils.saturateByte(b0 - b);
-	
+
 					if (x < (width - 1) * 3) {
-						work[pyx + 3] += r_error * 7 / 16;
-						work[pyx + 3 + 1] += g_error * 7 / 16;
-						work[pyx + 3 + 2] += b_error * 7 / 16;
-					}
-					if (y < height - 1) {
-						work[py1x - 3] += r_error * 3 / 16;
-						work[py1x - 3 + 1] += g_error * 3 / 16;
-						work[py1x - 3 + 2] += b_error * 3 / 16;
+						work[pyx + 3] += r_error * 1 / 8;
+						work[pyx + 3 + 1] += g_error * 1 / 8;
+						work[pyx + 3 + 2] += b_error * 1 / 8;
 
-						work[py1x] += r_error * 5 / 16;
-						work[py1x + 1] += g_error * 5 / 16;
-						work[py1x + 2] += b_error * 5 / 16;
-
-						if (x < (width - 1) * 3) {
-							work[py1x + 3] += r_error / 16;
-							work[py1x + 3 + 1] += g_error / 16;
-							work[py1x + 3 + 2] += b_error / 16;
+						if (x < (width - 2) * 3) {
+							work[pyx + 6] += r_error * 1 / 8;
+							work[pyx + 6 + 1] += g_error * 1 / 8;
+							work[pyx + 6 + 2] += b_error * 1 / 8;
 						}
 					}
+					if (y < (height - 1)) {
+						work[py1x - 3] += r_error * 1 / 8;
+						work[py1x - 3 + 1] += g_error * 1 / 8;
+						work[py1x - 3 + 2] += b_error * 1 / 8;
+
+						work[py1x] += r_error * 1 / 8;
+						work[py1x + 1] += g_error * 1 / 8;
+						work[py1x + 2] += b_error * 1 / 8;
+
+						if (x < (width - 1) * 3) {
+							work[py1x + 3] += r_error * 1 / 8;
+							work[py1x + 3 + 1] += g_error * 1 / 8;
+							work[py1x + 3 + 2] += b_error * 1 / 8;
+						}
+
+						if (y < (height - 2)) {
+							work[py2x] += r_error * 1 / 8;
+							work[py2x + 1] += g_error * 1 / 8;
+							work[py2x + 2] += b_error * 1 / 8;
+						}
+					}
+
 				}
 			}
 		}

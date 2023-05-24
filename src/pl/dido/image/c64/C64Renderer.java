@@ -21,18 +21,20 @@ import pl.dido.image.Config;
 import pl.dido.image.c64.C64Config.SCREEN_MODE;
 import pl.dido.image.renderer.AbstractOldiesRenderer;
 import pl.dido.image.utils.Utils;
-import pl.dido.image.utils.neural.Dataset;
-import pl.dido.image.utils.neural.NeuralNetwork;
+import pl.dido.image.utils.neural.*;
 
 public class C64Renderer extends AbstractOldiesRenderer {
 
 	// C64 palette
-	private final static int colors[] = new int[] { 0, 0xFFFFFF, 0x68372B, 0x70A4B2, 0x6F3D86, 0x588D43, 0x352879,
+	private final static int colors1[] = new int[] { 0, 0xFFFFFF, 0x68372B, 0x70A4B2, 0x6F3D86, 0x588D43, 0x352879,
 			0xB8C76F, 0x6F4F25, 0x433900, 0x9A6759, 0x444444, 0x6C6C6C, 0x9AD284, 0x6C5EB5, 0x959595 };
+	
+	private final static int colors2[] = new int[] { 0, 0xFFFFFF, 0x68372B, 0x70A4B2, 0x6F3D86, 0x588D43, 0x352879,
+			0xB8C76F, 0x6F4F25, 0x433900, 0x9A6759, 0x444444, 0x6C6C6C, 0xa9ff9f, 0x6C5EB5, 0x959595 };
 
 	private final static int power2[] = new int[] { 128, 64, 32, 16, 8, 4, 2, 1 };
 
-	private final static String PETSCII_NETWORK = "petscii.network";
+	private final static String PETSCII_NETWORK = "petscii128.network";
 	private final static String PETSCII_CHARSET = "petscii.bin";
 
 	protected int bitmap[] = new int[40 * 200];
@@ -51,12 +53,12 @@ public class C64Renderer extends AbstractOldiesRenderer {
 	protected void imageDithering() {
 		if (config.dithering)
 			super.imageDithering();
-
-		super.showImage();
 	}
 
 	@Override
 	protected void setupPalette() {
+		final int colors[] = (((C64Config) config).screen_mode == SCREEN_MODE.PETSCII) ? colors1 : colors2;
+				
 		switch (image.getType()) {
 		case BufferedImage.TYPE_3BYTE_BGR:
 			for (int i = 0; i < colors.length; i++) {
@@ -727,7 +729,7 @@ public class C64Renderer extends AbstractOldiesRenderer {
 
 	protected void petscii() {
 		// matches pattern with petscii
-		final NeuralNetwork neural = new NeuralNetwork();
+		final ExtendedHL1Network neural = new ExtendedHL1Network();
 		// charset 8x8 pixels
 		final byte charset[];
 
@@ -744,7 +746,7 @@ public class C64Renderer extends AbstractOldiesRenderer {
 		final float tile[] = new float[64];
 
 		// calculate average
-		int nr, ng, nb, count = 0;
+		int nr = 0, ng = 0, nb = 0, count = 0;
 		final int occurrence[] = new int[16];
 
 		for (int i = 0; i < pixels.length; i += 3) {
@@ -764,7 +766,7 @@ public class C64Renderer extends AbstractOldiesRenderer {
 			}
 
 		// most occurrence color as background
-		backgroundColor = (count - occurrence[0]) / (float)count > 0.5f ? k: 0;
+		backgroundColor = k == 0 ? 0: ((count - occurrence[0]) / (float)count) > 0.6f ? k: 0;
 
 		nr = palette[backgroundColor][0];
 		ng = palette[backgroundColor][1];

@@ -37,8 +37,8 @@ public class CPCGui {
 		cpcLogo.setBounds(290, 0, 200, 150);
 		cpcPanel.add(cpcLogo);
 
-		final JCheckBox chkReplaceBox = new JCheckBox("replace brightest");
-		chkReplaceBox.setToolTipText("Replaces brightest with dimmed yellow");
+		final JCheckBox chkReplaceBox = new JCheckBox("replace colors");
+		chkReplaceBox.setToolTipText("Replaces brightest and dimmest with white nad black");
 		chkReplaceBox.setFont(GuiUtils.std);
 		chkReplaceBox.setBounds(20, 70, 169, 23);
 		chkReplaceBox.setSelected(config.replace_white);

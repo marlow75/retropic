@@ -299,6 +299,14 @@ public class Utils {
 			final float g, final float b) {
 		return ((r - pr) * (r - pr)) + ((g - pg) * (g - pg)) + ((b - pb) * (b - pb));
 	}
+	
+	public static final float perceptedDistance(final float r, final float g, final float b, final float pr, final float pg,
+			final float pb) {
+
+		final float delta = (r + pr) / 2;
+		return (((2 + delta / 256) * (r - pr) * (r - pr)) + (4 * (g - pg) * (g - pg))
+				+ ((2 + (255 - delta) / 256) * (b - pb) * (b - pb)));
+	}
 
 	public static final int max(final int a, final int b, final int c) {
 		final int w = a > b ? a : b;

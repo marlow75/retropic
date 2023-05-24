@@ -10,7 +10,7 @@ public class Trainer {
 	protected static final String PETSCII_CHARSET = "petscii.bin";
 
 	public static final void main(final String args[]) throws IOException {
-		final NeuralNetwork neural = new NeuralNetwork();
+		final HL2Network neural = new HL2Network();
 		
 		final Vector<Dataset> samples = NNUtils.loadData(Utils.getResourceAsStream(PETSCII_CHARSET));
 		neural.learn(samples);

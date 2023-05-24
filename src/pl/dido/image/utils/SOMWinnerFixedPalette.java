@@ -23,4 +23,34 @@ public class SOMWinnerFixedPalette extends SOMFixedPalette {
 		bmu[1] += rate * (g - bmu[1]);
 		bmu[2] += rate * (b - bmu[2]);
 	}
+	
+	@Override
+	protected Position getBMU(final float red, final float green, final float blue) {
+		int bx = 0, by = 0;
+		float min = Float.MAX_VALUE;
+
+		for (int y = 0; y < height; y++) {
+			final float line[][] = matrix[y];
+
+			for (int x = 0; x < width; x++) {
+				final float row[] = line[x];
+
+				final float r = row[0];
+				final float g = row[1];
+				final float b = row[2];
+
+				// simple euclidean
+				final float d = Utils.perceptedDistance(red, green, blue, r, g, b);
+
+				if (d < min) {
+					min = d;
+
+					bx = x;
+					by = y;
+				}
+			}
+		}
+
+		return new Position(bx, by);
+	}
 }

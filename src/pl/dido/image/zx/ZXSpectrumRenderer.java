@@ -23,8 +23,8 @@ import pl.dido.image.utils.Utils;
 public class ZXSpectrumRenderer extends AbstractOldiesRenderer {
 
 	// ZX spectrum palette
-	private final static int colors[] = new int[] { 0x000000, 0x000000, 0x0000d8, 0x0000ff, 0xd80000, 0xff0000,
-			0xd800d8, 0xff00ff, 0x00d800, 0x00ff00, 0x00d8d8, 0x00ffff, 0xd8d800, 0xffff00, 0xd8d8d8, 0xffffff };
+	private final static int colors[] = new int[] { 0x000000, 0x000000, 0x0000D7, 0x0000FF, 0xD70000, 0xFF0000,
+			0xD700D7, 0xFF00FF, 0x00D700, 0x00FF00, 0x00D7D7, 0x00FFFF, 0xD7D700, 0xFFFF00, 0xD7D7D7, 0xFFFFFF };
 
 	protected int attribs[] = new int[768];
 	protected int bitmap[] = new int[32 * 192];
@@ -138,10 +138,17 @@ public class ZXSpectrumRenderer extends AbstractOldiesRenderer {
 
 				int value = 0, bitcount = 0;
 
-				for (int y0 = 0; y0 < 8; y0++)
+				for (int y0 = 0; y0 < 8; y0++) {
+					final int k0 = offset + y0 * 256 * 3;
+
+					final int k1 = offset + (y0 + 1) * 256 * 3;
+					final int k2 = offset + (y0 + 2) * 256 * 3;
+
 					for (int x0 = 0; x0 < 8 * 3; x0 += 3) {
-						final int pyx0 = offset + y0 * 256 * 3 + x0;
-						final int py1x0 = offset + (y0 + 1) * 256 * 3 + x0;
+						final int pyx0 = k0 + x0;
+
+						final int py1x0 = k1 + x0;
+						final int py2x0 = k2 + x0;
 
 						final int r = Utils.saturate((int) work[pyx0]);
 						final int g = Utils.saturate((int) work[pyx0 + 1]);
@@ -183,28 +190,41 @@ public class ZXSpectrumRenderer extends AbstractOldiesRenderer {
 							final int g_error = g - ng;
 							final int b_error = b - nb;
 
-							if (x < 248) {
-								work[pyx0 + 3] += r_error * 7 / 16;
-								work[pyx0 + 3 + 1] += g_error * 7 / 16;
-								work[pyx0 + 3 + 2] += b_error * 7 / 16;
+							if (x0 < 9) {
+								work[pyx0 + 3] += r_error * 1 / 8;
+								work[pyx0 + 3 + 1] += g_error * 1 / 8;
+								work[pyx0 + 3 + 2] += b_error * 1 / 8;
+
+								if (x0 < 6) {
+									work[pyx0 + 6] += r_error * 1 / 8;
+									work[pyx0 + 6 + 1] += g_error * 1 / 8;
+									work[pyx0 + 6 + 2] += b_error * 1 / 8;
+								}
 							}
-							if (y < 184) {
-								work[py1x0 - 3] += r_error * 3 / 16;
-								work[py1x0 - 3 + 1] += g_error * 3 / 16;
-								work[py1x0 - 3 + 2] += b_error * 3 / 16;
+							if (y0 < 7) {
+								work[py1x0 - 3] += r_error * 1 / 8;
+								work[py1x0 - 3 + 1] += g_error * 1 / 8;
+								work[py1x0 - 3 + 2] += b_error * 1 / 8;
 
-								work[py1x0] += r_error * 5 / 16;
-								work[py1x0 + 1] += g_error * 5 / 16;
-								work[py1x0 + 2] += b_error * 5 / 16;
+								work[py1x0] += r_error * 1 / 8;
+								work[py1x0 + 1] += g_error * 1 / 8;
+								work[py1x0 + 2] += b_error * 1 / 8;
 
-								if (x < 248) {
-									work[py1x0 + 3] += r_error / 16;
-									work[py1x0 + 3 + 1] += g_error / 16;
-									work[py1x0 + 3 + 2] += b_error / 16;
+								if (x0 < 9) {
+									work[py1x0 + 3] += r_error * 1 / 8;
+									work[py1x0 + 3 + 1] += g_error * 1 / 8;
+									work[py1x0 + 3 + 2] += b_error * 1 / 8;
+								}
+
+								if (y0 < 6) {
+									work[py2x0] += r_error * 1 / 8;
+									work[py2x0 + 1] += g_error * 1 / 8;
+									work[py2x0 + 2] += b_error * 1 / 8;
 								}
 							}
 						}
 					}
+				}
 			}
 		}
 	}

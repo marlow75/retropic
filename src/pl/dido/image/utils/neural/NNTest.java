@@ -10,7 +10,7 @@ public class NNTest {
 		final String PETSCII_NETWORK = "petscii.network";
 		final String PETSCII_CHARSET = "petscii.bin";
 		
-		final NeuralNetwork neural = new NeuralNetwork();
+		final HL2Network neural = new HL2Network();
 		final byte charset[];
 
 		try {
