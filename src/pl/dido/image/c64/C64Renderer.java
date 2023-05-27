@@ -28,13 +28,13 @@ public class C64Renderer extends AbstractOldiesRenderer {
 	// C64 palette
 	private final static int colors1[] = new int[] { 0, 0xFFFFFF, 0x68372B, 0x70A4B2, 0x6F3D86, 0x588D43, 0x352879,
 			0xB8C76F, 0x6F4F25, 0x433900, 0x9A6759, 0x444444, 0x6C6C6C, 0x9AD284, 0x6C5EB5, 0x959595 };
-	
+
 	private final static int colors2[] = new int[] { 0, 0xFFFFFF, 0x68372B, 0x70A4B2, 0x6F3D86, 0x588D43, 0x352879,
 			0xB8C76F, 0x6F4F25, 0x433900, 0x9A6759, 0x444444, 0x6C6C6C, 0xa9ff9f, 0x6C5EB5, 0x959595 };
 
 	private final static int power2[] = new int[] { 128, 64, 32, 16, 8, 4, 2, 1 };
 
-	private final static String PETSCII_NETWORK = "petscii128.network";
+	private final static String PETSCII_NETWORK = "petscii.network";
 	private final static String PETSCII_CHARSET = "petscii.bin";
 
 	protected int bitmap[] = new int[40 * 200];
@@ -58,7 +58,7 @@ public class C64Renderer extends AbstractOldiesRenderer {
 	@Override
 	protected void setupPalette() {
 		final int colors[] = (((C64Config) config).screen_mode == SCREEN_MODE.PETSCII) ? colors1 : colors2;
-				
+
 		switch (image.getType()) {
 		case BufferedImage.TYPE_3BYTE_BGR:
 			for (int i = 0; i < colors.length; i++) {
@@ -729,7 +729,8 @@ public class C64Renderer extends AbstractOldiesRenderer {
 
 	protected void petscii() {
 		// matches pattern with petscii
-		final ExtendedHL1Network neural = new ExtendedHL1Network();
+		final HL1Network neural = new HL1Network(64, 128, 256);
+
 		// charset 8x8 pixels
 		final byte charset[];
 
@@ -744,7 +745,7 @@ public class C64Renderer extends AbstractOldiesRenderer {
 		// tiles screen and pattern
 		final int work[] = new int[64 * 3];
 		final float tile[] = new float[64];
-
+		
 		// calculate average
 		int nr = 0, ng = 0, nb = 0, count = 0;
 		final int occurrence[] = new int[16];
@@ -753,24 +754,27 @@ public class C64Renderer extends AbstractOldiesRenderer {
 			nr = pixels[i] & 0xff;
 			ng = pixels[i + 1] & 0xff;
 			nb = pixels[i + 2] & 0xff;
-
-			occurrence[getColorIndex(palette, nr, ng, nb)]++;
+			
+			// dimmer better
+			occurrence[getColorIndex(palette, nr, ng, nb)] += (255 - getLumaByCM(nr, ng, nb));
 		}
 
 		// get maximum occurrence
 		int k = 0;
-		for (int i = 0; i < 16; i++)
-			if (count < occurrence[i]) {
-				count = occurrence[i];
+		for (int i = 0; i < 16; i++) {
+			final int o = occurrence[i];
+			if (count < o) {
+				count = o;
 				k = i;
 			}
-
-		// most occurrence color as background
-		backgroundColor = k == 0 ? 0: ((count - occurrence[0]) / (float)count) > 0.6f ? k: 0;
-
-		nr = palette[backgroundColor][0];
-		ng = palette[backgroundColor][1];
-		nb = palette[backgroundColor][2];
+		}
+		
+		// most occurrence shadow color as background
+		backgroundColor = k;
+		
+		nr = palette[k][0];
+		ng = palette[k][1];
+		nb = palette[k][2];
 
 		final float backLuma = getLumaByCM(nr, ng, nb);
 
@@ -799,7 +803,7 @@ public class C64Renderer extends AbstractOldiesRenderer {
 						final float distance = Math.abs(getLumaByCM(r, g, b) - backLuma);
 						if (max_distance < distance) {
 							max_distance = distance;
-							f = getColorIndex(palette, r, g, b);
+							f = getColorIndex(r, g, b);
 						}
 					}
 				}
@@ -878,7 +882,7 @@ public class C64Renderer extends AbstractOldiesRenderer {
 			final JMenuItem miFile = new JMenuItem("Export as picture... ");
 			miFile.setMnemonic(KeyEvent.VK_S);
 			miFile.setAccelerator(
-					KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+					KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
 			miFile.addActionListener(new ActionListener() {
 				@SuppressWarnings("incomplete-switch")
 				public void actionPerformed(final ActionEvent e) {
@@ -916,7 +920,7 @@ public class C64Renderer extends AbstractOldiesRenderer {
 		final JMenuItem miExecutable = new JMenuItem("Export as executable... ");
 		miExecutable.setMnemonic(KeyEvent.VK_E);
 		miExecutable.setAccelerator(
-				KeyStroke.getKeyStroke(KeyEvent.VK_E, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+				KeyStroke.getKeyStroke(KeyEvent.VK_E, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
 		miExecutable.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				try {

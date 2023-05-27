@@ -406,7 +406,7 @@ public class Amiga500Renderer extends AbstractCachedRenderer {
 		final JMenuItem miArtStudio = new JMenuItem("Export as picture... ");
 		miArtStudio.setMnemonic(KeyEvent.VK_S);
 		miArtStudio.setAccelerator(
-				KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+				KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
 		miArtStudio.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				try {
