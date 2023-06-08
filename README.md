@@ -27,30 +27,38 @@ You can download executable jar [here](retropic.jar).
 
 Try all options available.
 
-* Color distance – how color distance in the RGB cube is measured: euclidean, redmean simple approximation (percepted), picking highest luminance color.
 * Dithering - pictures are dithered using Floyds-Steinberg or Atkinson algorythms.
+* Color distance – how color distance in the RGB cube is measured: euclidean, redmean simple approximation (close to human perception), picking highest luminance color.
+* Contrast processing - experimental luma histogram equalizer designed for 8 bit machines primarly, now enabled for every available machine. HE - standard global equalization, SWAHE - local equlization.
 
 ### Commodore C64
 
-16 colors total, 4 modes, 2 usefull for graphics, experimental use of standard text mode.
-
-* none, floyds, apple – dithering, colors of the original picture are replaced by retro machine palette.
+16 colors total, 4 modes, 2 usefull for graphics
 
 * 320x200 - use 2 colors in 8x8 screen cell.
 * 160x200 - use 4 colors in 4x8 screen cell, average or brightest color are choosen when shrinking to 320->160.
-* 40x25   - use 2 colors in 8x8 screen cell and PETSCII character (experimental).
 
 Exports to executable PRG or to Art Studio (hires) and Koala Paint (multicolor).
 
 ![Hires](venusC64.png)
-![Hires](heroC64.png)
+
+### PETSCII
+
+16 foreground colors, 1 common background color for every character on the screen. Orginal PETSCII characterset.
+
+* One hidden layer, sigmoid activation - neural net character matcher with single hidden layer, preffers semigraphics.
+* Two hidden layers, sigmoid activation - neural net character matcher with two hidden layers, preffers characters.
+
+Exports to executable PRG.
+
+![Hires](petscii.png)
 
 ### ZX Spectrum 48/+
 
 8 colors total, 1 screen mode.
 
 * try apple dithering - produces more tinty picture insted of hue explosion.
-* 256x192 - use 2 colors in 8x8 screen cell
+* 256x192 - use 2 colors in 8x8 screen cell.
 
 Exports to native SCR snapshoot.
 
@@ -63,19 +71,14 @@ Exports to native SCR snapshoot.
 * dithering – Atkinson dithering, colors of the original picture are replaced by retro machine palette
 * replace brightest - replaces brightest color with dimmed yellow
 
-* 320x200 - use 4 colors on whole screen
-* 160x200 - use 16 colors on whole screen, average or brightest color are choosen when shrinking to 320->160
+* 320x200 - use 4 colors on whole screen.
+* 160x200 - use 16 colors on whole screen, average or brightest color are choosen when shrinking to 320->160.
 
-Export to Advanced Art Studio with standalone palette file. All files generated with AMSDOS headers.
+Palette is result of Kohonen pixel classification. Exports to Advanced Art Studio with standalone palette file. All files generated with AMSDOS headers.
 
 ![16 colors](venusCPC.png)
 
 ### Atari ST
-
-512 colors total, 3 modes, 2 usefull for graphics.
-
-* none, floyds, apple – dithering, colors of the original picture are replaced by retro machine palette.
-* adjust contrast - gives more or less contrast - replaces colors.
 
 * 320x200 - use 16 colors, palette is result of Kohonen pixel classification.
 
@@ -86,8 +89,6 @@ Export to DEGAS paint program.
 ### Amiga 500
 
 4096 colors total, 4 modes usefull for graphics.
-
-* none, floyds, apple – dithering, colors of the original picture are replaced by retro machine palette.
 
 * 320x256, 320x512 (lace) - use 32 colors, palette is result of Kohonen pixel classification.
 * 320x256, 320x512 (lace) - use HAM6 coding, 16 color palette as a result of Kohonen classification.
@@ -100,8 +101,6 @@ Export to Delux Paint IFF file format.
 ### Amiga 1200
 
 16M colors total, 2 modes usefull for graphics.
-
-* none, floyds, apple – dithering, colors of the original picture are replaced by retro machine palette.
 
 * 320x256, 320x512 (lace), 640x512 (lace) - use 256 colors, palette is result of Kohonen pixel classification.
 * 320x256, 320x512 (lace), 640x512 (lace) - use HAM8 coding, 64 color palette as a result of Kohonen classification.
