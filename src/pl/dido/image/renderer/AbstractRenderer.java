@@ -123,12 +123,12 @@ public abstract class AbstractRenderer extends Thread {
 				break;
 			case SWAHE:
 				switch (image.getType()) {
-				case BufferedImage.TYPE_3BYTE_BGR:				
+				case BufferedImage.TYPE_3BYTE_BGR:
 					SWAHEBGR(config.swaheWindowSize);
 					break;
 				case BufferedImage.TYPE_INT_RGB:
 					SWAHERGB(config.swaheWindowSize);
-					break;					
+					break;
 				}
 				break;
 			default:
@@ -456,16 +456,16 @@ public abstract class AbstractRenderer extends Thread {
 			histogram[yuv[i]]++;
 		}
 
-		final int N = len / 3;
-
 		// cdf - cumulative distributed function
 		cdf[0] = histogram[0];
 		for (int i = 1; i < 256; i++)
 			cdf[i] = cdf[i - 1] + histogram[i];
 
 		byte t;
+		int maxCdf = cdf[255];
+
 		for (int i = 0; i < len; i += 3) {
-			final int luma = Math.min(255, Math.round((cdf[yuv[i]] * 255f) / N));
+			final int luma = Math.round((cdf[yuv[i]] * 255f) / maxCdf);
 			Utils.yuv2RGB(luma, yuv[i + 1], yuv[i + 2], pixels, i);
 
 			switch (image.getType()) {
@@ -478,8 +478,8 @@ public abstract class AbstractRenderer extends Thread {
 			}
 		}
 	}
-	
-	// SWAHE for BGR format 
+
+	// SWAHE for BGR format
 	protected final void SWAHEBGR(final int window) {
 		// histogram
 		final byte newPixels[] = new byte[pixels.length];
@@ -493,7 +493,7 @@ public abstract class AbstractRenderer extends Thread {
 
 		final int window3 = 3 * window;
 		final int midY = window / 2;
-		
+
 		final int midX = window3 / 2;
 		final int center = midX + midY * window3;
 
@@ -502,10 +502,10 @@ public abstract class AbstractRenderer extends Thread {
 
 		final int maxX1 = maxX - 3;
 		final int maxY1 = maxY - 1;
-		
+
 		final float histogram[] = new float[256];
-		final float brightness = config.swaheBrightness * 0.05f;
-		
+		final float brightness = config.swaheBrightness * 0.1f;
+
 		int r, g, b;
 
 		for (int y = 0; y < maxY; y++)
@@ -559,51 +559,55 @@ public abstract class AbstractRenderer extends Thread {
 					}
 
 				avg /= count;
-				// clip the brightest
-				final float dmax = brightness * count + avg;
+				int scaledLuma;
 
-				int clippedCount = 0;
-				// distribute surplus
-				do {
-					clipped = false;
-					total = 0;
+				if (count > 1) {
+					// clip the brightest
+					final float dmax = brightness * count + avg;
+					int clippedCount = 0;
+					// distribute surplus
+					do {
+						clipped = false;
+						total = 0;
 
-					for (int i = 0; i < 256; i++)
-						// clip if is above dmax
-						if (histogram[i] > dmax) {
-							delta = histogram[i] - dmax;
-							histogram[i] = dmax;
+						for (int i = 0; i < 256; i++)
+							// clip if is above dmax
+							if (histogram[i] > dmax) {
+								delta = histogram[i] - dmax;
+								histogram[i] = dmax;
 
-							// add to total clipping sum
-							total += delta;
-							clippedCount++;
-							
-							clipped = true;
+								// add to total clipping sum
+								total += delta;
+								clippedCount++;
+
+								clipped = true;
+							}
+
+						if (clipped) {
+							total /= count - clippedCount;
+							// add to all none zero slots
+							for (int i = 0; i < 256; i++) {
+								final float p = histogram[i];
+								if (p > 0 && p < dmax)
+									histogram[i] += total;
+							}
 						}
 
-					if (clipped) {
-						total /= count - clippedCount;
-						// add to all none zero slots
-						for (int i = 0; i < 256; i++) {
-							final float p = histogram[i];
-							if (p > 0 && p < dmax)
-								histogram[i] += total;
-						}
-					}
+					} while (clipped);
 
-				} while (clipped);
+					// cdf - cumulative distributed function
+					cdf[0] = histogram[0];
+					for (int i = 1; i < 256; i++)
+						cdf[i] = cdf[i - 1] + histogram[i];
 
-				// cdf - cumulative distributed function
-				cdf[0] = histogram[0];
-				for (int i = 1; i < 256; i++)
-					cdf[i] = cdf[i - 1] + histogram[i];
-
-				// window center pixel - luma
-				final int luma = Math.round((cdf[yuv[center]] * 255f) / cdf[255]);
-
+					// window center pixel - luma
+					scaledLuma = Math.round((cdf[yuv[center]] * 255f) / cdf[255]);
+				} else
+					scaledLuma = yuv[center];
+				
 				// pixel screen position
 				sp = x + y * maxX;
-				Utils.yuv2RGB(luma, yuv[center + 1], yuv[center + 2], newPixels, sp);
+				Utils.yuv2RGB(scaledLuma, yuv[center + 1], yuv[center + 2], newPixels, sp);
 
 				// swap R & B components
 				final byte t = newPixels[sp];
@@ -615,7 +619,7 @@ public abstract class AbstractRenderer extends Thread {
 		System.arraycopy(newPixels, 0, pixels, 0, pixels.length);
 	}
 
-	// SWAHE for RGB format 
+	// SWAHE for RGB format TODO: move to one function
 	protected final void SWAHERGB(final int window) {
 		// histogram
 		final byte newPixels[] = new byte[pixels.length];
@@ -629,7 +633,7 @@ public abstract class AbstractRenderer extends Thread {
 
 		final int window3 = 3 * window;
 		final int midY = window / 2;
-		
+
 		final int midX = window3 / 2;
 		final int center = midX + midY * window3;
 
@@ -638,10 +642,10 @@ public abstract class AbstractRenderer extends Thread {
 
 		final int maxX1 = maxX - 3;
 		final int maxY1 = maxY - 1;
-		
+
 		final float histogram[] = new float[256];
-		final float brightness = config.swaheBrightness * 0.05f;
-		
+		final float brightness = config.swaheBrightness * 0.1f;
+
 		int r, g, b;
 
 		for (int y = 0; y < maxY; y++)
@@ -695,57 +699,61 @@ public abstract class AbstractRenderer extends Thread {
 					}
 
 				avg /= count;
-				// clip the brightest
-				final float dmax = brightness * count + avg;
+				int scaledLuma;
 
-				int clippedCount = 0;
-				// distribute surplus
-				do {
-					clipped = false;
-					total = 0;
+				if (count > 1) {
+					// clip the brightest
+					final float dmax = brightness * count + avg;
+					int clippedCount = 0;
+					// distribute surplus
+					do {
+						clipped = false;
+						total = 0;
 
-					for (int i = 0; i < 256; i++)
-						// clip if is above dmax
-						if (histogram[i] > dmax) {
-							delta = histogram[i] - dmax;
-							histogram[i] = dmax;
+						for (int i = 0; i < 256; i++)
+							// clip if is above dmax
+							if (histogram[i] > dmax) {
+								delta = histogram[i] - dmax;
+								histogram[i] = dmax;
 
-							// add to total clipping sum
-							total += delta;
-							clippedCount++;
-							
-							clipped = true;
+								// add to total clipping sum
+								total += delta;
+								clippedCount++;
+
+								clipped = true;
+							}
+
+						if (clipped) {
+							total /= count - clippedCount;
+							// add to all none zero slots
+							for (int i = 0; i < 256; i++) {
+								final float p = histogram[i];
+								if (p > 0 && p < dmax)
+									histogram[i] += total;
+							}
 						}
 
-					if (clipped) {
-						total /= count - clippedCount;
-						// add to all none zero slots
-						for (int i = 0; i < 256; i++) {
-							final float p = histogram[i];
-							if (p > 0 && p < dmax)
-								histogram[i] += total;
-						}
-					}
+					} while (clipped);
 
-				} while (clipped);
+					// cdf - cumulative distributed function
+					cdf[0] = histogram[0];
+					for (int i = 1; i < 256; i++)
+						cdf[i] = cdf[i - 1] + histogram[i];
 
-				// cdf - cumulative distributed function
-				cdf[0] = histogram[0];
-				for (int i = 1; i < 256; i++)
-					cdf[i] = cdf[i - 1] + histogram[i];
-
-				// window center pixel - luma
-				final int luma = Math.round((cdf[yuv[center]] * 255f) / cdf[255]);
+					// window center pixel - luma
+					scaledLuma = Math.round((cdf[yuv[center]] * 255f) / cdf[255]);
+				} else
+					scaledLuma = yuv[center];
 
 				// pixel screen position
 				sp = x + y * maxX;
-				Utils.yuv2RGB(luma, yuv[center + 1], yuv[center + 2], newPixels, sp);
+				Utils.yuv2RGB(scaledLuma, yuv[center + 1], yuv[center + 2], newPixels, sp);
 			}
 
 		// copy to screen
 		System.arraycopy(newPixels, 0, pixels, 0, pixels.length);
 	}
-	
+
 	private class ImageWindowListener extends WindowAdapter {
 		private AbstractRenderer renderer;
 

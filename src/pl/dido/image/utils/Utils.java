@@ -20,16 +20,14 @@ public class Utils {
 	}
 
 	public static final void yuv2RGB(int y, int u, int v, byte pixels[], int i) {
-		final int COLOR_MAX = 255;
-
 		float r = y + 1.402f * (v - 128);
 		float g = y - 0.34414f * (u - 128) - 0.71414f * (v - 128);
 		float b = y + 1.772f * (u - 128);
 
 		// clamp to [0,255]
-		pixels[i] = (byte) Math.max(0, Math.min(COLOR_MAX, r));
-		pixels[i + 1] = (byte) Math.max(0, Math.min(COLOR_MAX, g));
-		pixels[i + 2] = (byte) Math.max(0, Math.min(COLOR_MAX, b));
+		pixels[i] = (byte) (r > 0 ? (r > 255 ? 255 : r) : 0); 
+		pixels[i + 1] = (byte) (g > 0 ? (g > 255 ? 255 : g) : 0);
+		pixels[i + 2] = (byte) (b > 0 ? (b > 255 ? 255 : b) : 0);
 	}
 
 	public static final int saturate(final int i) {

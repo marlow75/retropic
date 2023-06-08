@@ -26,7 +26,7 @@ public class C64Renderer extends AbstractOldiesRenderer {
 	// C64 palette
 	private final static int colors[] = new int[] { 0, 0xFFFFFF, 0x68372B, 0x70A4B2, 0x6F3D86, 0x588D43, 0x352879,
 			0xB8C76F, 0x6F4F25, 0x433900, 0x9A6759, 0x444444, 0x6C6C6C, 0x9AD284, 0x6C5EB5, 0x959595 };
-	
+
 	protected int bitmap[] = new int[40 * 200];
 	protected int screen[] = new int[1000];
 
@@ -229,7 +229,7 @@ public class C64Renderer extends AbstractOldiesRenderer {
 
 				float min = 255;
 				float max = 0;
-								
+
 				int index = 0;
 				int f = 0, n = 0;
 
@@ -258,12 +258,12 @@ public class C64Renderer extends AbstractOldiesRenderer {
 						}
 
 						final float luma = getLumaByCM(r, g, b);
-						
+
 						if (luma > max) {
 							max = luma;
 							f = getColorIndex(r, g, b);
 						}
-						
+
 						if (luma < min) {
 							min = luma;
 							n = getColorIndex(r, g, b);
@@ -677,7 +677,7 @@ public class C64Renderer extends AbstractOldiesRenderer {
 			}
 		}
 	}
-	
+
 	@Override
 	protected JMenuBar getMenuBar() {
 		final JMenu menuFile = new JMenu("File");
@@ -688,7 +688,6 @@ public class C64Renderer extends AbstractOldiesRenderer {
 		miFile.setAccelerator(
 				KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
 		miFile.addActionListener(new ActionListener() {
-			@SuppressWarnings("incomplete-switch")
 			public void actionPerformed(final ActionEvent e) {
 				try {
 					String exportFileName = Utils.createDirectory(Config.export_path) + "/";
