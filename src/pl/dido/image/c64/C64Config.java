@@ -4,7 +4,7 @@ import pl.dido.image.Config;
 
 public class C64Config extends Config {
 	public enum SCREEN_MODE {
-		HIRES, MULTICOLOR, PETSCII;
+		HIRES, MULTICOLOR;
 	};
 	
 	public enum LUMA_PIXELS {
@@ -25,6 +25,8 @@ public class C64Config extends Config {
 		color_alg = NEAREST_COLOR.PERCEPTED;		
 		
 		dithering = true;
+		highContrast = HIGH_CONTRAST.SWAHE;
+		
 		dither_alg = DITHERING.ATKINSON;
 		
 		luma_pixels = LUMA_PIXELS.OUTER;		
@@ -38,9 +40,6 @@ public class C64Config extends Config {
 		switch (screen_mode) {
 		case HIRES:
 			configString += "320x200x2 ";
-			break;
-		case PETSCII:
-			configString += "40x25x2 ";
 			break;
 		default:
 			configString += "160x200x4 ";

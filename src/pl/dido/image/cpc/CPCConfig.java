@@ -17,7 +17,9 @@ public class CPCConfig extends Config {
 	
 	public CPCConfig() {	
 		dither_alg = DITHERING.ATKINSON;
+		
 		dithering = true;
+		highContrast = HIGH_CONTRAST.SWAHE;
 		
 		screen_mode = SCREEN_MODE.MODE1;
 		pixel_merge = PIXEL_MERGE.AVERAGE;

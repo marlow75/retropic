@@ -16,8 +16,8 @@ public class ZXGui {
 		final JPanel panelZX = new JPanel();
 		panelZX.setLayout(null);
 
-		final JCheckBox chckbxVividCheckBox = new JCheckBox("try apple dithering");
-		chckbxVividCheckBox.setToolTipText("Enables picture predithering");
+		final JCheckBox chckbxVividCheckBox = new JCheckBox("apple dithering");
+		chckbxVividCheckBox.setToolTipText("Enables picture atkinson predithering");
 		chckbxVividCheckBox.setFont(GuiUtils.std);
 		chckbxVividCheckBox.setBounds(20, 23, 171, 44);
 		chckbxVividCheckBox.setSelected(config.dithering);
@@ -33,6 +33,7 @@ public class ZXGui {
 		zxLogo.setBounds(230, 7, 252, 65);
 		panelZX.add(zxLogo);
 		
+		GuiUtils.addContrastControls(panelZX, config);
 		GuiUtils.addColorControls(panelZX, config);		
 		
 		return panelZX;

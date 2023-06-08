@@ -1,6 +1,10 @@
 package pl.dido.image;
 
 public class Config implements Cloneable {
+	
+	public enum HIGH_CONTRAST {
+		HE, SWAHE, NONE;
+	}
 
 	public enum DITHERING {
 		STD_FS, ATKINSON
@@ -11,6 +15,11 @@ public class Config implements Cloneable {
 	};
 
 	public boolean dithering;
+	public HIGH_CONTRAST highContrast;
+	
+	public int swaheWindowSize;
+	public float swaheBrightness;
+	
 	public static String default_path;
 	public static String export_path;
 
@@ -22,6 +31,10 @@ public class Config implements Cloneable {
 		color_alg = NEAREST_COLOR.PERCEPTED;
 
 		dithering = false;
+		highContrast = HIGH_CONTRAST.NONE;
+		
+		swaheWindowSize = 40;
+		swaheBrightness = 1f;
 
 		default_path = "pic";
 		export_path = "export";
@@ -51,7 +64,17 @@ public class Config implements Cloneable {
 			configString += "percepted";
 			break;
 		}
-
+		
+		switch (highContrast) {
+		case HE:
+			configString += " HE ";
+			break;
+		case SWAHE:
+			configString += " SWAHE W" + this.swaheWindowSize + " B" + this.swaheBrightness + " ";
+		default:
+			break;
+		}
+		
 		return configString;
 	}
 

@@ -99,10 +99,11 @@ public class ZXSpectrumRenderer extends AbstractOldiesRenderer {
 			for (int x = 0; x < 256; x += 8) { // every 8 pixel
 				final int offset = p + x * 3;
 
-				float min = 255;
-				float max = 0;
+				int min = 0;
+				int max = 0;
 
 				int f = 0, n = 0;
+				int rf = 0, gf = 0, bf = 0, rb = 0, gb = 0, bb = 0;
 
 				// 8x8 tile
 				for (int y0 = 0; y0 < 8; y0 += 1) {
@@ -119,15 +120,39 @@ public class ZXSpectrumRenderer extends AbstractOldiesRenderer {
 
 						final float luma = getLumaByCM(r, g, b);
 
-						if (luma > max) {
-							max = luma;
-							f = getColorIndex(r, g, b);
-						} else if (luma < min) {
-							min = luma;
-							n = getColorIndex(r, g, b);
+						if (luma >= 128) {
+							rf += r;
+							gf += g;
+							bf += b;
+
+							max += 1;
+						}
+
+						if (luma < 128) {
+							rb += r;
+							gb += g;
+							bb += b;
+
+							min++;
 						}
 					}
 				}
+				
+				if (max > 0) {
+					rf /= max;
+					gf /= max;
+					bf /= max;
+				}
+
+				if (min > 0) {
+					rb /= min;
+					gb /= min;
+					bb /= min;
+				}
+
+				f = getColorIndex(rf, gf, bf);
+				n = getColorIndex(rb, gb, bb);
+
 				final int address = (y >> 3) * 32 + (x >> 3);
 
 				int ink = f >> 1;

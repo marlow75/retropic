@@ -37,29 +37,19 @@ import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import pl.dido.image.amiga.Amiga1200Config;
-import pl.dido.image.amiga.Amiga1200Gui;
-import pl.dido.image.amiga.Amiga1200Renderer;
-import pl.dido.image.amiga.Amiga500Config;
-import pl.dido.image.amiga.Amiga500Gui;
-import pl.dido.image.amiga.Amiga500Renderer;
-import pl.dido.image.atari.STConfig;
-import pl.dido.image.atari.STGui;
-import pl.dido.image.atari.STRenderer;
-import pl.dido.image.c64.C64Config;
-import pl.dido.image.c64.C64Gui;
-import pl.dido.image.c64.C64Renderer;
-import pl.dido.image.cpc.CPCConfig;
-import pl.dido.image.cpc.CPCGui;
-import pl.dido.image.cpc.CPCRenderer;
+import pl.dido.image.amiga.*;
+import pl.dido.image.atari.*;
+import pl.dido.image.c64.*;
+import pl.dido.image.cpc.*;
+import pl.dido.image.petscii.*;
 import pl.dido.image.utils.Utils;
-import pl.dido.image.zx.ZXConfig;
-import pl.dido.image.zx.ZXGui;
-import pl.dido.image.zx.ZXSpectrumRenderer;
+import pl.dido.image.zx.*;
 
 public class RetroPIC {
 
 	protected JFrame frame;
+	
+	protected PetsciiConfig petsciiConfig = new PetsciiConfig();
 
 	protected C64Config c64Config = new C64Config();
 	protected ZXConfig zxConfig = new ZXConfig();
@@ -93,12 +83,13 @@ public class RetroPIC {
 		frame.getContentPane().setLayout(new BorderLayout());
 
 		final JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane.setFont(new Font("Tahoma", Font.PLAIN, 16));
+		tabbedPane.setFont(new Font("Tahoma", Font.PLAIN, 12));
 
 		final Button btnLoad = new Button("Load file...");
 
 		frame.getContentPane().add(tabbedPane, BorderLayout.CENTER);
 		tabbedPane.addTab("Commodore 64", null, C64Gui.c64Tab(c64Config), null);
+		tabbedPane.addTab("PETSCII", null, PetsciiGui.petsciiTab(petsciiConfig), null);
 		tabbedPane.addTab("ZX Spectrum 48/+", null, ZXGui.zxTab(zxConfig), null);
 		tabbedPane.addTab("Amstrad CPC", null, CPCGui.cpcTab(cpcConfig), null);
 		tabbedPane.addTab("Atari ST", null, STGui.stTab(stConfig), null);
@@ -214,18 +205,21 @@ public class RetroPIC {
 					new C64Renderer(img, selectedFile.getName(), c64Config).start();
 					break;
 				case 1:
-					new ZXSpectrumRenderer(img, selectedFile.getName(), zxConfig).start();
+					new PetsciiRenderer(img, selectedFile.getName(), petsciiConfig).start();
 					break;
 				case 2:
-					new CPCRenderer(img, selectedFile.getName(), cpcConfig).start();
+					new ZXSpectrumRenderer(img, selectedFile.getName(), zxConfig).start();
 					break;
 				case 3:
-					new STRenderer(img, selectedFile.getName(), stConfig).start();
+					new CPCRenderer(img, selectedFile.getName(), cpcConfig).start();
 					break;
 				case 4:
-					new Amiga500Renderer(img, selectedFile.getName(), amiga500Config).start();
+					new STRenderer(img, selectedFile.getName(), stConfig).start();
 					break;
 				case 5:
+					new Amiga500Renderer(img, selectedFile.getName(), amiga500Config).start();
+					break;
+				case 6:
 					new Amiga1200Renderer(img, selectedFile.getName(), amiga1200Config).start();
 					break;
 				}

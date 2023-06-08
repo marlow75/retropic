@@ -64,36 +64,6 @@ public class STRenderer extends AbstractCachedRenderer {
 		final SOMFixedPalette training = new SOMFixedPalette(4, 4, 3); // 4x4 = 16 colors
 		pictureColors = training.train(pixels);
 
-		if (((STConfig) config).replace_colors) {
-			int im = 0, in = 0, max = 0, min = 0;
-
-			int color[];
-			for (int i = 0; i < pictureColors.length; i++) {
-				color = pictureColors[i];
-
-				final int luma = color[0] + color[1] + color[2];
-				if (luma > max) {
-					max = luma;
-					im = i;
-				}
-
-				if (luma < min) {
-					min = luma;
-					in = i;
-				}
-			}
-
-			color = pictureColors[im];
-			color[0] = 255;
-			color[1] = 255;
-			color[2] = 255;
-
-			color = pictureColors[in];
-			color[0] = 0;
-			color[1] = 0;
-			color[2] = 0;
-		}
-
 		doPicturePaletteDithering();
 	}
 

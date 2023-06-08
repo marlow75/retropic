@@ -32,7 +32,7 @@ public class HL1Network implements Serializable {
 	public float ALPHA = 0.05f;
 	public float BETA = 0.05f;
 
-	public float EPOCHS = 100_000;
+	public float EPOCHS = 150_000;
 	public float[] I;
 
 	public float[] H;
@@ -50,7 +50,7 @@ public class HL1Network implements Serializable {
 	public float[] gradientOutput;
 	public float[] gradientHidden;
 	
-	public float[] T;
+	//public float[] T;
 
 	public HL1Network(final int in, final int hid, final int out) {
 		IN = in; HID = hid; OUT = out;
@@ -72,8 +72,6 @@ public class HL1Network implements Serializable {
 		gradientOutput = new float[OUT];
 		gradientHidden = new float[HID];
 		
-		T = new float[OUT];
-		
 		initWeight(W);
 		initWeight(V);
 		
@@ -87,15 +85,6 @@ public class HL1Network implements Serializable {
 				// [-0.1, 0.1]
 				w[i][j] = ((float)Math.random() - 0.5f) * 2f;
 			}
-	}
-
-	public void showWeight(float[][] w) {
-		for (int i = 0; i < w.length; i++) {
-			for (int j = 0; j < w[i].length; j++)
-				System.out.print(w[i][j] + " ");
-			
-			System.out.println();
-		}
 	}
 
 	public void initThreshold(float[] threshold) {
@@ -139,20 +128,21 @@ public class HL1Network implements Serializable {
 	}
 
 	public float back(final Dataset data) {
-		float error = 0f;
+		float error = 0f, sum;
+		float o, d, t, g;
 
 		for (int k = 0; k < OUT; k++) {
-			T[k] = data.getOutput(k);
+			t = data.getOutput(k);
 
-			final float o = O[k];
-			final float d = T[k] - o;
+			o = O[k];
+			d = t - o;
 
 			error += Math.abs(d);
 			gradientOutput[k] = d * derivative(o);
 		}
 
 		for (int j = 0; j < HID; j++) {
-			float sum = 0f;
+			sum = 0f;
 
 			for (int k = 0; k < OUT; k++)
 				sum += gradientOutput[k] * V[k][j];
@@ -162,10 +152,10 @@ public class HL1Network implements Serializable {
 
 		for (int k = 0; k < OUT; k++) {
 			final float v[] = V[k];
-			final float d = gradientOutput[k];
+			d = gradientOutput[k];
 
 			for (int j = 0; j < HID; j++) {
-				final float g = ALPHA * d * H[j];
+				g = ALPHA * d * H[j];
 				v[j] += g + momentum * deltaV[k][j];
 				deltaV[k][j] = g;
 			}
@@ -175,15 +165,15 @@ public class HL1Network implements Serializable {
 
 		for (int j = 0; j < HID; j++) {
 			final float w[] = W[j];
-			final float s = gradientHidden[j];
+			d = gradientHidden[j];
 
 			for (int i = 0; i < IN; i++) {
-				final float g = ALPHA * s * I[i];
+				g = ALPHA * d * I[i];
 				w[i] += g + momentum * deltaW[j][i];
 				deltaW[j][i] = g;
 			}
 
-			hiddenBias[j] += BETA * s;
+			hiddenBias[j] += BETA * d;
 		}
 
 		return error;
@@ -223,20 +213,25 @@ public class HL1Network implements Serializable {
 	
 	public void learn(final Vector<Dataset> samples) {
 		log.info("Learning...");
-
+		int count = 0;
+		
 		for (int loop = 0; loop < EPOCHS; loop++) {
 			float error = 0f;
-
+		
+			count = 0;
 			Collections.shuffle(samples);
 			for (final Enumeration<Dataset> e = samples.elements(); e.hasMoreElements();) {
 				final Dataset dataset = e.nextElement();
 
 				forward(dataset);
 				error += back(dataset);
+				count++;
 			}
 
-			if (loop % 100 == 0)
+			if (loop % 100 == 0) {
+				error /= count;
 				log.info(loop + ": " + error);
+			}
 
 			if (error < ERR_LIMIT)
 				break;

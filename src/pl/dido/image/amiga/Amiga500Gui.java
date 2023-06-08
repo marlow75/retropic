@@ -34,13 +34,13 @@ public class Amiga500Gui {
 		
 		final JLabel lblConvertLabel = new JLabel("Converter mode:");
 		lblConvertLabel.setFont(GuiUtils.bold);
-		lblConvertLabel.setBounds(20, 100, 250, 23);
+		lblConvertLabel.setBounds(20, 50, 250, 20);
 		panelAmiga.add(lblConvertLabel);
 
 		final JComboBox<String> modesList = new JComboBox<String>(modesStrings);
 		modesList.setToolTipText("Choose available video mode");
 		modesList.setFont(GuiUtils.std);
-		modesList.setBounds(46, 138, 250, 40);
+		modesList.setBounds(46, 80, 250, 20);
 		modesList.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				
@@ -67,6 +67,7 @@ public class Amiga500Gui {
 		panelAmiga.add(modesList);
 		panelAmiga.add(getRLECheckBox(config));
 		
+		GuiUtils.addContrastControls(panelAmiga, config);
 		GuiUtils.addColorControls(panelAmiga, config);
 						
 		return panelAmiga;
@@ -77,7 +78,7 @@ public class Amiga500Gui {
 		
 		chckbxRLECheckBox.setToolTipText("Enables RLE compression");
 		chckbxRLECheckBox.setFont(GuiUtils.std);
-		chckbxRLECheckBox.setBounds(46, 190, 250, 44);
+		chckbxRLECheckBox.setBounds(45, 110, 250, 20);
 		chckbxRLECheckBox.setSelected(config.rleCompress);
 		
 		chckbxRLECheckBox.addActionListener(new ActionListener() {

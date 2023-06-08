@@ -9,5 +9,8 @@ public class ZXConfig extends Config {
 		dither_alg = DITHERING.ATKINSON;
 		
 		dithering = true;
+		highContrast = HIGH_CONTRAST.SWAHE;
+		
+		swaheWindowSize = 20;
 	}
 }

@@ -18,25 +18,15 @@ import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 
 import pl.dido.image.Config;
-import pl.dido.image.c64.C64Config.SCREEN_MODE;
 import pl.dido.image.renderer.AbstractOldiesRenderer;
 import pl.dido.image.utils.Utils;
-import pl.dido.image.utils.neural.*;
 
 public class C64Renderer extends AbstractOldiesRenderer {
 
 	// C64 palette
-	private final static int colors1[] = new int[] { 0, 0xFFFFFF, 0x68372B, 0x70A4B2, 0x6F3D86, 0x588D43, 0x352879,
+	private final static int colors[] = new int[] { 0, 0xFFFFFF, 0x68372B, 0x70A4B2, 0x6F3D86, 0x588D43, 0x352879,
 			0xB8C76F, 0x6F4F25, 0x433900, 0x9A6759, 0x444444, 0x6C6C6C, 0x9AD284, 0x6C5EB5, 0x959595 };
-
-	private final static int colors2[] = new int[] { 0, 0xFFFFFF, 0x68372B, 0x70A4B2, 0x6F3D86, 0x588D43, 0x352879,
-			0xB8C76F, 0x6F4F25, 0x433900, 0x9A6759, 0x444444, 0x6C6C6C, 0xa9ff9f, 0x6C5EB5, 0x959595 };
-
-	private final static int power2[] = new int[] { 128, 64, 32, 16, 8, 4, 2, 1 };
-
-	private final static String PETSCII_NETWORK = "petscii.network";
-	private final static String PETSCII_CHARSET = "petscii.bin";
-
+	
 	protected int bitmap[] = new int[40 * 200];
 	protected int screen[] = new int[1000];
 
@@ -57,8 +47,6 @@ public class C64Renderer extends AbstractOldiesRenderer {
 
 	@Override
 	protected void setupPalette() {
-		final int colors[] = (((C64Config) config).screen_mode == SCREEN_MODE.PETSCII) ? colors1 : colors2;
-
 		switch (image.getType()) {
 		case BufferedImage.TYPE_3BYTE_BGR:
 			for (int i = 0; i < colors.length; i++) {
@@ -88,8 +76,6 @@ public class C64Renderer extends AbstractOldiesRenderer {
 		case MULTICOLOR:
 			lowresOccurrenceDithered();
 			break;
-		case PETSCII:
-			petscii();
 		}
 	}
 
@@ -231,43 +217,6 @@ public class C64Renderer extends AbstractOldiesRenderer {
 		}
 	}
 
-	private void petsciiExportPRG(final String fileName) {
-		try {
-			final BufferedInputStream in = new BufferedInputStream(Utils.getResourceAsStream("petscii.prg"), 8192);
-			final BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(new File(fileName)), 8192);
-
-			// loading address BASIC
-			out.write(0x01);
-			out.write(0x08);
-
-			int data;
-			in.read(); // skip loading address
-			in.read();
-
-			while ((data = in.read()) != -1)
-				out.write(data);
-
-			in.close();
-
-			// first background color
-			out.write(backgroundColor & 0xf);
-
-			// bitmap
-			for (int i = 0; i < 1000; i++)
-				out.write(screen[i] & 0xff);
-
-			// color nibbles
-			for (int i = 0; i < 1000; i++)
-				out.write(nibble[i] & 0xf);
-
-			out.close();
-
-			frame.setTitle(frame.getTitle() + " SAVED");
-		} catch (final IOException e) {
-			e.printStackTrace();
-		}
-	}
-
 	protected void hiresLumaDithered() {
 		final int work[] = new int[64 * 3];
 		int bitmapIndex = 0;
@@ -280,7 +229,7 @@ public class C64Renderer extends AbstractOldiesRenderer {
 
 				float min = 255;
 				float max = 0;
-
+								
 				int index = 0;
 				int f = 0, n = 0;
 
@@ -309,11 +258,13 @@ public class C64Renderer extends AbstractOldiesRenderer {
 						}
 
 						final float luma = getLumaByCM(r, g, b);
-
+						
 						if (luma > max) {
 							max = luma;
 							f = getColorIndex(r, g, b);
-						} else if (luma < min) {
+						}
+						
+						if (luma < min) {
 							min = luma;
 							n = getColorIndex(r, g, b);
 						}
@@ -726,196 +677,48 @@ public class C64Renderer extends AbstractOldiesRenderer {
 			}
 		}
 	}
-
-	protected void petscii() {
-		// matches pattern with petscii
-		final HL1Network neural = new HL1Network(64, 128, 256);
-
-		// charset 8x8 pixels
-		final byte charset[];
-
-		try {
-			charset = Utils.loadCharset(Utils.getResourceAsStream(PETSCII_CHARSET));
-			neural.load(Utils.getResourceAsStream(PETSCII_NETWORK));
-		} catch (final IOException e) {
-			// mass hysteria
-			throw new RuntimeException(e);
-		}
-
-		// tiles screen and pattern
-		final int work[] = new int[64 * 3];
-		final float tile[] = new float[64];
-		
-		// calculate average
-		int nr = 0, ng = 0, nb = 0, count = 0;
-		final int occurrence[] = new int[16];
-
-		for (int i = 0; i < pixels.length; i += 3) {
-			nr = pixels[i] & 0xff;
-			ng = pixels[i + 1] & 0xff;
-			nb = pixels[i + 2] & 0xff;
-			
-			// dimmer better
-			occurrence[getColorIndex(palette, nr, ng, nb)] += (255 - getLumaByCM(nr, ng, nb));
-		}
-
-		// get maximum occurrence
-		int k = 0;
-		for (int i = 0; i < 16; i++) {
-			final int o = occurrence[i];
-			if (count < o) {
-				count = o;
-				k = i;
-			}
-		}
-		
-		// most occurrence shadow color as background
-		backgroundColor = k;
-		
-		nr = palette[k][0];
-		ng = palette[k][1];
-		nb = palette[k][2];
-
-		final float backLuma = getLumaByCM(nr, ng, nb);
-
-		for (int y = 0; y < 200; y += 8) {
-			final int p = y * 320 * 3;
-
-			for (int x = 0; x < 320; x += 8) {
-				final int offset = p + x * 3;
-
-				int index = 0, f = 0;
-				float max_distance = 0;
-
-				// pickup brightest color in 8x8 tile
-				for (int y0 = 0; y0 < 8; y0++) {
-					for (int x0 = 0; x0 < 24; x0 += 3) {
-						final int position = offset + y0 * 320 * 3 + x0;
-
-						final int r = pixels[position] & 0xff;
-						final int g = pixels[position + 1] & 0xff;
-						final int b = pixels[position + 2] & 0xff;
-
-						work[index++] = r;
-						work[index++] = g;
-						work[index++] = b;
-
-						final float distance = Math.abs(getLumaByCM(r, g, b) - backLuma);
-						if (max_distance < distance) {
-							max_distance = distance;
-							f = getColorIndex(r, g, b);
-						}
-					}
-				}
-
-				// foreground color
-				final int cf[] = palette[f];
-				final int fr = cf[0];
-				final int fg = cf[1];
-				final int fb = cf[2];
-
-				for (int y0 = 0; y0 < 8; y0++)
-					for (int x0 = 0; x0 < 8; x0++) {
-						final int pyx0 = y0 * 24 + x0 * 3;
-
-						final int r = work[pyx0];
-						final int g = work[pyx0 + 1];
-						final int b = work[pyx0 + 2];
-
-						// fore or background color?
-						final float df = getDistanceByCM(r, g, b, fr, fg, fb);
-						final float db = getDistanceByCM(r, g, b, nr, ng, nb);
-
-						// ones as color of the bright pixels
-						tile[y0 * 8 + x0] = (df < db) ? 1 : 0;
-					}
-
-				// pattern match character
-				neural.forward(new Dataset(tile));
-				final float[] result = neural.getResult();
-
-				int code = -1;
-				float value = 0f;
-
-				// get code of character in charset
-				for (int i = 0; i < 256; i++)
-					if (result[i] > value) {
-						code = i;
-						value = result[i];
-					}
-
-				// colors
-				final int address = (y >> 3) * 40 + (x >> 3);
-				nibble[address] = f;
-				screen[address] = code;
-
-				// draw character
-				for (int y0 = 0; y0 < 8; y0++) {
-					final int charset_pos = code * 8 + y0;
-					final int charByte = charset[charset_pos];
-
-					for (int x0 = 0; x0 < 8; x0++) {
-						final int bitValue = power2[x0];
-						final int screen_pos = offset + y0 * 320 * 3 + x0 * 3;
-
-						if ((charByte & bitValue) == bitValue) {
-							pixels[screen_pos] = (byte) fr;
-							pixels[screen_pos + 1] = (byte) fg;
-							pixels[screen_pos + 2] = (byte) fb;
-						} else {
-							pixels[screen_pos] = (byte) nr;
-							pixels[screen_pos + 1] = (byte) ng;
-							pixels[screen_pos + 2] = (byte) nb;
-						}
-					}
-				}
-			}
-		}
-	}
-
+	
 	@Override
 	protected JMenuBar getMenuBar() {
 		final JMenu menuFile = new JMenu("File");
 		menuFile.setMnemonic(KeyEvent.VK_F);
 
-		if (((C64Config) config).screen_mode != SCREEN_MODE.PETSCII) {
-			final JMenuItem miFile = new JMenuItem("Export as picture... ");
-			miFile.setMnemonic(KeyEvent.VK_S);
-			miFile.setAccelerator(
-					KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
-			miFile.addActionListener(new ActionListener() {
-				@SuppressWarnings("incomplete-switch")
-				public void actionPerformed(final ActionEvent e) {
-					try {
-						String exportFileName = Utils.createDirectory(Config.export_path) + "/";
+		final JMenuItem miFile = new JMenuItem("Export as picture... ");
+		miFile.setMnemonic(KeyEvent.VK_S);
+		miFile.setAccelerator(
+				KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
+		miFile.addActionListener(new ActionListener() {
+			@SuppressWarnings("incomplete-switch")
+			public void actionPerformed(final ActionEvent e) {
+				try {
+					String exportFileName = Utils.createDirectory(Config.export_path) + "/";
 
+					switch (((C64Config) config).screen_mode) {
+					case HIRES:
+						exportFileName += fileName + ".art";
+						break;
+					case MULTICOLOR:
+						exportFileName += fileName + ".koa";
+						break;
+					}
+
+					final int result = JOptionPane.showConfirmDialog(null, "Export " + exportFileName + "?", "Confirm",
+							JOptionPane.YES_NO_OPTION);
+					if (result == 0)
 						switch (((C64Config) config).screen_mode) {
 						case HIRES:
-							exportFileName += fileName + ".art";
+							hiresExport(exportFileName);
 							break;
 						case MULTICOLOR:
-							exportFileName += fileName + ".koa";
+							lowresExport(exportFileName);
 							break;
 						}
-
-						final int result = JOptionPane.showConfirmDialog(null, "Export " + exportFileName + "?",
-								"Confirm", JOptionPane.YES_NO_OPTION);
-						if (result == 0)
-							switch (((C64Config) config).screen_mode) {
-							case HIRES:
-								hiresExport(exportFileName);
-								break;
-							case MULTICOLOR:
-								lowresExport(exportFileName);
-								break;
-							}
-					} catch (final IOException ex) {
-						JOptionPane.showMessageDialog(null, "Error", ex.getMessage(), JOptionPane.ERROR_MESSAGE);
-					}
+				} catch (final IOException ex) {
+					JOptionPane.showMessageDialog(null, "Error", ex.getMessage(), JOptionPane.ERROR_MESSAGE);
 				}
-			});
-			menuFile.add(miFile);
-		}
+			}
+		});
+		menuFile.add(miFile);
 
 		final JMenuItem miExecutable = new JMenuItem("Export as executable... ");
 		miExecutable.setMnemonic(KeyEvent.VK_E);
@@ -935,9 +738,6 @@ public class C64Renderer extends AbstractOldiesRenderer {
 							break;
 						case MULTICOLOR:
 							lowresExportPRG(exportFileName);
-							break;
-						case PETSCII:
-							petsciiExportPRG(exportFileName);
 							break;
 						}
 				} catch (final IOException ex) {
