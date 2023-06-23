@@ -86,7 +86,7 @@ public class GuiUtils {
 		sizeLabel.setBounds(225, 235, 120, 20);
 		panel.add(sizeLabel);
 
-		final JSlider sldWindow = new JSlider(JSlider.HORIZONTAL, 20, 40, config.swaheWindowSize);
+		final JSlider sldWindow = new JSlider(JSlider.HORIZONTAL, 1, 3, config.windowSize == 8 ? 1 : config.windowSize == 20 ? 2 : 3);
 		sldWindow.setBounds(220, 255, 120, 35);
 		sldWindow.setFont(std);
 		sldWindow.setEnabled(config.highContrast == Config.HIGH_CONTRAST.SWAHE);
@@ -94,16 +94,19 @@ public class GuiUtils {
 			public void stateChanged(final ChangeEvent e) {
 				final JSlider source = (JSlider) e.getSource();
 
-				if (!source.getValueIsAdjusting()) {
-					int value = (int) source.getValue();
-					if (value < 30)
-						value = 20;
-					else
-						value = 40;
-
-					sldWindow.setValue(value);
-					config.swaheWindowSize = value;
-				}
+				if (!source.getValueIsAdjusting())
+					switch (source.getValue()) {
+					case 1:
+						config.windowSize = 8;
+						break;
+					case 2:
+						config.windowSize = 20;
+						break;
+					case 3:
+						config.windowSize = 40;
+						break;
+					}
+					
 			}
 		});
 
@@ -111,29 +114,31 @@ public class GuiUtils {
 
 		// create the label table
 		final Hashtable<Integer, JLabel> labelTable1 = new Hashtable<Integer, JLabel>();
-		labelTable1.put(20, new JLabel("20"));
-		labelTable1.put(40, new JLabel("40"));
+		labelTable1.put(1, new JLabel("8"));
+		labelTable1.put(2, new JLabel("20"));
+		labelTable1.put(3, new JLabel("40"));
+		
 		sldWindow.setLabelTable(labelTable1);
-
+		sldWindow.setSnapToTicks(true);
+		sldWindow.setPaintLabels(true);
+		
 		panel.add(sldWindow);
 		
-		final JLabel brightLabel = new JLabel("brigthness");
+		final JLabel brightLabel = new JLabel("details");
 		brightLabel.setFont(bold);
 		brightLabel.setBounds(355, 235, 120, 20);
 		panel.add(brightLabel);
 
-		final JSlider sldBrightness = new JSlider(JSlider.HORIZONTAL, 10, 40, (int)(config.swaheBrightness * 10));
-		sldBrightness.setEnabled(config.highContrast == Config.HIGH_CONTRAST.SWAHE);
+		final JSlider sldBrightness = new JSlider(JSlider.HORIZONTAL, 1, 5, config.details);
+		sldBrightness.setEnabled(config.highContrast == Config.HIGH_CONTRAST.SWAHE || config.highContrast == Config.HIGH_CONTRAST.CLAHE);
 		sldBrightness.setFont(GuiUtils.std);
 		sldBrightness.setBounds(350, 255, 120, 35);
 		sldBrightness.addChangeListener(new ChangeListener() {
 			public void stateChanged(final ChangeEvent e) {
 				final JSlider source = (JSlider) e.getSource();
 
-				if (!source.getValueIsAdjusting()) {
-					final float value = source.getValue() / 10f;
-					config.swaheBrightness = value;
-				}
+				if (!source.getValueIsAdjusting())
+					config.details = source.getValue();
 			}
 		});
 
@@ -141,10 +146,11 @@ public class GuiUtils {
 
 		// create the label table
 		final Hashtable<Integer, JLabel> labelTable2 = new Hashtable<Integer, JLabel>();
-		labelTable2.put(10, new JLabel("1.0"));
-		labelTable2.put(20, new JLabel("2.0"));
-		labelTable2.put(30, new JLabel("3.0"));
-		labelTable2.put(40, new JLabel("4.0"));
+		labelTable2.put(1, new JLabel("1.0"));
+		labelTable2.put(2, new JLabel("2.0"));
+		labelTable2.put(3, new JLabel("3.0"));
+		labelTable2.put(4, new JLabel("4.0"));
+		labelTable2.put(5, new JLabel("5.0"));
 		sldBrightness.setLabelTable(labelTable2);
 
 		panel.add(sldBrightness);
@@ -152,7 +158,7 @@ public class GuiUtils {
 		final JRadioButton rdbtnNoContrastExpanderButton = new JRadioButton("none");
 		rdbtnNoContrastExpanderButton.setToolTipText("No contrast processing");
 		rdbtnNoContrastExpanderButton.setFont(std);
-		rdbtnNoContrastExpanderButton.setBounds(46, 213, 80, 20);
+		rdbtnNoContrastExpanderButton.setBounds(46, 213, 50, 20);
 		rdbtnNoContrastExpanderButton.setSelected(config.highContrast == Config.HIGH_CONTRAST.NONE);
 
 		rdbtnNoContrastExpanderButton.addActionListener(new ActionListener() {
@@ -168,7 +174,7 @@ public class GuiUtils {
 		final JRadioButton rdbtnHEButton = new JRadioButton("HE");
 		rdbtnHEButton.setToolTipText("Histogram Equalizer");
 		rdbtnHEButton.setFont(std);
-		rdbtnHEButton.setBounds(140, 213, 80, 20);
+		rdbtnHEButton.setBounds(116, 213, 50, 20);
 		rdbtnHEButton.setSelected(config.highContrast == Config.HIGH_CONTRAST.HE);
 
 		rdbtnHEButton.addActionListener(new ActionListener() {
@@ -180,11 +186,27 @@ public class GuiUtils {
 		});
 
 		panel.add(rdbtnHEButton);
+		
+		final JRadioButton rdbtnCLAHEButton = new JRadioButton("CLAHE");
+		rdbtnCLAHEButton.setToolTipText("Clipped Adaptive Histogram Equalizer");
+		rdbtnCLAHEButton.setFont(std);
+		rdbtnCLAHEButton.setBounds(186, 213, 70, 20);
+		rdbtnCLAHEButton.setSelected(config.highContrast == Config.HIGH_CONTRAST.CLAHE);
+
+		rdbtnCLAHEButton.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				config.highContrast = Config.HIGH_CONTRAST.CLAHE;
+				sldWindow.setEnabled(false);
+				sldBrightness.setEnabled(true);
+			}
+		});
+
+		panel.add(rdbtnCLAHEButton);
 
 		final JRadioButton rdbtnSWAHEButton = new JRadioButton("SWAHE");
 		rdbtnSWAHEButton.setToolTipText("Sliding Window Adaptive Histogram Equalizer");
 		rdbtnSWAHEButton.setFont(std);
-		rdbtnSWAHEButton.setBounds(230, 213, 80, 20);
+		rdbtnSWAHEButton.setBounds(256, 213, 70, 20);
 		rdbtnSWAHEButton.setSelected(config.highContrast == Config.HIGH_CONTRAST.SWAHE);
 
 		rdbtnSWAHEButton.addActionListener(new ActionListener() {
@@ -200,6 +222,7 @@ public class GuiUtils {
 		final ButtonGroup groupContrast = new ButtonGroup();
 		groupContrast.add(rdbtnNoContrastExpanderButton);
 		groupContrast.add(rdbtnHEButton);
+		groupContrast.add(rdbtnCLAHEButton);
 		groupContrast.add(rdbtnSWAHEButton);
 	}
 	

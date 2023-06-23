@@ -20,9 +20,7 @@ import javax.swing.KeyStroke;
 import pl.dido.image.Config;
 import pl.dido.image.renderer.AbstractRenderer;
 import pl.dido.image.utils.Utils;
-import pl.dido.image.utils.neural.Dataset;
-import pl.dido.image.utils.neural.HL1Network;
-import pl.dido.image.utils.neural.HL2Network;
+import pl.dido.image.utils.neural.*;
 
 public class PetsciiRenderer extends AbstractRenderer {
 
@@ -115,7 +113,7 @@ public class PetsciiRenderer extends AbstractRenderer {
 
 	protected void petscii() {
 		// matches pattern with petscii
-		final HL1Network neural;
+		final Network neural;
 		
 		// charset 8x8 pixels per char
 		final byte charset[];

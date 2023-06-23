@@ -41,7 +41,7 @@ public class PetsciiGui {
 		final JRadioButton rdbtnL2Button = new JRadioButton("Two hidden layers, sigmoid activation");
 		rdbtnL2Button.setToolTipText("Robust but a kind of slow network architecture");
 		rdbtnL2Button.setFont(GuiUtils.std);
-		rdbtnL2Button.setBounds(46, 153, 331, 23);
+		rdbtnL2Button.setBounds(46, 137, 331, 23);
 		rdbtnL2Button.setSelected(config.network == NETWORK.L2);
 		rdbtnL2Button.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
@@ -50,7 +50,7 @@ public class PetsciiGui {
 		});
 
 		petsciiC64.add(rdbtnL2Button);
-
+		
 		final ButtonGroup groupResolution = new ButtonGroup();
 		groupResolution.add(rdbtnL1Button);
 		groupResolution.add(rdbtnL2Button);

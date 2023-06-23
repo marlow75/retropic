@@ -11,6 +11,6 @@ public class ZXConfig extends Config {
 		dithering = true;
 		highContrast = HIGH_CONTRAST.SWAHE;
 		
-		swaheWindowSize = 20;
+		windowSize = 20;
 	}
 }

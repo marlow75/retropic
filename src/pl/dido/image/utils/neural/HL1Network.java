@@ -2,16 +2,16 @@ package pl.dido.image.utils.neural;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Vector;
 import java.util.logging.Logger;
 
-public class HL1Network implements Serializable {
+public class HL1Network implements Network, Serializable {
 
 	/**
 	 * 
@@ -243,11 +243,37 @@ public class HL1Network implements Serializable {
 	public float[] getResult() {
 		return this.O;
 	}
+	
+	protected void loadNetwork(final DataInputStream dos) throws IOException {
+		for (int i = 0; i < W.length; i++)
+	    	for (int j = 0; j < I.length; j++)
+	    		W[i][j] = dos.readFloat();
 
-	public void save(final String fileName) throws IOException {
-		final FileOutputStream fos = new FileOutputStream(fileName);
-	    final DataOutputStream dos = new DataOutputStream(fos);
+	    for (int i = 0; i < V.length; i++)
+	    	for (int j = 0; j < W.length; j++)
+	    		V[i][j] = dos.readFloat();
 	    
+	    for (int i = 0; i < hiddenBias.length; i++)
+	    	hiddenBias[i] = dos.readFloat();
+
+	    for (int i = 0; i < outputBias.length; i++)
+	    	outputBias[i] = dos.readFloat();
+	    
+	    for (int i = 0; i < gradientOutput.length; i++)
+	    	gradientOutput[i] = dos.readFloat();
+
+	    for (int i = 0; i < gradientHidden.length; i++)
+	    	gradientHidden[i] = dos.readFloat();
+	}
+	
+	public void load(final InputStream inputStream) throws IOException {
+	    final DataInputStream dos = new DataInputStream(inputStream);
+	    loadNetwork(dos);
+	    
+	    dos.close();		
+	}
+	
+	protected void saveNetwork(final DataOutputStream dos) throws IOException {
 	    for (int i = 0; i < W.length; i++)
 	    	for (int j = 0; j < I.length; j++)
 	    		dos.writeFloat(W[i][j]);
@@ -267,33 +293,13 @@ public class HL1Network implements Serializable {
 
 	    for (int i = 0; i < gradientHidden.length; i++)
 	    	dos.writeFloat(gradientHidden[i]);
-	    
-	    dos.close();		
 	}
-	
-	public void load(final InputStream inputStream) throws IOException {
-	    final DataInputStream dos = new DataInputStream(inputStream);
-	    
-	    for (int i = 0; i < W.length; i++)
-	    	for (int j = 0; j < I.length; j++)
-	    		W[i][j] = dos.readFloat();
 
-	    for (int i = 0; i < V.length; i++)
-	    	for (int j = 0; j < W.length; j++)
-	    		V[i][j] = dos.readFloat();
+	@Override
+	public void save(final OutputStream outputStream) throws IOException {
+	    final DataOutputStream dos = new DataOutputStream(outputStream);
+	    saveNetwork(dos);
 	    
-	    for (int i = 0; i < hiddenBias.length; i++)
-	    	hiddenBias[i] = dos.readFloat();
-
-	    for (int i = 0; i < outputBias.length; i++)
-	    	outputBias[i] = dos.readFloat();
-	    
-	    for (int i = 0; i < gradientOutput.length; i++)
-	    	gradientOutput[i] = dos.readFloat();
-
-	    for (int i = 0; i < gradientHidden.length; i++)
-	    	gradientHidden[i] = dos.readFloat();
-	    
-	    dos.close();		
+	    dos.close();
 	}
 }

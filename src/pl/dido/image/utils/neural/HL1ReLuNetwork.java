@@ -9,7 +9,7 @@ public class HL1ReLuNetwork extends HL1Network {
 	
 	@Override
 	protected float activation(final float x) {
-		return x >= 0 ? Math.max(0.2f * x, 1f) : 0.01f * x;
+		return x >= 0 ? Math.min(0.2f * x, 1f) : 0.01f * x;
 	}
 	
 	@Override

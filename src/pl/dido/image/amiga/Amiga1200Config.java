@@ -23,7 +23,7 @@ public class Amiga1200Config extends AmigaConfig {
 		case STD_320x256:
 		case STD_320x512:
 		case STD_640x512:
-			configString += "x256 " + super.getConfigString();
+			configString += "x256 ";
 			
 			break;
 		case HAM8_320x256:
@@ -34,6 +34,6 @@ public class Amiga1200Config extends AmigaConfig {
 			break; 
 		}
 		
-		return configString;
+		return configString + super.getConfigString();
 	}
 }

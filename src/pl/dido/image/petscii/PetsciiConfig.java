@@ -23,7 +23,20 @@ public class PetsciiConfig extends Config {
 	}
 	
 	@Override
-	public String getConfigString() {			
-		return "40x25x2 " + super.getConfigString();
+	public String getConfigString() {
+		final String n;
+		
+		switch (network) {
+		case L1:
+			n = "L1 ";
+			break;
+		case L2:
+			n = "L2 ";
+			break;
+		default:
+			n = "SOFTMAX ";
+		}
+		
+		return "40x25x2 " + n + super.getConfigString();
 	}
 }

@@ -2,9 +2,9 @@ package pl.dido.image.utils.neural;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 public class HL2Network extends HL1Network {
 
@@ -149,9 +149,8 @@ public class HL2Network extends HL1Network {
 	}
 
 	@Override
-	public void save(final String fileName) throws IOException {
-		final FileOutputStream fos = new FileOutputStream(fileName);
-	    final DataOutputStream dos = new DataOutputStream(fos);
+	public void save(final OutputStream outputStream) throws IOException {
+	    final DataOutputStream dos = new DataOutputStream(outputStream);
 	    
 	    for (int i = 0; i < W.length; i++)
 	    	for (int j = 0; j < I.length; j++)

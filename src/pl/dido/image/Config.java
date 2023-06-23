@@ -3,7 +3,7 @@ package pl.dido.image;
 public class Config implements Cloneable {
 	
 	public enum HIGH_CONTRAST {
-		HE, SWAHE, NONE;
+		HE, SWAHE, NONE, CLAHE;
 	}
 
 	public enum DITHERING {
@@ -17,8 +17,8 @@ public class Config implements Cloneable {
 	public boolean dithering;
 	public HIGH_CONTRAST highContrast;
 	
-	public int swaheWindowSize;
-	public float swaheBrightness;
+	public int windowSize;
+	public int details;
 	
 	public static String default_path;
 	public static String export_path;
@@ -33,8 +33,8 @@ public class Config implements Cloneable {
 		dithering = false;
 		highContrast = HIGH_CONTRAST.NONE;
 		
-		swaheWindowSize = 40;
-		swaheBrightness = 1f;
+		windowSize = 40;
+		details = 1;
 
 		default_path = "pic";
 		export_path = "export";
@@ -69,8 +69,11 @@ public class Config implements Cloneable {
 		case HE:
 			configString += " HE ";
 			break;
+		case CLAHE:
+			configString += " CLAHE D" + this.details + " ";
+			break;
 		case SWAHE:
-			configString += " SWAHE W" + this.swaheWindowSize + " B" + this.swaheBrightness + " ";
+			configString += " SWAHE W" + this.windowSize + " D" + this.details + " ";
 		default:
 			break;
 		}
