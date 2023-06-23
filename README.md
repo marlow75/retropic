@@ -29,7 +29,7 @@ Try all options available.
 
 * Dithering - pictures are dithered using Floyds-Steinberg or Atkinson algorythms.
 * Color distance – how color distance in the RGB cube is measured: euclidean, redmean simple approximation (close to human perception), picking highest luminance color.
-* Contrast processing - experimental luma histogram equalizer designed for 8 bit machines primarly, now enabled for every available machine. HE - standard global equalization, SWAHE - local equlization.
+* Contrast processing - experimental luma histogram equalizer designed for 8 bit machines primarly, now enabled for every available machine. HE - standard global equalization, CLAHE & SWAHE - clipped local equalization, first fast method for local contrast enhancer, second slow but for more demanding.
 
 ### Commodore C64
 
