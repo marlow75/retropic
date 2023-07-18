@@ -1,28 +1,13 @@
 package pl.dido.image.cpc;
 
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.KeyStroke;
+import pl.dido.image.renderer.AbstractRenderer;
+import pl.dido.image.utils.Gfx;
+import pl.dido.image.utils.neural.SOMFixedPalette;
+import pl.dido.image.utils.neural.SOMWinnerFixedPalette;
 
-import pl.dido.image.Config;
-import pl.dido.image.renderer.AbstractOldiesRenderer;
-import pl.dido.image.utils.ChecksumOutputStream;
-import pl.dido.image.utils.SOMFixedPalette;
-import pl.dido.image.utils.SOMWinnerFixedPalette;
-import pl.dido.image.utils.Utils;
-
-public class CPCRenderer extends AbstractOldiesRenderer {
+public class CPCRenderer extends AbstractRenderer {
 
 	// CPC palette 27 colors
 	private final static int colors[] = new int[] { 0x000201, 0x00026B, 0x0C02F4, 0x6C0201, 0x690268, 0x6C02F2,
@@ -38,20 +23,14 @@ public class CPCRenderer extends AbstractOldiesRenderer {
 	protected int colorMapping[] = new int[] { 0x54, 0x44, 0x55, 0x5C, 0x58, 0x5D, 0x4C, 0x45, 0x4D, 0x56, 0x46, 0x57,
 			0x5E, 0x40, 0x5F, 0x4E, 0x47, 0x4F, 0x52, 0x42, 0x53, 0x5A, 0x59, 0x5B, 0x4A, 0x43, 0x4B };
 
-	public CPCRenderer(final BufferedImage image, final String fileName, final CPCConfig config) {
-		super(image, fileName, config);
+	public CPCRenderer(final BufferedImage image, final CPCConfig config) {
+		super(image, config);
 		palette = new int[27][3];
 	}
 
 	@Override
-	protected void imageDithering() {
-		if (config.dithering)
-			super.imageDithering();
-	}
-
-	@Override
 	protected void setupPalette() {
-		switch (image.getType()) {
+		switch (colorModel) {
 		case BufferedImage.TYPE_3BYTE_BGR:
 			for (int i = 0; i < colors.length; i++) {
 				final int pixel[] = palette[i];
@@ -128,7 +107,7 @@ public class CPCRenderer extends AbstractOldiesRenderer {
 
 			for (int i = 0; i < size; i++) {
 				final int c[] = p[i];
-				final float luma = getLumaByCM(c[0], c[1], c[2]);
+				final float luma = Gfx.getLumaByCM(colorModel, c[0], c[1], c[2]);
 
 				if (luma < min) {
 					min = luma;
@@ -159,108 +138,8 @@ public class CPCRenderer extends AbstractOldiesRenderer {
 		return p;
 	}
 
-	private void writeAMSDOSFileHeader(final ChecksumOutputStream chk, final String fileName, final String ext,
-			final int fileType, final int loadAddress, final int entryAddress, final int length) throws IOException {
-
-		// write file header
-		chk.write(0x0); // user number
-
-		// file name
-		for (int i = 0; i < fileName.length(); i++)
-			chk.write(fileName.charAt(i));
-
-		for (int i = 0; i < 8 - fileName.length(); i++)
-			chk.write(0x20);
-
-		for (int i = 0; i < 3; i++)
-			chk.write(ext.charAt(i));
-
-		chk.write(0x0);
-		chk.write(0x0);
-		chk.write(0x0);
-		chk.write(0x0);
-
-		chk.write(0x0);
-		chk.write(0x0);
-
-		chk.write(fileType & 0xff); // file type
-		chk.write(0x0);
-		chk.write(0x0);
-
-		chk.write(loadAddress & 0xff); // load address
-		chk.write((loadAddress & 0xff00) >> 8);
-
-		chk.write(0x0);
-
-		chk.write(length & 0xff); // file length
-		chk.write((length & 0xff00) >> 8);
-
-		chk.write(entryAddress & 0xff); // entry address
-		chk.write((entryAddress & 0xff00) >> 8);
-
-		// 36 unused
-		for (int i = 0; i < 36; i++)
-			chk.write(0x0);
-
-		chk.write(length & 0xff); // file length
-		chk.write((length & 0xff00) >> 8);
-		chk.write(0x0);
-
-		final int checksum = chk.getChecksum();
-		chk.write(checksum & 0xff);
-		chk.write((checksum & 0xff00) >> 8);
-
-		// 59 unused
-		for (int i = 0; i < 59; i++)
-			chk.write(0x0);
-	}
-
-	private void exportArtStudio(final String path, String fileName, final int mode) {
-		try {
-			// SCR file
-			if (fileName.length() > 8)
-				fileName = fileName.substring(0, 7);
-
-			fileName = fileName.toUpperCase().replaceAll("[_ ]", "-");
-			ChecksumOutputStream chk = new ChecksumOutputStream(new FileOutputStream(path + fileName + ".SCR"), 8192);
-			writeAMSDOSFileHeader(chk, fileName, "SCR", 2, 0x4000, 0x4000, 0x3fff);
-
-			// bitmap
-			for (int i = 0; i < bitmap.length; i++)
-				chk.write(bitmap[i] & 0xff);
-
-			chk.close();
-
-			// palette file
-			chk = new ChecksumOutputStream(new FileOutputStream(new File(path + fileName + ".PAL")), 8192);
-			writeAMSDOSFileHeader(chk, fileName, "PAL", 2, 0x8809, 0x8809, 239);
-
-			chk.write(mode); // mode?
-			chk.write(0x00); // no color animation
-			chk.write(0x00); // no delay time no animation
-
-			// palette
-			final int len = pictureColors.length;
-			for (int i = 0; i < 16 / len; i++)
-				for (int j = 0; j < len; j++) {
-					final int data = colorMapping[firmwareIndexes[j]];
-
-					for (int k = 0; k < 12; k++)
-						chk.write(data); // 12 same colors
-				}
-
-			for (int i = 0; i < 44; i++)
-				chk.write(0x0);
-
-			chk.close();
-			frame.setTitle(frame.getTitle() + " SAVED");
-		} catch (final IOException e) {
-			e.printStackTrace();
-		}
-	}
-
 	protected void mode1() {
-		final int[] work = Utils.copy2Int(pixels);
+		final int[] work = Gfx.copy2Int(pixels);
 
 		int r0, g0, b0;
 
@@ -284,7 +163,7 @@ public class CPCRenderer extends AbstractOldiesRenderer {
 				g0 = work[pyx + 1];
 				b0 = work[pyx + 2];
 
-				final int color = getColorIndex(pictureColors, r0, g0, b0);
+				final int color = Gfx.getColorIndex(colorAlg, colorModel, pictureColors, r0, g0, b0);
 				final int c[] = pictureColors[color];
 
 				final int r = c[0];
@@ -313,43 +192,42 @@ public class CPCRenderer extends AbstractOldiesRenderer {
 				}
 
 				if (config.dithering) {
-					final int r_error = Utils.saturateByte(r0 - r);
-					final int g_error = Utils.saturateByte(g0 - g);
-					final int b_error = Utils.saturateByte(b0 - b);
-
+					final int r_error = Gfx.saturate(r0 - r);
+					final int g_error = Gfx.saturate(g0 - g);
+					final int b_error = Gfx.saturate(b0 - b);
+					
 					if (x < (width - 1) * 3) {
-						work[pyx + 3] += r_error * 1 / 8;
-						work[pyx + 3 + 1] += g_error * 1 / 8;
-						work[pyx + 3 + 2] += b_error * 1 / 8;
+						work[pyx + 3] += r_error >> 3;
+						work[pyx + 3 + 1] += g_error >> 3;
+						work[pyx + 3 + 2] += b_error >> 3;
 
 						if (x < (width - 2) * 3) {
-							work[pyx + 6] += r_error * 1 / 8;
-							work[pyx + 6 + 1] += g_error * 1 / 8;
-							work[pyx + 6 + 2] += b_error * 1 / 8;
+							work[pyx + 6] += r_error >> 3;
+							work[pyx + 6 + 1] += g_error >> 3;
+							work[pyx + 6 + 2] += b_error >> 3;
 						}
 					}
 					if (y < (height - 1)) {
-						work[py1x - 3] += r_error * 1 / 8;
-						work[py1x - 3 + 1] += g_error * 1 / 8;
-						work[py1x - 3 + 2] += b_error * 1 / 8;
+						work[py1x - 3] += r_error >> 3;
+						work[py1x - 3 + 1] += g_error >> 3;
+						work[py1x - 3 + 2] += b_error >> 3;
 
-						work[py1x] += r_error * 1 / 8;
-						work[py1x + 1] += g_error * 1 / 8;
-						work[py1x + 2] += b_error * 1 / 8;
+						work[py1x] += r_error >> 3;
+						work[py1x + 1] += g_error >> 3;
+						work[py1x + 2] += b_error >> 3;
 
 						if (x < (width - 1) * 3) {
-							work[py1x + 3] += r_error * 1 / 8;
-							work[py1x + 3 + 1] += g_error * 1 / 8;
-							work[py1x + 3 + 2] += b_error * 1 / 8;
+							work[py1x + 3] += r_error >> 3;
+							work[py1x + 3 + 1] += g_error >> 3;
+							work[py1x + 3 + 2] += b_error >> 3;
 						}
 
 						if (y < (height - 2)) {
-							work[py2x] += r_error * 1 / 8;
-							work[py2x + 1] += g_error * 1 / 8;
-							work[py2x + 2] += b_error * 1 / 8;
+							work[py2x] += r_error >> 3;
+							work[py2x + 1] += g_error >> 3;
+							work[py2x + 2] += b_error >> 3;
 						}
 					}
-
 				}
 			}
 		}
@@ -391,7 +269,7 @@ public class CPCRenderer extends AbstractOldiesRenderer {
 					b = (b1 + b2) >> 1;
 					break;
 				default:
-					if (getLumaByCM(r1, g1, b1) > getLumaByCM(r2, g2, b2)) {
+					if (Gfx.getLumaByCM(colorModel, r1, g1, b1) > Gfx.getLumaByCM(colorModel, r2, g2, b2)) {
 						r = r1;
 						g = g1;
 						b = b1;
@@ -404,7 +282,7 @@ public class CPCRenderer extends AbstractOldiesRenderer {
 					break;
 				}
 
-				final int color = getColorIndex(pictureColors, r, g, b);
+				final int color = Gfx.getColorIndex(colorAlg, colorModel, pictureColors, r, g, b);
 				final int data = ((color & 1) != 0 ? bit0 : 0) | ((color & 2) != 0 ? bit1 : 0)
 						| ((color & 4) != 0 ? bit2 : 0) | ((color & 8) != 0 ? bit3 : 0);
 
@@ -447,68 +325,5 @@ public class CPCRenderer extends AbstractOldiesRenderer {
 				pixels[ph + 2] = (byte) newPixels[pl + 2];
 				pixels[ph + 5] = (byte) newPixels[pl + 2];
 			}
-	}
-
-	@Override
-	protected JMenuBar getMenuBar() {
-		final JMenu menuFile = new JMenu("File");
-		menuFile.setMnemonic(KeyEvent.VK_F);
-
-		final JMenuItem miArtStudio = new JMenuItem("Export as picture... ");
-		miArtStudio.setMnemonic(KeyEvent.VK_S);
-		miArtStudio.setAccelerator(
-				KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
-		miArtStudio.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				try {
-					String path = Utils.createDirectory(Config.export_path) + "/";
-
-					final int result = JOptionPane.showConfirmDialog(null, "Export " + fileName + "?", "Confirm",
-							JOptionPane.YES_NO_OPTION);
-					if (result == 0)
-						switch (((CPCConfig) config).screen_mode) {
-						case MODE1:
-							exportArtStudio(path, fileName, 1);
-							break;
-						case MODE0:
-							exportArtStudio(path, fileName, 0);
-							break;
-						}
-				} catch (final IOException ex) {
-					JOptionPane.showMessageDialog(null, "Error", ex.getMessage(), JOptionPane.ERROR_MESSAGE);
-				}
-			}
-		});
-		menuFile.add(miArtStudio);
-
-		final JMenuBar menuBar = new JMenuBar();
-		menuBar.add(menuFile);
-
-		return menuBar;
-	}
-
-	@Override
-	protected String getTitle() {
-		return "CPC ";
-	}
-
-	@Override
-	protected int getHeight() {
-		return 200;
-	}
-
-	@Override
-	protected int getWidth() {
-		return 320;
-	}
-
-	@Override
-	protected int getScreenHeight() {
-		return 400;
-	}
-
-	@Override
-	protected int getScreenWidth() {
-		return 640;
 	}
 }

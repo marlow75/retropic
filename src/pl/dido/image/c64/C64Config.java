@@ -1,6 +1,6 @@
 package pl.dido.image.c64;
 
-import pl.dido.image.Config;
+import pl.dido.image.utils.Config;
 
 public class C64Config extends Config {
 	public enum SCREEN_MODE {
@@ -56,5 +56,25 @@ public class C64Config extends Config {
 		}
 		
 		return configString + super.getConfigString();
+	}
+
+	@Override
+	public int getWidth() {
+		return 320;
+	}
+
+	@Override
+	public int getHeight() {
+		return 200;
+	}
+	
+	@Override
+	public int getScreenHeight() {
+		return 300;
+	}
+
+	@Override
+	public int getScreenWidth() {
+		return 480;
 	}
 }

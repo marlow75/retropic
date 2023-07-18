@@ -1,27 +1,11 @@
 package pl.dido.image.c64;
 
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.KeyStroke;
+import pl.dido.image.renderer.AbstractRenderer;
+import pl.dido.image.utils.Gfx;
 
-import pl.dido.image.Config;
-import pl.dido.image.renderer.AbstractOldiesRenderer;
-import pl.dido.image.utils.Utils;
-
-public class C64Renderer extends AbstractOldiesRenderer {
+public class C64Renderer extends AbstractRenderer {
 
 	// C64 palette
 	private final static int colors[] = new int[] { 0, 0xFFFFFF, 0x68372B, 0x70A4B2, 0x6F3D86, 0x588D43, 0x352879,
@@ -33,21 +17,15 @@ public class C64Renderer extends AbstractOldiesRenderer {
 	protected int nibble[] = new int[1000];
 	protected int backgroundColor = 0;
 
-	public C64Renderer(final BufferedImage image, final String fileName, final C64Config config) {
-		super(image, fileName, config);
+	public C64Renderer(final BufferedImage image, final C64Config config) {
+		super(image, config);
 
 		palette = new int[16][3];
 	}
 
 	@Override
-	protected void imageDithering() {
-		if (config.dithering)
-			super.imageDithering();
-	}
-
-	@Override
 	protected void setupPalette() {
-		switch (image.getType()) {
+		switch (colorModel) {
 		case BufferedImage.TYPE_3BYTE_BGR:
 			for (int i = 0; i < colors.length; i++) {
 				palette[i][0] = (colors[i] & 0x0000ff); // blue
@@ -76,144 +54,6 @@ public class C64Renderer extends AbstractOldiesRenderer {
 		case MULTICOLOR:
 			lowresOccurrenceDithered();
 			break;
-		}
-	}
-
-	private void hiresExport(final String fileName) {
-		try {
-			final BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(new File(fileName)), 8192);
-
-			// loading address
-			out.write(0);
-			out.write(0x20);
-
-			// bitmap
-			for (int i = 0; i < bitmap.length; i++)
-				out.write(bitmap[i] & 0xff);
-
-			// attributes
-			for (int i = 0; i < screen.length; i++)
-				out.write(screen[i] & 0xff);
-
-			out.close();
-			frame.setTitle(frame.getTitle() + " SAVED");
-		} catch (final IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	private void hiresExportPRG(final String fileName) {
-		try {
-			final BufferedInputStream in = new BufferedInputStream(Utils.getResourceAsStream("high.prg"), 8192);
-			final BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(new File(fileName)), 8192);
-
-			// loading address BASIC
-			out.write(0x01);
-			out.write(0x08);
-
-			int data, prg_len = 0;
-			in.read(); // skip loading address
-			in.read();
-
-			while ((data = in.read()) != -1) {
-				out.write(data);
-				prg_len += 1;
-			}
-
-			in.close();
-
-			// spare bytes
-			int spare = 6143 - prg_len;
-			for (int i = 0; i < spare; i++)
-				out.write(0xff);
-
-			// bitmap
-			for (int i = 0; i < bitmap.length; i++)
-				out.write(bitmap[i] & 0xff);
-
-			// attributes
-			for (int i = 0; i < screen.length; i++)
-				out.write(screen[i] & 0xff);
-
-			out.close();
-			frame.setTitle(frame.getTitle() + " SAVED");
-		} catch (final IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	private void lowresExportPRG(final String fileName) {
-		try {
-			final BufferedInputStream in = new BufferedInputStream(Utils.getResourceAsStream("low.prg"), 8192);
-			final BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(new File(fileName)), 8192);
-
-			// loading address BASIC
-			out.write(0x01);
-			out.write(0x08);
-
-			int data, prg_len = 0;
-			in.read(); // skip loading address
-			in.read();
-
-			while ((data = in.read()) != -1) {
-				out.write(data);
-				prg_len += 1;
-			}
-
-			in.close();
-
-			// spare bytes
-			int spare = 6143 - prg_len;
-			for (int i = 0; i < spare; i++)
-				out.write(0xff);
-
-			// bitmap
-			for (int i = 0; i < 8000; i++)
-				out.write(bitmap[i] & 0xff);
-
-			// attributes
-			for (int i = 0; i < 1000; i++)
-				out.write(screen[i] & 0xff);
-
-			// color nibbles
-			for (int i = 0; i < 1000; i++)
-				out.write(nibble[i] & 0xf);
-
-			out.write(backgroundColor & 0xff);
-
-			out.close();
-			frame.setTitle(frame.getTitle() + " SAVED");
-		} catch (final IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	private void lowresExport(final String fileName) {
-		try {
-			final BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(new File(fileName)), 8192);
-
-			// header
-			out.write(0);
-			out.write(0x60);
-
-			// bitmap
-			for (int i = 0; i < 8000; i++)
-				out.write(bitmap[i] & 0xff);
-
-			// attributes
-			for (int i = 0; i < 1000; i++)
-				out.write(screen[i] & 0xff);
-
-			// color nibbles
-			for (int i = 0; i < 1000; i++)
-				out.write(nibble[i] & 0xf);
-
-			out.write(backgroundColor & 0xff);
-
-			out.close();
-			frame.setTitle(frame.getTitle() + " SAVED");
-		} catch (final IOException e) {
-			e.printStackTrace();
 		}
 	}
 
@@ -257,7 +97,7 @@ public class C64Renderer extends AbstractOldiesRenderer {
 							break;
 						}
 
-						final float luma = getLumaByCM(r, g, b);
+						final float luma = Gfx.getLumaByCM(colorModel, r, g, b);
 
 						if (luma > max) {
 							max = luma;
@@ -301,8 +141,8 @@ public class C64Renderer extends AbstractOldiesRenderer {
 						int ng = cn[1];
 						int nb = cn[2];
 
-						final float d1 = getDistanceByCM(r, g, b, fr, fg, fb);
-						final float d2 = getDistanceByCM(r, g, b, nr, ng, nb);
+						final float d1 = Gfx.getDistanceByCM(colorAlg, colorModel, r, g, b, fr, fg, fb);
+						final float d2 = Gfx.getDistanceByCM(colorAlg, colorModel, r, g, b, nr, ng, nb);
 
 						if (d1 < d2) {
 							nr = fr;
@@ -326,26 +166,26 @@ public class C64Renderer extends AbstractOldiesRenderer {
 						pixels[position + 2] = (byte) nb;
 
 						if (config.dithering) {
-							final int r_error = Utils.saturateByte(r - nr);
-							final int g_error = Utils.saturateByte(g - ng);
-							final int b_error = Utils.saturateByte(b - nb);
+							final int r_error = Gfx.saturateByte(r - nr);
+							final int g_error = Gfx.saturateByte(g - ng);
+							final int b_error = Gfx.saturateByte(b - nb);
 
 							switch (config.dither_alg) {
 							case STD_FS:
 								if (x0 < 21) {
-									work[pyx0 + 3] += r_error * 7 / 16;
-									work[pyx0 + 3 + 1] += g_error * 7 / 16;
-									work[pyx0 + 3 + 2] += b_error * 7 / 16;
+									work[pyx0 + 3] += (r_error * 7) / 16;
+									work[pyx0 + 3 + 1] += (g_error * 7) / 16;
+									work[pyx0 + 3 + 2] += (b_error * 7) / 16;
 								}
 
 								if (y0 < 7) {
-									work[py1x0 - 3] += r_error * 3 / 16;
-									work[py1x0 - 3 + 1] += g_error * 3 / 16;
-									work[py1x0 - 3 + 2] += b_error * 3 / 16;
+									work[py1x0 - 3] += (r_error * 3) / 16;
+									work[py1x0 - 3 + 1] += (g_error * 3) / 16;
+									work[py1x0 - 3 + 2] += (b_error * 3) / 16;
 
-									work[py1x0] += r_error * 5 / 16;
-									work[py1x0 + 1] += g_error * 5 / 16;
-									work[py1x0 + 2] += b_error * 5 / 16;
+									work[py1x0] += (r_error * 5) / 16;
+									work[py1x0 + 1] += (g_error * 5) / 16;
+									work[py1x0 + 2] += (b_error * 5) / 16;
 
 									if (x0 < 21) {
 										work[py1x0 + 3] += r_error / 16;
@@ -356,35 +196,35 @@ public class C64Renderer extends AbstractOldiesRenderer {
 								break;
 							case ATKINSON:
 								if (x0 < 21) {
-									work[pyx0 + 3] += r_error * 1 / 8;
-									work[pyx0 + 3 + 1] += g_error * 1 / 8;
-									work[pyx0 + 3 + 2] += b_error * 1 / 8;
+									work[pyx0 + 3] += r_error >> 3;
+									work[pyx0 + 3 + 1] += g_error >> 3;
+									work[pyx0 + 3 + 2] += b_error >> 3;
 
 									if (x0 < 18) {
-										work[pyx0 + 6] += r_error * 1 / 8;
-										work[pyx0 + 6 + 1] += g_error * 1 / 8;
-										work[pyx0 + 6 + 2] += b_error * 1 / 8;
+										work[pyx0 + 6] += r_error >> 3;
+										work[pyx0 + 6 + 1] += g_error >> 3;
+										work[pyx0 + 6 + 2] += b_error >> 3;
 									}
 								}
 								if (y0 < 7) {
-									work[py1x0 - 3] += r_error * 1 / 8;
-									work[py1x0 - 3 + 1] += g_error * 1 / 8;
-									work[py1x0 - 3 + 2] += b_error * 1 / 8;
+									work[py1x0 - 3] += r_error >> 3;
+									work[py1x0 - 3 + 1] += g_error >> 3;
+									work[py1x0 - 3 + 2] += b_error >> 3;
 
-									work[py1x0] += r_error * 1 / 8;
-									work[py1x0 + 1] += g_error * 1 / 8;
-									work[py1x0 + 2] += b_error * 1 / 8;
+									work[py1x0] += r_error >> 3;
+									work[py1x0 + 1] += g_error >> 3;
+									work[py1x0 + 2] += b_error >> 3;
 
 									if (x0 < 21) {
-										work[py1x0 + 3] += r_error * 1 / 8;
-										work[py1x0 + 3 + 1] += g_error * 1 / 8;
-										work[py1x0 + 3 + 2] += b_error * 1 / 8;
+										work[py1x0 + 3] += r_error >> 3;
+										work[py1x0 + 3 + 1] += g_error >> 3;
+										work[py1x0 + 3 + 2] += b_error >> 3;
 									}
 
 									if (y0 < 6) {
-										work[py2x0] += r_error * 1 / 8;
-										work[py2x0 + 1] += g_error * 1 / 8;
-										work[py2x0 + 2] += b_error * 1 / 8;
+										work[py2x0] += r_error >> 3;
+										work[py2x0 + 1] += g_error >> 3;
+										work[py2x0 + 2] += b_error >> 3;
 									}
 								}
 
@@ -434,15 +274,14 @@ public class C64Renderer extends AbstractOldiesRenderer {
 							b = (b1 + b2) >> 1;
 							break;
 						default:
-							if (getLumaByCM(r1, g1, b1) > getLumaByCM(r2, g2, b2)) {
-								r = r1;
-								g = g1;
-								b = b1;
-							} else {
-								r = r2;
-								g = g2;
-								b = b2;
-							}
+							final float l1 = Gfx.getLumaByCM(colorModel, r1, g1, b1);
+							final float l2 = Gfx.getLumaByCM(colorModel, r2, g2, b2);
+							
+							final float sum = l1 + l2;
+							
+							r = (int) ((r1 * l1 + r2 * l2) / sum);
+							g = (int) ((g1 * l1 + g2 * l2) / sum);
+							b = (int) ((b1 * l1 + b2 * l2) / sum);
 
 							break;
 						}
@@ -567,7 +406,7 @@ public class C64Renderer extends AbstractOldiesRenderer {
 						final int g = work[pyx0 + 1];
 						final int b = work[pyx0 + 2];
 
-						index = getColorIndex(tilePalette, r, g, b);
+						index = Gfx.getColorIndex(colorAlg, colorModel, tilePalette, r, g, b);
 						final int c[] = tilePalette[index];
 
 						final int nr = c[0];
@@ -587,12 +426,11 @@ public class C64Renderer extends AbstractOldiesRenderer {
 						bitcount += 1;
 
 						if (config.dithering) {
-							final int r_error = Utils.saturateByte(r - nr);
-							final int g_error = Utils.saturateByte(g - ng);
-							final int b_error = Utils.saturateByte(b - nb);
+							final int r_error = Gfx.saturateByte(r - nr);
+							final int g_error = Gfx.saturateByte(g - ng);
+							final int b_error = Gfx.saturateByte(b - nb);
 
 							switch (config.dither_alg) {
-
 							case STD_FS:
 								if (x0 < 9) {
 									work[pyx0 + 3] += r_error * 7 / 16;
@@ -676,104 +514,5 @@ public class C64Renderer extends AbstractOldiesRenderer {
 					}
 			}
 		}
-	}
-
-	@Override
-	protected JMenuBar getMenuBar() {
-		final JMenu menuFile = new JMenu("File");
-		menuFile.setMnemonic(KeyEvent.VK_F);
-
-		final JMenuItem miFile = new JMenuItem("Export as picture... ");
-		miFile.setMnemonic(KeyEvent.VK_S);
-		miFile.setAccelerator(
-				KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
-		miFile.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				try {
-					String exportFileName = Utils.createDirectory(Config.export_path) + "/";
-
-					switch (((C64Config) config).screen_mode) {
-					case HIRES:
-						exportFileName += fileName + ".art";
-						break;
-					case MULTICOLOR:
-						exportFileName += fileName + ".koa";
-						break;
-					}
-
-					final int result = JOptionPane.showConfirmDialog(null, "Export " + exportFileName + "?", "Confirm",
-							JOptionPane.YES_NO_OPTION);
-					if (result == 0)
-						switch (((C64Config) config).screen_mode) {
-						case HIRES:
-							hiresExport(exportFileName);
-							break;
-						case MULTICOLOR:
-							lowresExport(exportFileName);
-							break;
-						}
-				} catch (final IOException ex) {
-					JOptionPane.showMessageDialog(null, "Error", ex.getMessage(), JOptionPane.ERROR_MESSAGE);
-				}
-			}
-		});
-		menuFile.add(miFile);
-
-		final JMenuItem miExecutable = new JMenuItem("Export as executable... ");
-		miExecutable.setMnemonic(KeyEvent.VK_E);
-		miExecutable.setAccelerator(
-				KeyStroke.getKeyStroke(KeyEvent.VK_E, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
-		miExecutable.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				try {
-					final String exportFileName = Utils.createDirectory(Config.export_path) + "/" + fileName + ".prg";
-
-					final int result = JOptionPane.showConfirmDialog(null, "Export " + exportFileName + "?", "Confirm",
-							JOptionPane.YES_NO_OPTION);
-					if (result == 0)
-						switch (((C64Config) config).screen_mode) {
-						case HIRES:
-							hiresExportPRG(exportFileName);
-							break;
-						case MULTICOLOR:
-							lowresExportPRG(exportFileName);
-							break;
-						}
-				} catch (final IOException ex) {
-					JOptionPane.showMessageDialog(null, "Error", ex.getMessage(), JOptionPane.ERROR_MESSAGE);
-				}
-			}
-		});
-		menuFile.add(miExecutable);
-
-		final JMenuBar menuBar = new JMenuBar();
-		menuBar.add(menuFile);
-
-		return menuBar;
-	}
-
-	@Override
-	protected String getTitle() {
-		return "C64 ";
-	}
-
-	@Override
-	protected int getHeight() {
-		return 200;
-	}
-
-	@Override
-	protected int getWidth() {
-		return 320;
-	}
-
-	@Override
-	protected int getScreenHeight() {
-		return 400;
-	}
-
-	@Override
-	protected int getScreenWidth() {
-		return 640;
 	}
 }

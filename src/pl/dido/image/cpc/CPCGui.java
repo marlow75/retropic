@@ -22,7 +22,7 @@ public class CPCGui {
 		final JCheckBox chckbxVividCheckBox = new JCheckBox("apple dithering");
 		chckbxVividCheckBox.setToolTipText("Enables Atkinson predithering");
 		chckbxVividCheckBox.setFont(GuiUtils.std);
-		chckbxVividCheckBox.setBounds(20, 23, 171, 20);
+		chckbxVividCheckBox.setBounds(20, 23, 100, 20);
 		chckbxVividCheckBox.setSelected(config.dithering);
 		
 		chckbxVividCheckBox.addActionListener(new ActionListener() {
@@ -31,6 +31,19 @@ public class CPCGui {
 			}});
 		
 		cpcPanel.add(chckbxVividCheckBox);
+		
+		final JCheckBox chckbxAspectCheckBox = new JCheckBox("keep aspect");
+		chckbxAspectCheckBox.setToolTipText("Preserve orginal image aspect ratio");
+		chckbxAspectCheckBox.setFont(GuiUtils.std);
+		chckbxAspectCheckBox.setBounds(150, 23, 100, 20);
+		chckbxAspectCheckBox.setSelected(config.keepAspect);
+		
+		chckbxAspectCheckBox.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				config.keepAspect = !config.keepAspect;
+			}});
+		
+		cpcPanel.add(chckbxAspectCheckBox);
 
 		final Canvas cpcLogo = new ImageCanvas("amstrad.png");
 		cpcLogo.setBounds(290, 0, 200, 100);

@@ -6,6 +6,7 @@ import java.awt.event.ActionListener;
 import java.util.Hashtable;
 
 import javax.swing.ButtonGroup;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -13,7 +14,8 @@ import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import pl.dido.image.Config.NEAREST_COLOR;
+import pl.dido.image.utils.Config;
+import pl.dido.image.utils.Config.NEAREST_COLOR;
 
 public class GuiUtils {
 
@@ -21,7 +23,7 @@ public class GuiUtils {
 	public final static Font bold = new Font("Tahoma", Font.BOLD, 10);
 	
 	public static final JPanel addDitheringControls(final JPanel panel, final Config config) {		
-		final JLabel lblDitherLabel = new JLabel("Dithering:");
+		final JLabel lblDitherLabel = new JLabel("Dithering & aspect:");
 		lblDitherLabel.setFont(bold);
 		lblDitherLabel.setBounds(20, 10, 100, 20);
 		panel.add(lblDitherLabel);
@@ -29,7 +31,7 @@ public class GuiUtils {
 		final JRadioButton rdbtnNoDitherButton = new JRadioButton("none");
 		rdbtnNoDitherButton.setToolTipText("No dithering at all");
 		rdbtnNoDitherButton.setFont(std);
-		rdbtnNoDitherButton.setBounds(46, 30, 80, 20);
+		rdbtnNoDitherButton.setBounds(46, 30, 50, 20);
 		rdbtnNoDitherButton.setSelected(!config.dithering);
 		
 		rdbtnNoDitherButton.addActionListener(new ActionListener() {
@@ -42,7 +44,7 @@ public class GuiUtils {
 		final JRadioButton rdbtnFSButton = new JRadioButton("floyds");
 		rdbtnFSButton.setToolTipText("Floyd-Steinberg dithering, global color error");
 		rdbtnFSButton.setFont(std);
-		rdbtnFSButton.setBounds(140, 30, 80, 20);
+		rdbtnFSButton.setBounds(116, 30, 60, 20);
 		rdbtnFSButton.setSelected(config.dithering && (config.dither_alg == Config.DITHERING.STD_FS));
 		
 		rdbtnFSButton.addActionListener(new ActionListener() {
@@ -56,7 +58,7 @@ public class GuiUtils {
 		final JRadioButton rdbtnAtkinsonButton = new JRadioButton("apple");
 		rdbtnAtkinsonButton.setToolTipText("Atkinson dithering, lokal color error");
 		rdbtnAtkinsonButton.setFont(std);
-		rdbtnAtkinsonButton.setBounds(230, 30, 80, 20);
+		rdbtnAtkinsonButton.setBounds(186, 30, 60, 20);
 		rdbtnAtkinsonButton.setSelected(config.dithering && (config.dither_alg == Config.DITHERING.ATKINSON));
 		
 		rdbtnAtkinsonButton.addActionListener(new ActionListener() {
@@ -72,6 +74,19 @@ public class GuiUtils {
 		groupContrast.add(rdbtnFSButton);
 		groupContrast.add(rdbtnAtkinsonButton);
 		
+		final JCheckBox chckbxAspectCheckBox = new JCheckBox("keep aspect");
+		chckbxAspectCheckBox.setToolTipText("Preserve orginal image aspect ratio");
+		chckbxAspectCheckBox.setFont(GuiUtils.std);
+		chckbxAspectCheckBox.setBounds(246, 30, 85, 20);
+		chckbxAspectCheckBox.setSelected(config.keepAspect);
+		
+		chckbxAspectCheckBox.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				config.keepAspect = !config.keepAspect;
+			}});
+		
+		panel.add(chckbxAspectCheckBox);
+		
 		return panel;
 	}
 	
@@ -86,7 +101,7 @@ public class GuiUtils {
 		sizeLabel.setBounds(225, 235, 120, 20);
 		panel.add(sizeLabel);
 
-		final JSlider sldWindow = new JSlider(JSlider.HORIZONTAL, 1, 3, config.windowSize == 8 ? 1 : config.windowSize == 20 ? 2 : 3);
+		final JSlider sldWindow = new JSlider(JSlider.HORIZONTAL, 1, 3, config.windowSize == 20 ? 1 : config.windowSize == 30 ? 2 : 3);
 		sldWindow.setBounds(220, 255, 120, 35);
 		sldWindow.setFont(std);
 		sldWindow.setEnabled(config.highContrast == Config.HIGH_CONTRAST.SWAHE);
@@ -97,10 +112,10 @@ public class GuiUtils {
 				if (!source.getValueIsAdjusting())
 					switch (source.getValue()) {
 					case 1:
-						config.windowSize = 8;
+						config.windowSize = 20;
 						break;
 					case 2:
-						config.windowSize = 20;
+						config.windowSize = 30;
 						break;
 					case 3:
 						config.windowSize = 40;
@@ -114,8 +129,8 @@ public class GuiUtils {
 
 		// create the label table
 		final Hashtable<Integer, JLabel> labelTable1 = new Hashtable<Integer, JLabel>();
-		labelTable1.put(1, new JLabel("8"));
-		labelTable1.put(2, new JLabel("20"));
+		labelTable1.put(1, new JLabel("20"));
+		labelTable1.put(2, new JLabel("30"));
 		labelTable1.put(3, new JLabel("40"));
 		
 		sldWindow.setLabelTable(labelTable1);

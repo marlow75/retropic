@@ -37,17 +37,40 @@ import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import pl.dido.image.amiga.*;
-import pl.dido.image.atari.*;
-import pl.dido.image.c64.*;
-import pl.dido.image.cpc.*;
-import pl.dido.image.petscii.*;
+import pl.dido.image.amiga.Amiga1200Config;
+import pl.dido.image.amiga.Amiga1200Gui;
+import pl.dido.image.amiga.Amiga1200Renderer;
+import pl.dido.image.amiga.Amiga1200Runner;
+import pl.dido.image.amiga.Amiga500Config;
+import pl.dido.image.amiga.Amiga500Gui;
+import pl.dido.image.amiga.Amiga500Renderer;
+import pl.dido.image.amiga.Amiga500Runner;
+import pl.dido.image.atari.STConfig;
+import pl.dido.image.atari.STGui;
+import pl.dido.image.atari.STRenderer;
+import pl.dido.image.atari.STRunner;
+import pl.dido.image.c64.C64Config;
+import pl.dido.image.c64.C64Gui;
+import pl.dido.image.c64.C64Renderer;
+import pl.dido.image.c64.C64Runner;
+import pl.dido.image.cpc.CPCConfig;
+import pl.dido.image.cpc.CPCGui;
+import pl.dido.image.cpc.CPCRenderer;
+import pl.dido.image.cpc.CPCRunner;
+import pl.dido.image.petscii.PetsciiConfig;
+import pl.dido.image.petscii.PetsciiGui;
+import pl.dido.image.petscii.PetsciiRenderer;
+import pl.dido.image.petscii.PetsciiRunner;
 import pl.dido.image.utils.Utils;
-import pl.dido.image.zx.*;
+import pl.dido.image.zx.ZXConfig;
+import pl.dido.image.zx.ZXGui;
+import pl.dido.image.zx.ZXRunner;
+import pl.dido.image.zx.ZXSpectrumRenderer;
 
 public class RetroPIC {
 
 	protected JFrame frame;
+	protected String default_path;
 	
 	protected PetsciiConfig petsciiConfig = new PetsciiConfig();
 
@@ -111,7 +134,7 @@ public class RetroPIC {
 		btnLoad.setPreferredSize(new Dimension(143, 34));
 		btnLoad.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				final JFileChooser fc = new JFileChooser(Config.default_path);
+				final JFileChooser fc = new JFileChooser(default_path);
 				final FileFilter filter = new FileNameExtensionFilter("Choose picture", "jpg");
 
 				fc.setFileFilter(filter);
@@ -119,7 +142,7 @@ public class RetroPIC {
 
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 					loadImage(fc.getSelectedFile(), tabbedPane.getSelectedIndex());
-					Config.default_path = fc.getSelectedFile().getAbsolutePath();
+					default_path = fc.getSelectedFile().getAbsolutePath();
 				}
 			}
 		});
@@ -132,6 +155,7 @@ public class RetroPIC {
 		final JPanel buttonsPanel = new JPanel();
 		buttonsPanel.setLayout(new BoxLayout(buttonsPanel, BoxLayout.LINE_AXIS));
 		buttonsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+		
 		buttonsPanel.add(Box.createHorizontalGlue());
 		buttonsPanel.add(btnLoad);
 		buttonsPanel.add(Box.createRigidArea(new Dimension(10, 0)));
@@ -145,8 +169,7 @@ public class RetroPIC {
 			}
 		});
 
-		new DropTarget(frame, new DropTargetListener() {
-			
+		new DropTarget(frame, new DropTargetListener() {	
 			@Override
 			public void drop(final DropTargetDropEvent event) {
 				event.acceptDrop(DnDConstants.ACTION_COPY);
@@ -162,6 +185,7 @@ public class RetroPIC {
 							@SuppressWarnings("unchecked")
 							final List<File> files = (List<File>) transferable.getTransferData(flavor);
 							loadImage(files.get(0), tabbedPane.getSelectedIndex());
+							default_path = files.get(0).getAbsolutePath();
 						}
 					} catch (final Exception e) {
 						// nothing
@@ -196,31 +220,32 @@ public class RetroPIC {
 	public void loadImage(final File selectedFile, final int selectedTab) {
 		try {
 			final BufferedImage img = ImageIO.read(selectedFile);
+			final String fileName = selectedFile.getName();
 
 			switch (img.getType()) {
 			case BufferedImage.TYPE_3BYTE_BGR:
 			case BufferedImage.TYPE_INT_RGB:
 				switch (selectedTab) {
 				case 0:
-					new C64Renderer(img, selectedFile.getName(), c64Config).start();
+					new Thread(new C64Runner(new C64Renderer(img, c64Config), fileName)).start();
 					break;
 				case 1:
-					new PetsciiRenderer(img, selectedFile.getName(), petsciiConfig).start();
+					new Thread(new PetsciiRunner(new PetsciiRenderer(img, petsciiConfig), fileName)).start();
 					break;
 				case 2:
-					new ZXSpectrumRenderer(img, selectedFile.getName(), zxConfig).start();
+					new Thread(new ZXRunner(new ZXSpectrumRenderer(img, zxConfig), fileName)).start();
 					break;
 				case 3:
-					new CPCRenderer(img, selectedFile.getName(), cpcConfig).start();
+					new Thread(new CPCRunner(new CPCRenderer(img, cpcConfig), fileName)).start();
 					break;
 				case 4:
-					new STRenderer(img, selectedFile.getName(), stConfig).start();
+					new Thread(new STRunner(new STRenderer(img, stConfig), fileName)).start();
 					break;
 				case 5:
-					new Amiga500Renderer(img, selectedFile.getName(), amiga500Config).start();
+					new Thread(new Amiga500Runner(new Amiga500Renderer(img, amiga500Config), fileName)).start();
 					break;
 				case 6:
-					new Amiga1200Renderer(img, selectedFile.getName(), amiga1200Config).start();
+					new Thread(new Amiga1200Runner(new Amiga1200Renderer(img, amiga1200Config), fileName)).start();
 					break;
 				}
 				break;

@@ -19,7 +19,7 @@ public class ZXGui {
 		final JCheckBox chckbxVividCheckBox = new JCheckBox("apple dithering");
 		chckbxVividCheckBox.setToolTipText("Enables picture atkinson predithering");
 		chckbxVividCheckBox.setFont(GuiUtils.std);
-		chckbxVividCheckBox.setBounds(20, 23, 171, 44);
+		chckbxVividCheckBox.setBounds(20, 23, 100, 20);
 		chckbxVividCheckBox.setSelected(config.dithering);
 		
 		chckbxVividCheckBox.addActionListener(new ActionListener() {
@@ -28,6 +28,19 @@ public class ZXGui {
 			}});
 		
 		panelZX.add(chckbxVividCheckBox);
+		
+		final JCheckBox chckbxAspectCheckBox = new JCheckBox("keep aspect");
+		chckbxAspectCheckBox.setToolTipText("Preserve orginal image aspect ratio");
+		chckbxAspectCheckBox.setFont(GuiUtils.std);
+		chckbxAspectCheckBox.setBounds(20, 50, 100, 20);
+		chckbxAspectCheckBox.setSelected(config.keepAspect);
+		
+		chckbxAspectCheckBox.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				config.keepAspect = !config.keepAspect;
+			}});
+		
+		panelZX.add(chckbxAspectCheckBox);
 		
 		final Canvas zxLogo = new ImageCanvas("sinclair.png");
 		zxLogo.setBounds(230, 7, 252, 65);

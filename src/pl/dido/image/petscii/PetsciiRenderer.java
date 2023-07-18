@@ -1,26 +1,15 @@
 package pl.dido.image.petscii;
 
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.KeyStroke;
-
-import pl.dido.image.Config;
 import pl.dido.image.renderer.AbstractRenderer;
+import pl.dido.image.utils.Gfx;
 import pl.dido.image.utils.Utils;
-import pl.dido.image.utils.neural.*;
+import pl.dido.image.utils.neural.Dataset;
+import pl.dido.image.utils.neural.HL1Network;
+import pl.dido.image.utils.neural.HL2Network;
+import pl.dido.image.utils.neural.Network;
 
 public class PetsciiRenderer extends AbstractRenderer {
 
@@ -32,24 +21,32 @@ public class PetsciiRenderer extends AbstractRenderer {
 
 	private final static String PETSCII_NETWORK_L1 = "petscii.L1network";
 	private final static String PETSCII_NETWORK_L2 = "petscii.L2network";
-	
+
 	private final static String PETSCII_CHARSET = "petscii.bin";
 
-	protected int bitmap[] = new int[40 * 200];
-	protected int screen[] = new int[1000];
+	public int bitmap[] = new int[40 * 200];
+	public int screen[] = new int[1000];
 
-	protected int nibble[] = new int[1000];
-	protected int backgroundColor = 0;
-
-	public PetsciiRenderer(final BufferedImage image, final String fileName, final PetsciiConfig config) {
-		super(image, fileName, config);
-
+	public int nibble[] = new int[1000];
+	public int backgroundColor = 0;
+	
+	private void initialize() {
 		palette = new int[16][3];
 	}
 	
+	public PetsciiRenderer(final PetsciiConfig config) {
+		super(config);
+		initialize();
+	}
+
+	public PetsciiRenderer(final BufferedImage image, final PetsciiConfig config) {
+		super(image, config);
+		initialize();
+	}
+
 	@Override
 	protected void setupPalette() {
-		switch (image.getType()) {
+		switch (colorModel) {
 		case BufferedImage.TYPE_3BYTE_BGR:
 			for (int i = 0; i < colors.length; i++) {
 				palette[i][0] = colors[i] & 0x0000ff; // blue
@@ -74,61 +71,24 @@ public class PetsciiRenderer extends AbstractRenderer {
 		petscii();
 	}
 
-	private void petsciiExportPRG(final String fileName) {
-		try {
-			final BufferedInputStream in = new BufferedInputStream(Utils.getResourceAsStream("petscii.prg"), 8192);
-			final BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(new File(fileName)), 8192);
-
-			// loading address BASIC
-			out.write(0x01);
-			out.write(0x08);
-
-			int data;
-			in.read(); // skip loading address
-			in.read();
-
-			while ((data = in.read()) != -1)
-				out.write(data);
-
-			in.close();
-
-			// first background color
-			out.write(backgroundColor & 0xf);
-
-			// bitmap
-			for (int i = 0; i < 1000; i++)
-				out.write(screen[i] & 0xff);
-
-			// color nibbles
-			for (int i = 0; i < 1000; i++)
-				out.write(nibble[i] & 0xf);
-
-			out.close();
-
-			frame.setTitle(frame.getTitle() + " SAVED");
-		} catch (final IOException e) {
-			e.printStackTrace();
-		}
-	}
-
 	protected void petscii() {
 		// matches pattern with petscii
 		final Network neural;
-		
+
 		// charset 8x8 pixels per char
 		final byte charset[];
 		final String networkFile;
-		
+
 		switch (((PetsciiConfig) config).network) {
 		case L2:
 			neural = new HL2Network(64, 128, 256);
 			networkFile = PETSCII_NETWORK_L2;
-			
+
 			break;
 		default:
 			neural = new HL1Network(64, 128, 256);
 			networkFile = PETSCII_NETWORK_L1;
-			
+
 			break;
 		}
 
@@ -154,7 +114,8 @@ public class PetsciiRenderer extends AbstractRenderer {
 			nb = pixels[i + 2] & 0xff;
 
 			// dimmer better
-			occurrence[getColorIndex(palette, nr, ng, nb)] += (255 - getLumaByCM(nr, ng, nb));
+			occurrence[Gfx.getColorIndex(colorAlg, colorModel, palette, nr, ng, nb)] += (255
+					- Gfx.getLumaByCM(colorModel, nr, ng, nb));
 		}
 
 		// get background color with maximum occurrence
@@ -174,7 +135,7 @@ public class PetsciiRenderer extends AbstractRenderer {
 		ng = palette[k][1];
 		nb = palette[k][2];
 
-		final float backLuma = getLumaByCM(nr, ng, nb);
+		final float backLuma = Gfx.getLumaByCM(colorModel, nr, ng, nb);
 
 		for (int y = 0; y < 200; y += 8) {
 			final int p = y * 320 * 3;
@@ -198,10 +159,10 @@ public class PetsciiRenderer extends AbstractRenderer {
 						work[index++] = g;
 						work[index++] = b;
 
-						final float distance = Math.abs(getLumaByCM(r, g, b) - backLuma);
+						final float distance = Math.abs(Gfx.getLumaByCM(colorModel, r, g, b) - backLuma);
 						if (max_distance < distance) {
 							max_distance = distance;
-							f = getColorIndex(r, g, b);
+							f = Gfx.getColorIndex(colorAlg, colorModel, palette, r, g, b);
 						}
 					}
 				}
@@ -221,8 +182,8 @@ public class PetsciiRenderer extends AbstractRenderer {
 						final int b = work[pyx0 + 2];
 
 						// fore or background color?
-						final float df = getDistanceByCM(r, g, b, fr, fg, fb);
-						final float db = getDistanceByCM(r, g, b, nr, ng, nb);
+						final float df = Gfx.getDistanceByCM(colorAlg, colorModel, r, g, b, fr, fg, fb);
+						final float db = Gfx.getDistanceByCM(colorAlg, colorModel, r, g, b, nr, ng, nb);
 
 						// ones as color of the bright pixels
 						tile[(y0 << 3) + x0] = (df <= db) ? 1 : 0;
@@ -269,61 +230,5 @@ public class PetsciiRenderer extends AbstractRenderer {
 				}
 			}
 		}
-	}
-
-	@Override
-	protected JMenuBar getMenuBar() {
-		final JMenu menuFile = new JMenu("File");
-		menuFile.setMnemonic(KeyEvent.VK_F);
-
-		final JMenuItem miExecutable = new JMenuItem("Export as executable... ");
-		miExecutable.setMnemonic(KeyEvent.VK_E);
-		miExecutable.setAccelerator(
-				KeyStroke.getKeyStroke(KeyEvent.VK_E, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
-		miExecutable.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				try {
-					final String exportFileName = Utils.createDirectory(Config.export_path) + "/" + fileName + ".prg";
-					final int result = JOptionPane.showConfirmDialog(null, "Export " + exportFileName + "?", "Confirm",
-							JOptionPane.YES_NO_OPTION);
-					
-					if (result == 0)
-						petsciiExportPRG(exportFileName);
-				} catch (final IOException ex) {
-					JOptionPane.showMessageDialog(null, "Error", ex.getMessage(), JOptionPane.ERROR_MESSAGE);
-				}
-			}
-		});
-		menuFile.add(miExecutable);
-
-		final JMenuBar menuBar = new JMenuBar();
-		menuBar.add(menuFile);
-
-		return menuBar;
-	}
-
-	@Override
-	protected String getTitle() {
-		return "PETSCII ";
-	}
-
-	@Override
-	protected int getHeight() {
-		return 200;
-	}
-
-	@Override
-	protected int getWidth() {
-		return 320;
-	}
-
-	@Override
-	protected int getScreenHeight() {
-		return 400;
-	}
-
-	@Override
-	protected int getScreenWidth() {
-		return 640;
 	}
 }

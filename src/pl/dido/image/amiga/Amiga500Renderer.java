@@ -1,52 +1,43 @@
 package pl.dido.image.amiga;
 
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.KeyStroke;
+import pl.dido.image.renderer.AbstractPictureColorsRenderer;
+import pl.dido.image.utils.Config;
+import pl.dido.image.utils.Gfx;
+import pl.dido.image.utils.neural.HAMFixedPalette;
+import pl.dido.image.utils.neural.SOMFixedPalette;
 
-import pl.dido.image.Config;
-import pl.dido.image.renderer.AbstractCachedRenderer;
-import pl.dido.image.utils.HAMFixedPalette;
-import pl.dido.image.utils.IFF;
-import pl.dido.image.utils.SOMFixedPalette;
-import pl.dido.image.utils.Utils;
-
-public class Amiga500Renderer extends AbstractCachedRenderer {
+public class Amiga500Renderer extends AbstractPictureColorsRenderer {
 
 	protected int bitplanes[][];
 
-	public Amiga500Renderer(final BufferedImage image, final String fileName, final Config config) {
-		super(image, fileName, config);
+	public Amiga500Renderer(final BufferedImage image, final Config config) {
+		super(image, config);
 		palette = new int[4096][3];
 	}
 
 	@Override
-	protected void imageDithering() {
-		if (config.dithering)
-			super.imageDithering();
+	protected BufferedImage scaleImage(BufferedImage image) {
+		if (image.getWidth() != width || image.getHeight() != height)
+			if (config.keepAspect)
+				return Gfx.scaleWithPreservedAspect(image, width, height);
+			else
+				return Gfx.scaleWithStretching(image, width, height);
+
+		return image;
 	}
-	
+
 	@Override
 	protected void setupPalette() {
 		int i = 0;
-		
+
 		for (int r = 0; r < 16; r++) {
 			final int rk = r * 17;
-			
+
 			for (int g = 0; g < 16; g++) {
 				final int gk = g * 17;
-				
+
 				for (int b = 0; b < 16; b++) {
 					final int c[] = palette[i];
 
@@ -74,7 +65,7 @@ public class Amiga500Renderer extends AbstractCachedRenderer {
 			break;
 		case STD_320x256:
 		case STD_320x512:
-			training = new SOMFixedPalette(8, 4, 4); // 8x4 = 32 colors (4 bits)
+			training = new SOMFixedPalette(8, 4, 5); // 8x4 = 32 colors (5 bits)
 			pictureColors = training.train(pixels);
 
 			standard32();
@@ -83,7 +74,7 @@ public class Amiga500Renderer extends AbstractCachedRenderer {
 	}
 
 	protected void standard32() {
-		final float[] work = Utils.copy2float(pixels);
+		final int[] work = Gfx.copy2Int(pixels);
 		bitplanes = new int[(width >> 4) * height][5]; // 5 planes
 
 		int r0, g0, b0;
@@ -101,11 +92,11 @@ public class Amiga500Renderer extends AbstractCachedRenderer {
 				final int py1x = k1 + x;
 				final int py2x = k2 + x;
 
-				r0 = Utils.saturate((int) work[pyx]);
-				g0 = Utils.saturate((int) work[pyx + 1]);
-				b0 = Utils.saturate((int) work[pyx + 2]);
+				r0 = Gfx.saturate(work[pyx]);
+				g0 = Gfx.saturate(work[pyx + 1]);
+				b0 = Gfx.saturate(work[pyx + 2]);
 
-				final int color = getColorIndex(pictureColors, r0, g0, b0);
+				final int color = Gfx.getColorIndex(colorAlg, colorModel, pictureColors, r0, g0, b0);
 				final int c[] = pictureColors[color];
 
 				final int r = c[0];
@@ -131,25 +122,25 @@ public class Amiga500Renderer extends AbstractCachedRenderer {
 					shift--;
 
 				if (config.dithering) {
-					final float r_error = r0 - r;
-					final float g_error = g0 - g;
-					final float b_error = b0 - b;
+					final int r_error = r0 - r;
+					final int g_error = g0 - g;
+					final int b_error = b0 - b;
 
 					switch (config.dither_alg) {
 					case STD_FS:
 						if (x < (width - 1) * 3) {
-							work[pyx + 3] += r_error * 7 / 16;
-							work[pyx + 3 + 1] += g_error * 7 / 16;
-							work[pyx + 3 + 2] += b_error * 7 / 16;
+							work[pyx + 3] += (r_error * 7) / 16;
+							work[pyx + 3 + 1] += (g_error * 7) / 16;
+							work[pyx + 3 + 2] += (b_error * 7) / 16;
 						}
 						if (y < height - 1) {
-							work[py1x - 3] += r_error * 3 / 16;
-							work[py1x - 3 + 1] += g_error * 3 / 16;
-							work[py1x - 3 + 2] += b_error * 3 / 16;
+							work[py1x - 3] += (r_error * 3) / 16;
+							work[py1x - 3 + 1] += (g_error * 3) / 16;
+							work[py1x - 3 + 2] += (b_error * 3) / 16;
 
-							work[py1x] += r_error * 5 / 16;
-							work[py1x + 1] += g_error * 5 / 16;
-							work[py1x + 2] += b_error * 5 / 16;
+							work[py1x] += (r_error * 5) / 16;
+							work[py1x + 1] += (g_error * 5) / 16;
+							work[py1x + 2] += (b_error * 5) / 16;
 
 							if (x < (width - 1) * 3) {
 								work[py1x + 3] += r_error / 16;
@@ -160,35 +151,35 @@ public class Amiga500Renderer extends AbstractCachedRenderer {
 						break;
 					case ATKINSON:
 						if (x < (width - 1) * 3) {
-							work[pyx + 3] += r_error * 1 / 8;
-							work[pyx + 3 + 1] += g_error * 1 / 8;
-							work[pyx + 3 + 2] += b_error * 1 / 8;
+							work[pyx + 3] += r_error >> 3;
+							work[pyx + 3 + 1] += g_error >> 3;
+							work[pyx + 3 + 2] += b_error >> 3;
 
 							if (x < (width - 2) * 3) {
-								work[pyx + 6] += r_error * 1 / 8;
-								work[pyx + 6 + 1] += g_error * 1 / 8;
-								work[pyx + 6 + 2] += b_error * 1 / 8;
+								work[pyx + 6] += r_error >> 3;
+								work[pyx + 6 + 1] += g_error >> 3;
+								work[pyx + 6 + 2] += b_error >> 3;
 							}
 						}
 						if (y < height - 1) {
-							work[py1x - 3] += r_error * 1 / 8;
-							work[py1x - 3 + 1] += g_error * 1 / 8;
-							work[py1x - 3 + 2] += b_error * 1 / 8;
+							work[py1x - 3] += r_error >> 3;
+							work[py1x - 3 + 1] += g_error >> 3;
+							work[py1x - 3 + 2] += b_error >> 3;
 
-							work[py1x] += r_error * 1 / 8;
-							work[py1x + 1] += g_error * 1 / 8;
-							work[py1x + 2] += b_error * 1 / 8;
+							work[py1x] += r_error >> 3;
+							work[py1x + 1] += g_error >> 3;
+							work[py1x + 2] += b_error >> 3;
 
 							if (x < (width - 1) * 3) {
-								work[py1x + 3] += r_error * 1 / 8;
-								work[py1x + 3 + 1] += g_error * 1 / 8;
-								work[py1x + 3 + 2] += b_error * 1 / 8;
+								work[py1x + 3] += r_error >> 3;
+								work[py1x + 3 + 1] += g_error >> 3;
+								work[py1x + 3 + 2] += b_error >> 3;
 							}
 
 							if (y < height - 2) {
-								work[py2x] += r_error * 1 / 8;
-								work[py2x + 1] += g_error * 1 / 8;
-								work[py2x + 2] += b_error * 1 / 8;
+								work[py2x] += r_error >> 3;
+								work[py2x + 1] += g_error >> 3;
+								work[py2x + 2] += b_error >> 3;
 							}
 						}
 
@@ -200,7 +191,7 @@ public class Amiga500Renderer extends AbstractCachedRenderer {
 	}
 
 	protected void ham6Encoded() {
-		final float[] work = Utils.copy2float(pixels);
+		final float[] work = Gfx.copy2float(pixels);
 		bitplanes = new int[(width >> 4) * height][6]; // 6 planes
 
 		int r0, g0, b0, r = 0, g = 0, b = 0;
@@ -234,17 +225,17 @@ public class Amiga500Renderer extends AbstractCachedRenderer {
 				final int py2x = k2 + x;
 
 				// get picture RGB components
-				r0 = Utils.saturate((int) work[pyx]);
-				g0 = Utils.saturate((int) work[pyx + 1]);
-				b0 = Utils.saturate((int) work[pyx + 2]);
+				r0 = Gfx.saturate((int) work[pyx]);
+				g0 = Gfx.saturate((int) work[pyx + 1]);
+				b0 = Gfx.saturate((int) work[pyx + 2]);
 
 				// find closest palette color
-				int action = getColorIndex(pictureColors, r0, g0, b0); // 16 color palette
+				int action = Gfx.getColorIndex(colorAlg, colorModel, pictureColors, r0, g0, b0); // 16 color palette
 				final int pc[] = pictureColors[action];
 
 				if (nextPixel) { // its not first pixel in a row so use best matching color
 					// distance to palette match
-					final float dpc = getDistanceByCM(r0, g0, b0, pc[0], pc[1], pc[2]);
+					final float dpc = Gfx.getDistanceByCM(colorAlg, colorModel, r0, g0, b0, pc[0], pc[1], pc[2]);
 
 					float min_r = Float.MAX_VALUE; // minimum red
 					float min_g = min_r;
@@ -260,9 +251,9 @@ public class Amiga500Renderer extends AbstractCachedRenderer {
 						final int scaled = i | (i << 4);
 
 						// which component change gets minimum error?
-						final float dr = getDistanceByCM(r0, g0, b0, scaled, g, b);
-						final float dg = getDistanceByCM(r0, g0, b0, r, scaled, b);
-						final float db = getDistanceByCM(r0, g0, b0, r, g, scaled);
+						final float dr = Gfx.getDistanceByCM(colorAlg, colorModel, r0, g0, b0, scaled, g, b);
+						final float dg = Gfx.getDistanceByCM(colorAlg, colorModel, r0, g0, b0, r, scaled, b);
+						final float db = Gfx.getDistanceByCM(colorAlg, colorModel, r0, g0, b0, r, g, scaled);
 
 						if (dr < min_r) {
 							ri = scaled;
@@ -280,7 +271,7 @@ public class Amiga500Renderer extends AbstractCachedRenderer {
 						}
 					}
 
-					final float ham = Utils.min(min_r, min_g, min_b);
+					final float ham = Gfx.min(min_r, min_g, min_b);
 
 					// check which color is best, palette or HAM?
 					if (ham <= dpc) {
@@ -331,9 +322,9 @@ public class Amiga500Renderer extends AbstractCachedRenderer {
 				pixels[pyx + 2] = (byte) b;
 
 				if (config.dithering) {
-					float r_error = r0 - r;
-					float g_error = g0 - g;
-					float b_error = b0 - b;
+					final float r_error = r0 - r;
+					final float g_error = g0 - g;
+					final float b_error = b0 - b;
 
 					switch (config.dither_alg) {
 					case STD_FS:
@@ -360,35 +351,35 @@ public class Amiga500Renderer extends AbstractCachedRenderer {
 						break;
 					case ATKINSON:
 						if (x < (width - 1) * 3) {
-							work[pyx + 3] += r_error * 1 / 8;
-							work[pyx + 3 + 1] += g_error * 1 / 8;
-							work[pyx + 3 + 2] += b_error * 1 / 8;
+							work[pyx + 3] += r_error / 8;
+							work[pyx + 3 + 1] += g_error / 8;
+							work[pyx + 3 + 2] += b_error / 8;
 
 							if (x < (width - 2) * 3) {
-								work[pyx + 6] += r_error * 1 / 8;
-								work[pyx + 6 + 1] += g_error * 1 / 8;
-								work[pyx + 6 + 2] += b_error * 1 / 8;
+								work[pyx + 6] += r_error / 8;
+								work[pyx + 6 + 1] += g_error / 8;
+								work[pyx + 6 + 2] += b_error / 8;
 							}
 						}
 						if (y < height - 1) {
-							work[py1x - 3] += r_error * 1 / 8;
-							work[py1x - 3 + 1] += g_error * 1 / 8;
-							work[py1x - 3 + 2] += b_error * 1 / 8;
+							work[py1x - 3] += r_error / 8;
+							work[py1x - 3 + 1] += g_error / 8;
+							work[py1x - 3 + 2] += b_error / 8;
 
-							work[py1x] += r_error * 1 / 8;
-							work[py1x + 1] += g_error * 1 / 8;
-							work[py1x + 2] += b_error * 1 / 8;
+							work[py1x] += r_error / 8;
+							work[py1x + 1] += g_error / 8;
+							work[py1x + 2] += b_error / 8;
 
 							if (x < (width - 1) * 3) {
-								work[py1x + 3] += r_error * 1 / 8;
-								work[py1x + 3 + 1] += g_error * 1 / 8;
-								work[py1x + 3 + 2] += b_error * 1 / 8;
+								work[py1x + 3] += r_error / 8;
+								work[py1x + 3 + 1] += g_error / 8;
+								work[py1x + 3 + 2] += b_error / 8;
 							}
 
 							if (y < height - 2) {
-								work[py2x] += r_error * 1 / 8;
-								work[py2x + 1] += g_error * 1 / 8;
-								work[py2x + 2] += b_error * 1 / 8;
+								work[py2x] += r_error / 8;
+								work[py2x + 1] += g_error / 8;
+								work[py2x + 2] += b_error / 8;
 							}
 						}
 						break;
@@ -396,123 +387,5 @@ public class Amiga500Renderer extends AbstractCachedRenderer {
 				}
 			}
 		}
-	}
-
-	@Override
-	protected JMenuBar getMenuBar() {
-		final JMenu menuFile = new JMenu("File");
-		menuFile.setMnemonic(KeyEvent.VK_F);
-
-		final JMenuItem miArtStudio = new JMenuItem("Export as picture... ");
-		miArtStudio.setMnemonic(KeyEvent.VK_S);
-		miArtStudio.setAccelerator(
-				KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
-		miArtStudio.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				try {
-					String path = Utils.createDirectory(Config.export_path) + "/";
-
-					final int result = JOptionPane.showConfirmDialog(null, "Export " + fileName + "?", "Confirm",
-							JOptionPane.YES_NO_OPTION);
-					if (result == 0)
-						exportIFF(path, fileName);
-				} catch (final IOException ex) {
-					JOptionPane.showMessageDialog(null, "Error", ex.getMessage(), JOptionPane.ERROR_MESSAGE);
-				}
-			}
-		});
-		menuFile.add(miArtStudio);
-
-		final JMenuBar menuBar = new JMenuBar();
-		menuBar.add(menuFile);
-
-		return menuBar;
-	}
-
-	protected void exportIFF(final String path, String fileName) {
-		try {
-			if (fileName.length() > 8)
-				fileName = fileName.substring(0, 7);
-
-			fileName = fileName.toUpperCase().replaceAll("[_ ]", "-");
-			final BufferedOutputStream chk = new BufferedOutputStream(new FileOutputStream(path + fileName + ".iff"),
-					8192);
-
-			int videoMode = 0, aspectX = 0, aspectY = 0, planes = 0;
-			switch (((Amiga500Config) config).video_mode) {
-			case STD_320x256:
-				videoMode = 0x0000;
-				aspectX = 44;
-				aspectY = 44;
-				planes = 5;
-				break;
-			case HAM6_320x256:
-				videoMode = 0x0800;
-				aspectX = 44;
-				aspectY = 44;
-				planes = 6;
-				break;
-			case STD_320x512:
-				videoMode = 0x0004;
-				aspectX = 22;
-				aspectY = 44;
-				planes = 5;
-				break;
-			case HAM6_320x512:
-				videoMode = 0x0804;
-				aspectX = 22;
-				aspectY = 44;
-				planes = 6;
-				break;
-			}
-
-			final boolean compressed = ((AmigaConfig) config).rleCompress;
-			chk.write(IFF.getILBMFormat(
-					IFF.chunk("BMHD", IFF.getILBMHD(width, height, aspectX, aspectY, planes, compressed)),
-					IFF.chunk("CMAP", IFF.getCMAP(pictureColors, image.getType())),
-					IFF.chunk("CAMG", IFF.bigEndianDWORD(videoMode)),
-					IFF.chunk("BODY", IFF.getBitmap(width, height, bitplanes, compressed))));
-
-			chk.close();
-
-			frame.setTitle(frame.getTitle() + " SAVED");
-		} catch (final IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	@Override
-	protected String getTitle() {
-		return "A500 " + getWidth() + "x" + getHeight();
-	}
-
-	@Override
-	protected int getHeight() {
-		switch (((Amiga500Config) config).video_mode) {
-		case HAM6_320x256:
-		case STD_320x256:
-			return 256;
-
-		case HAM6_320x512:
-		case STD_320x512:
-			return 512;
-		}
-
-		return -1;
-	}
-
-	@Override
-	protected int getWidth() {
-		return 320;
-	}
-
-	@Override
-	protected int getScreenHeight() {
-		return 512;
-	}
-
-	@Override
-	protected int getScreenWidth() {
-		return 640;
 	}
 }

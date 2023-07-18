@@ -1,8 +1,8 @@
 package pl.dido.image.amiga;
 
-import pl.dido.image.Config;
+import pl.dido.image.utils.Config;
 
-public class AmigaConfig extends Config {
+public abstract class AmigaConfig extends Config {
 	
 	public boolean rleCompress;
 	

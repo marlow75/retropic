@@ -1,4 +1,6 @@
-package pl.dido.image.utils;
+package pl.dido.image.utils.neural;
+
+import pl.dido.image.utils.Gfx;
 
 public class HAMFixedPalette extends SOMFixedPalette {
 	
@@ -24,7 +26,7 @@ public class HAMFixedPalette extends SOMFixedPalette {
 				final float g = ((rgb[i + 1] & 0xff) / scale);
 				final float b = ((rgb[i + 2] & 0xff) / scale);
 				
-				final float d = (float) Math.sqrt(Utils.euclideanDistance(r, g, b, or, og, ob));
+				final float d = (float) Math.sqrt(Gfx.euclideanDistance(r, g, b, or, og, ob));
 				a = ((d + a) / 2) * 1.35f;
 				
 				if (d > a)
