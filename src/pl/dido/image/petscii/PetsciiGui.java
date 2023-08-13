@@ -25,7 +25,7 @@ public class PetsciiGui {
 		lblConvertLabel.setBounds(20, 86, 169, 14);
 		petsciiC64.add(lblConvertLabel);
 
-		final JRadioButton rdbtnL1Button = new JRadioButton("One hidden layer, sigmoid activation");
+		final JRadioButton rdbtnL1Button = new JRadioButton("One hidden layer, semigraphics");
 		rdbtnL1Button.setToolTipText("Simple and fast network architecture");
 		rdbtnL1Button.setFont(GuiUtils.std);
 		rdbtnL1Button.setBounds(46, 112, 331, 23);
@@ -38,7 +38,7 @@ public class PetsciiGui {
 
 		petsciiC64.add(rdbtnL1Button);
 
-		final JRadioButton rdbtnL2Button = new JRadioButton("Two hidden layers, sigmoid activation");
+		final JRadioButton rdbtnL2Button = new JRadioButton("Two hidden layers, characters");
 		rdbtnL2Button.setToolTipText("Robust but a kind of slow network architecture");
 		rdbtnL2Button.setFont(GuiUtils.std);
 		rdbtnL2Button.setBounds(46, 137, 331, 23);

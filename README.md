@@ -6,6 +6,8 @@ Accepts JPG, PNG file formats and RGB, BGR pixel formats.
 
 You can download executable jar [here](retropic.jar).
 
+Requirements: JRE16 installed.
+
 ## Supported machines
 
 * C64, hires 320x200, multicolor 160x200, standard text mode 40x25

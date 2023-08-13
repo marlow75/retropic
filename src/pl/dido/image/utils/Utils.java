@@ -27,7 +27,7 @@ public class Utils {
 
 	public static String createDirectory(final String directory) throws IOException {
 		final Path path = Paths.get(directory);
-		return (!Files.isDirectory(path)) ? Files.createDirectory(path).toString() : path.toString();
+		return (!Files.exists(path)) ? Files.createDirectory(path).toString() : path.toString();
 	}
 
 	public static byte[] loadCharset(final InputStream is) throws IOException {
