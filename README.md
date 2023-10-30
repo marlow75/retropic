@@ -8,6 +8,11 @@ You can download executable jar [here](retropic.jar).
 
 Requirements: JRE16 installed.
 
+## Versions
+
+* 1.0 - Minor changes, time to start versioning
+* 0.1 - Initial version, bug fixes
+
 ## Supported machines
 
 * C64, hires 320x200, multicolor 160x200, standard text mode 40x25

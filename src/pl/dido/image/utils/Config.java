@@ -21,7 +21,6 @@ abstract public class Config implements Cloneable {
 	public int windowSize;
 	public int details;
 	
-	public static String fileName;
 	public static String export_path;
 
 	public DITHERING dither_alg;

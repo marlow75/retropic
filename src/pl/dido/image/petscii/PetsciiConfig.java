@@ -30,11 +30,9 @@ public class PetsciiConfig extends Config {
 		case L1:
 			n = "L1 ";
 			break;
-		case L2:
+		default:
 			n = "L2 ";
 			break;
-		default:
-			n = "SOFTMAX ";
 		}
 		
 		return "40x25x2 " + n + super.getConfigString();

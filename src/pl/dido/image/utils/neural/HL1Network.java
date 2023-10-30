@@ -6,10 +6,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Vector;
 import java.util.logging.Logger;
+
+import pl.dido.image.utils.ProgressListener;
 
 public class HL1Network implements Network, Serializable {
 
@@ -17,15 +20,15 @@ public class HL1Network implements Network, Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	
+
 	public static Logger log = Logger.getLogger(HL1Network.class.getCanonicalName());
 
 	public int IN = 8 * 8; // input layer
 	public int HID = 2 * 8 * 8; // hidden layer
-	
+
 	public int OUT = 256; // out
 	public float ERR_LIMIT = 0.1f;
-	
+
 	// adding momentum
 	public float momentum = 0.5f;
 
@@ -49,17 +52,19 @@ public class HL1Network implements Network, Serializable {
 
 	public float[] gradientOutput;
 	public float[] gradientHidden;
-	
-	//public float[] T;
+
+	protected ArrayList<ProgressListener> listeners;
 
 	public HL1Network(final int in, final int hid, final int out) {
-		IN = in; HID = hid; OUT = out;
-		
+		IN = in;
+		HID = hid;
+		OUT = out;
+
 		I = new float[IN];
 
 		H = new float[HID];
 		O = new float[OUT];
-		
+
 		W = new float[HID][IN];
 		V = new float[OUT][HID];
 
@@ -71,26 +76,39 @@ public class HL1Network implements Network, Serializable {
 
 		gradientOutput = new float[OUT];
 		gradientHidden = new float[HID];
-		
+
 		initWeight(W);
 		initWeight(V);
-		
+
 		initThreshold(hiddenBias);
 		initThreshold(outputBias);
 	}
-	
+
 	public void initWeight(float[][] w) {
 		for (int i = 0; i < w.length; i++)
 			for (int j = 0; j < w[i].length; j++) {
 				// [-0.1, 0.1]
-				w[i][j] = ((float)Math.random() - 0.5f) * 2f;
+				w[i][j] = ((float) Math.random() - 0.5f) * 2f;
 			}
+	}
+
+	public void addProgressListener(final ProgressListener listener) {
+		if (listeners == null)
+			listeners = new ArrayList<ProgressListener>();
+
+		listeners.add(listener);
+	}
+
+	public void notifyListeners() {
+		if (listeners != null)
+			for (final ProgressListener listener : listeners)
+				listener.notifyProgress();
 	}
 
 	public void initThreshold(float[] threshold) {
 		for (int i = 0; i < threshold.length; i++) {
 			// [-0.1, 0.1]
-			threshold[i] = ((float)Math.random() - 0.5f) * 2.f;
+			threshold[i] = ((float) Math.random() - 0.5f) * 2.f;
 		}
 	}
 
@@ -101,28 +119,28 @@ public class HL1Network implements Network, Serializable {
 	protected float derivative(final float x) {
 		return x * (1 - x);
 	}
-	
+
 	public void forward(final Dataset d) {
-		for (int i = 0; i < IN; i++)			
+		for (int i = 0; i < IN; i++)
 			I[i] = d.getInput(i);
 
 		for (int j = 0; j < HID; j++) {
 			float sum = 0f;
 			final float w[] = W[j];
-			
+
 			for (int i = 0; i < IN; i++)
 				sum += w[i] * I[i];
-			
+
 			H[j] = activation(sum + hiddenBias[j]);
 		}
 
 		for (int k = 0; k < OUT; k++) {
 			float sum = 0f;
 			final float v[] = V[k];
-			
+
 			for (int j = 0; j < HID; j++)
 				sum += v[j] * H[j];
-			
+
 			O[k] = activation(sum + outputBias[k]);
 		}
 	}
@@ -178,29 +196,29 @@ public class HL1Network implements Network, Serializable {
 
 		return error;
 	}
-	
-	public void batchLearn(final Vector<Vector<Dataset>> batches) {
+
+	public void batchTrain(final Vector<Vector<Dataset>> batches) {
 		log.info("Learing...");
 
 		for (int loop = 0; loop < EPOCHS; loop++) {
 			float error = 0f;
-			
-			for (final Vector<Dataset> batch: batches) {
+
+			for (final Vector<Dataset> batch : batches) {
 				Collections.shuffle(batch);
 				final float output[] = new float[OUT];
-				
+
 				for (final Enumeration<Dataset> e = batch.elements(); e.hasMoreElements();) {
 					final Dataset dataset = e.nextElement();
-	
+
 					for (int i = 0; i < IN; i++)
 						output[i] += dataset.getOutput(i);
-						
-					forward(dataset);					
+
+					forward(dataset);
 				}
 
-				error += back(new Dataset(null, output));				
+				error += back(new Dataset(null, output));
 			}
-			
+
 			if (loop % 100 == 0)
 				log.info(loop + ": " + error);
 
@@ -210,14 +228,14 @@ public class HL1Network implements Network, Serializable {
 
 		log.info("done.");
 	}
-	
-	public void learn(final Vector<Dataset> samples) {
+
+	public void train(final Vector<Dataset> samples) {
 		log.info("Learning...");
 		int count = 0;
-		
+
 		for (int loop = 0; loop < EPOCHS; loop++) {
 			float error = 0f;
-		
+
 			count = 0;
 			Collections.shuffle(samples);
 			for (final Enumeration<Dataset> e = samples.elements(); e.hasMoreElements();) {
@@ -230,6 +248,8 @@ public class HL1Network implements Network, Serializable {
 
 			if (loop % 100 == 0) {
 				error /= count;
+
+				notifyListeners();
 				log.info(loop + ": " + error);
 			}
 
@@ -239,67 +259,67 @@ public class HL1Network implements Network, Serializable {
 
 		log.info("done.");
 	}
-	
+
 	public float[] getResult() {
 		return this.O;
 	}
-	
+
 	protected void loadNetwork(final DataInputStream dos) throws IOException {
 		for (int i = 0; i < W.length; i++)
-	    	for (int j = 0; j < I.length; j++)
-	    		W[i][j] = dos.readFloat();
+			for (int j = 0; j < I.length; j++)
+				W[i][j] = dos.readFloat();
 
-	    for (int i = 0; i < V.length; i++)
-	    	for (int j = 0; j < W.length; j++)
-	    		V[i][j] = dos.readFloat();
-	    
-	    for (int i = 0; i < hiddenBias.length; i++)
-	    	hiddenBias[i] = dos.readFloat();
+		for (int i = 0; i < V.length; i++)
+			for (int j = 0; j < W.length; j++)
+				V[i][j] = dos.readFloat();
 
-	    for (int i = 0; i < outputBias.length; i++)
-	    	outputBias[i] = dos.readFloat();
-	    
-	    for (int i = 0; i < gradientOutput.length; i++)
-	    	gradientOutput[i] = dos.readFloat();
+		for (int i = 0; i < hiddenBias.length; i++)
+			hiddenBias[i] = dos.readFloat();
 
-	    for (int i = 0; i < gradientHidden.length; i++)
-	    	gradientHidden[i] = dos.readFloat();
+		for (int i = 0; i < outputBias.length; i++)
+			outputBias[i] = dos.readFloat();
+
+		for (int i = 0; i < gradientOutput.length; i++)
+			gradientOutput[i] = dos.readFloat();
+
+		for (int i = 0; i < gradientHidden.length; i++)
+			gradientHidden[i] = dos.readFloat();
 	}
-	
+
 	public void load(final InputStream inputStream) throws IOException {
-	    final DataInputStream dos = new DataInputStream(inputStream);
-	    loadNetwork(dos);
-	    
-	    dos.close();		
+		final DataInputStream dos = new DataInputStream(inputStream);
+		loadNetwork(dos);
+
+		dos.close();
 	}
-	
+
 	protected void saveNetwork(final DataOutputStream dos) throws IOException {
-	    for (int i = 0; i < W.length; i++)
-	    	for (int j = 0; j < I.length; j++)
-	    		dos.writeFloat(W[i][j]);
+		for (int i = 0; i < W.length; i++)
+			for (int j = 0; j < I.length; j++)
+				dos.writeFloat(W[i][j]);
 
-	    for (int i = 0; i < V.length; i++)
-	    	for (int j = 0; j < W.length; j++)
-	    		dos.writeFloat(V[i][j]);
-	    
-	    for (int i = 0; i < hiddenBias.length; i++)
-	    	dos.writeFloat(hiddenBias[i]);
+		for (int i = 0; i < V.length; i++)
+			for (int j = 0; j < W.length; j++)
+				dos.writeFloat(V[i][j]);
 
-	    for (int i = 0; i < outputBias.length; i++)
-	    	dos.writeFloat(outputBias[i]);
-	    
-	    for (int i = 0; i < gradientOutput.length; i++)
-	    	dos.writeFloat(gradientOutput[i]);
+		for (int i = 0; i < hiddenBias.length; i++)
+			dos.writeFloat(hiddenBias[i]);
 
-	    for (int i = 0; i < gradientHidden.length; i++)
-	    	dos.writeFloat(gradientHidden[i]);
+		for (int i = 0; i < outputBias.length; i++)
+			dos.writeFloat(outputBias[i]);
+
+		for (int i = 0; i < gradientOutput.length; i++)
+			dos.writeFloat(gradientOutput[i]);
+
+		for (int i = 0; i < gradientHidden.length; i++)
+			dos.writeFloat(gradientHidden[i]);
 	}
 
 	@Override
 	public void save(final OutputStream outputStream) throws IOException {
-	    final DataOutputStream dos = new DataOutputStream(outputStream);
-	    saveNetwork(dos);
-	    
-	    dos.close();
+		final DataOutputStream dos = new DataOutputStream(outputStream);
+		saveNetwork(dos);
+
+		dos.close();
 	}
 }

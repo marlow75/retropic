@@ -49,18 +49,19 @@ public class PetsciiRunner extends AbstractRendererRunner {
 			in.close();
 
 			// first background color
-			out.write(petscii.backgroundColor & 0xf);
+			out.write(petscii.getBackgroundColor() & 0xf);
 
+			int table[] = petscii.getScreen();
 			// bitmap
 			for (int i = 0; i < 1000; i++)
-				out.write(petscii.screen[i] & 0xff);
+				out.write(table[i] & 0xff);
 
+			table = petscii.getNibble();
 			// color nibbles
 			for (int i = 0; i < 1000; i++)
-				out.write(petscii.nibble[i] & 0xf);
+				out.write(table[i] & 0xf);
 
 			out.close();
-
 			frame.setTitle(frame.getTitle() + " SAVED");
 		} catch (final IOException e) {
 			e.printStackTrace();

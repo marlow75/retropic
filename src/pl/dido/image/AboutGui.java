@@ -12,11 +12,10 @@ import javax.swing.event.HyperlinkListener;
 
 import pl.dido.image.utils.Utils;
 
-public class AboutGui {
-	
+public class AboutGui {	
 	private static final byte[] tabInfo = "https://www.paypal.com/donate/?hosted_button_id=W746NY9CXMPTS".getBytes();
 
-	public static JPanel aboutTab() {
+	public static JPanel aboutTab(final String aboutHTML) {
 		final JPanel panelAbout = new JPanel();
 		panelAbout.setLayout(null);
 
@@ -39,7 +38,7 @@ public class AboutGui {
 		});
 
 		try {
-			aboutText.setPage(Utils.getResourceAsURL("about.htm"));
+			aboutText.setPage(Utils.getResourceAsURL(aboutHTML));
 		} catch (final IOException e) {
 			// nothing
 		}

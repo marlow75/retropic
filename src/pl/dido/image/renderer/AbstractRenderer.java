@@ -10,8 +10,8 @@ import pl.dido.image.utils.Gfx;
 
 public abstract class AbstractRenderer {
 
-	protected int palette[][];
-	protected byte pixels[];
+	public int palette[][];
+	public byte pixels[];
 
 	protected int width;
 	protected int height;
@@ -25,12 +25,7 @@ public abstract class AbstractRenderer {
 	public int colorModel;
 
 	private void initialize(final Config config) {
-		// copy of configuration
-		try {
-			this.config = (Config) config.clone();
-		} catch (final CloneNotSupportedException ex) {
-			this.config = config;
-		}
+		this.config = config;
 
 		width = config.getWidth();
 		height = config.getHeight();
@@ -89,7 +84,7 @@ public abstract class AbstractRenderer {
 		}
 
 		setupPalette();
-
+		
 		if (config.dithering)
 			imageDithering();
 

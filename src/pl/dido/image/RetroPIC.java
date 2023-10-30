@@ -118,7 +118,7 @@ public class RetroPIC {
 		tabbedPane.addTab("Atari ST", null, STGui.stTab(stConfig), null);
 		tabbedPane.addTab("Amiga 500", null, Amiga500Gui.amigaTab(amiga500Config), null);
 		tabbedPane.addTab("Amiga 1200", null, Amiga1200Gui.amigaTab(amiga1200Config), null);
-		tabbedPane.addTab("About", null, AboutGui.aboutTab(), null);
+		tabbedPane.addTab("About", null, AboutGui.aboutTab("aboutRetroPIC.htm"), null);
 		
 		tabbedPane.addChangeListener(new ChangeListener() {
 			public void stateChanged(final ChangeEvent changeEvent) {

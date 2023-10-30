@@ -19,21 +19,65 @@ public class PetsciiRenderer extends AbstractRenderer {
 
 	private final static int power2[] = new int[] { 128, 64, 32, 16, 8, 4, 2, 1 };
 
-	private final static String PETSCII_NETWORK_L1 = "petscii.L1network";
-	private final static String PETSCII_NETWORK_L2 = "petscii.L2network";
+	protected final static String PETSCII_NETWORK_L1 = "petscii.L1network";
+	protected final static String PETSCII_NETWORK_L2 = "petscii.L2network";
 
-	private final static String PETSCII_CHARSET = "petscii.bin";
+	protected final static String PETSCII_CHARSET = "petscii.bin";
 
-	public int bitmap[] = new int[40 * 200];
-	public int screen[] = new int[1000];
-
-	public int nibble[] = new int[1000];
-	public int backgroundColor = 0;
+	protected int screen[] = new int[1000];
+	protected int nibble[] = new int[1000];
 	
-	private void initialize() {
+	protected int backgroundColor = 0;
+	
+	protected Network neural; // matches pattern with petscii
+	protected byte charset[]; // charset 8x8 pixels per char
+	
+	protected void initialize() {
 		palette = new int[16][3];
+		final String networkFile;
+
+		switch (((PetsciiConfig) config).network) {
+		case L2:
+			neural = new HL2Network(64, 128, 256);
+			networkFile = PETSCII_NETWORK_L2;
+
+			break;
+		default:
+			neural = new HL1Network(64, 128, 256);
+			networkFile = PETSCII_NETWORK_L1;
+
+			break;
+		}
+
+		try {
+			charset = Utils.loadCharset(Utils.getResourceAsStream(PETSCII_CHARSET));
+			neural.load(Utils.getResourceAsStream(networkFile));
+		} catch (final IOException e) {
+			// mass hysteria
+			throw new RuntimeException(e);
+		}
 	}
 	
+	public int getBackgroundColor() {
+		return backgroundColor;
+	}
+	
+	public int[] getScreen() {
+		return screen;
+	}
+	
+	public int[] getNibble() {
+		return nibble;
+	}
+	
+	public byte[] getCharset() {
+		return charset;
+	}
+
+	public void setBackgroundColor(final int backgroundColor) {
+		this.backgroundColor = backgroundColor;
+	}
+
 	public PetsciiRenderer(final PetsciiConfig config) {
 		super(config);
 		initialize();
@@ -72,34 +116,6 @@ public class PetsciiRenderer extends AbstractRenderer {
 	}
 
 	protected void petscii() {
-		// matches pattern with petscii
-		final Network neural;
-
-		// charset 8x8 pixels per char
-		final byte charset[];
-		final String networkFile;
-
-		switch (((PetsciiConfig) config).network) {
-		case L2:
-			neural = new HL2Network(64, 128, 256);
-			networkFile = PETSCII_NETWORK_L2;
-
-			break;
-		default:
-			neural = new HL1Network(64, 128, 256);
-			networkFile = PETSCII_NETWORK_L1;
-
-			break;
-		}
-
-		try {
-			charset = Utils.loadCharset(Utils.getResourceAsStream(PETSCII_CHARSET));
-			neural.load(Utils.getResourceAsStream(networkFile));
-		} catch (final IOException e) {
-			// mass hysteria
-			throw new RuntimeException(e);
-		}
-
 		// tiles screen and pattern
 		final int work[] = new int[64 * 3];
 		final float tile[] = new float[64];
@@ -129,7 +145,7 @@ public class PetsciiRenderer extends AbstractRenderer {
 		}
 
 		// most occurrence color as background
-		backgroundColor = k;
+		setBackgroundColor(k);
 
 		nr = palette[k][0];
 		ng = palette[k][1];
