@@ -10,6 +10,7 @@ Requirements: JRE16 installed.
 
 ## Versions
 
+* 1.1 - Minor bug fixes, CPC new palette
 * 1.0 - Minor changes, time to start versioning
 * 0.1 - Initial version, bug fixes
 
