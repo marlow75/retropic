@@ -10,10 +10,17 @@ import pl.dido.image.utils.neural.SOMWinnerFixedPalette;
 public class CPCRenderer extends AbstractRenderer {
 
 	// CPC palette 27 colors
-	private final static int colors[] = new int[] { 0x000201, 0x00026B, 0x0C02F4, 0x6C0201, 0x690268, 0x6C02F2,
-			0xF30506, 0xF00268, 0xF302F4, 0x027801, 0x007868, 0x0C7BF4, 0x6E7B01, 0x6E7D6B, 0x6E7BF6, 0xF37D0D,
-			0xF37D6B, 0xFA80F9, 0x02F001, 0x00F36B, 0x0FF3F2, 0x71F504, 0x71F36B, 0x71F3F4, 0xF3F30D, 0xF3F36D,
-			0xFFF3F9};
+	// real palette
+//	private final static int colors[] = new int[] { 0x000201, 0x00026B, 0x0C02F4, 0x6C0201, 0x690268, 0x6C02F2,
+//			0xF30506, 0xF00268, 0xF302F4, 0x027801, 0x007868, 0x0C7BF4, 0x6E7B01, 0x6E7D6B, 0x6E7BF6, 0xF37D0D,
+//			0xF37D6B, 0xFA80F9, 0x02F001, 0x00F36B, 0x0FF3F2, 0x71F504, 0x71F36B, 0x71F3F4, 0xF3F30D, 0xF3F36D,
+//			0xFFF3F9 };
+
+	// palette
+	private final static int colors[] = new int[] { 0x040404, 0x00007f, 0x0000ff, 0x800000, 0x800080, 0x7f00ff,
+			0xff0000, 0xff0080, 0xff00ff, 0x008000, 0x008080, 0x0080ff, 0x808000, 0x808080, 0x8080ff, 0xff7f00,
+			0xff8080, 0xff80ff, 0x01ff00, 0x01ff80, 0x01ffff, 0x80ff00, 0x80ff80, 0x80ffff, 0xffff00, 0xffff80, 
+			0xffffff };
 
 	protected int bitmap[] = new int[16384];
 	protected int pictureColors[][];
@@ -113,7 +120,7 @@ public class CPCRenderer extends AbstractRenderer {
 					min = luma;
 					im = i;
 				}
-				
+
 				if (luma > max) {
 					max = luma;
 					ix = i;
@@ -125,7 +132,7 @@ public class CPCRenderer extends AbstractRenderer {
 			c[0] = 255;
 			c[1] = 255;
 			c[2] = 255;
-			
+
 			c = p[im];
 			c[0] = 0;
 			c[1] = 0;
@@ -195,7 +202,7 @@ public class CPCRenderer extends AbstractRenderer {
 					final int r_error = Gfx.saturate(r0 - r);
 					final int g_error = Gfx.saturate(g0 - g);
 					final int b_error = Gfx.saturate(b0 - b);
-					
+
 					if (x < (width - 1) * 3) {
 						work[pyx + 3] += r_error >> 3;
 						work[pyx + 3 + 1] += g_error >> 3;

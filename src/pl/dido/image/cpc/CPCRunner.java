@@ -26,7 +26,7 @@ public class CPCRunner extends AbstractRendererRunner {
 
 	public CPCRunner(final AbstractRenderer renderer, final String fileName) {
 		super(renderer, fileName);
-		cpc = (CPCRenderer) cpc;
+		cpc = (CPCRenderer) renderer;
 	}
 
 	private void writeAMSDOSFileHeader(final ChecksumOutputStream chk, final String fileName, final String ext,

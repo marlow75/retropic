@@ -9,6 +9,7 @@ public class SOMPalette {
 
 	protected float rate = 0.6f;  // defaults
 	protected float radius = 2f;
+	
 	protected int epoch = 10;
 	
 	public SOMPalette(final int width, final int height) {
@@ -30,10 +31,13 @@ public class SOMPalette {
 		
 		for (int y = 0; y < height; y++) {
 			final int line[][] = matrix[y];
+			
 			for (int x = 0; x < width; x++) {
-				line[x][0] = (int) (Math.random() * 255);
-				line[x][1] = (int) (Math.random() * 255);
-				line[x][2] = (int) (Math.random() * 255);
+				final int rgb[] = line[x];
+				
+				rgb[0] = (int) (Math.random() * 255);
+				rgb[1] = (int) (Math.random() * 255);
+				rgb[2] = (int) (Math.random() * 255);
 			}
 		}
 	}
@@ -63,28 +67,25 @@ public class SOMPalette {
 		for (int y = 0; y < height; y++) {
 			final int line[][] = matrix[y];
 			
-			for (int x = 0; x < width; x++) {
-				final int i = y * width + x;
-				
-				result[i][0] = line[x][0];
-				result[i][1] = line[x][1];
-				result[i][2] = line[x][2];
-			}
+			for (int x = 0; x < width; x++)
+				System.arraycopy(line[x], 0, result[y * width + x], 0, 3);
 		}
 
 		return result;
 	}
 
-	protected void learn(final Position best, final int red, final int green, final int blue) {
+	protected void learn(final Position best, final int r, final int g, final int b) {
 		for (int y = 0; y < height; y++) {
 			final int line[][] = matrix[y];
+			
 			for (int x = 0; x < width; x++) {				
 				// learn rate
 				final float n = rate * neighbourhood(distance(best.x, best.y, x, y), radius);
+				final int rgb[] = line[x];
 
-				line[x][0] += (int) (n * (red   - line[x][0]));
-				line[x][1] += (int) (n * (green - line[x][1]));
-				line[x][2] += (int) (n * (blue  - line[x][2]));
+				rgb[0] += (int) (n * (r - rgb[0]));
+				rgb[1] += (int) (n * (g - rgb[1]));
+				rgb[2] += (int) (n * (b - rgb[2]));
 			}
 		}
 	}
@@ -104,10 +105,12 @@ public class SOMPalette {
 		for (int y = 0; y < height; y++) {
 			final int line[][] = matrix[y];
 			
-			for (int x = 0; x < width; x++) {				
-				final int r = line[x][0];
-				final int g = line[x][1];
-				final int b = line[x][2];
+			for (int x = 0; x < width; x++) {
+				final int rgb[] = line[x];
+				
+				final int r = rgb[0];
+				final int g = rgb[1];
+				final int b = rgb[2];
 
 				// simple euclidean				
 				final float d = Gfx.euclideanDistance(red, green, blue, r, g, b);
