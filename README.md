@@ -123,7 +123,7 @@ Export to Delux Paint IFF file format.
 
 Early, experimental interlaced modes. You can select max luma difference in blending colors together.
 
-* Naive 320x200 - use max 4 colors in 8x8 screen cell, 27-54 colors can be used without anoying flickering.
+* Naive 320x200 - use max 4 colors in 8x8 screen cell, 27-54 colors can be used without annoying flickering.
 * MCI 320x200 - use max 16 colors in 8x8 screen cell. Not usable yet. Very early stage, only a few suitable pictures can be converted. They must be dark or monochrome.
 
 Exports to executable PRG. In the future release one of standard format will be supported (editing).
