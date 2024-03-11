@@ -10,14 +10,15 @@ Requirements: JRE16 installed.
 
 ## Versions
 
+* 1.2 - Improved palette & color handling for C64, CPC, Amiga 500, experimental C64 extra 
 * 1.1 - Minor bug fixes, CPC new palette
 * 1.0 - Minor changes, time to start versioning
 * 0.1 - Initial version, bug fixes
 
 ## Supported machines
 
-* C64, hires 320x200, multicolor 160x200, standard text mode 40x25
-* ZX Spectrum 48/+ 256x192 in 8 colors.
+* C64, hires 320x200, multicolor 160x200, standard text mode 40x25, interlaced, MCI (first atempt, unworking yet)
+* ZX Spectrum 48/+ 256x192 in 16 colors.
 * Amstrad CPC series mode0 160x200 16 colors, mode1 320x200 in 4 colors.
 * Atari ST, 320x200 in 16 on screen from 512 palette colors.
 * Amiga 500/1000, PAL 320x256 and 320x512 in 32 colors or in HAM6 encoding, 4096 palette colors.
@@ -44,7 +45,7 @@ Try all options available.
 16 colors total, 4 modes, 2 usefull for graphics
 
 * 320x200 - use 2 colors in 8x8 screen cell.
-* 160x200 - use 4 colors in 4x8 screen cell, average or brightest color are choosen when shrinking to 320->160.
+* 160x200 - use 4 colors in 4x8 screen cell, average or brightest color are choosen when shrinking 320->160.
 
 Exports to executable PRG or to Art Studio (hires) and Koala Paint (multicolor).
 
@@ -80,7 +81,7 @@ Exports to native SCR snapshoot.
 * replace brightest - replaces brightest color with dimmed yellow
 
 * 320x200 - use 4 colors on whole screen.
-* 160x200 - use 16 colors on whole screen, average or brightest color are choosen when shrinking to 320->160.
+* 160x200 - use 16 colors on whole screen, average or brightest color are choosen when shrinking 320->160.
 
 Palette is result of Kohonen pixel classification. Exports to Advanced Art Studio with standalone palette file. All files generated with AMSDOS headers.
 
@@ -117,3 +118,14 @@ Export to Delux Paint IFF file format.
 Export to Delux Paint IFF file format.
 
 ![HAM8 encoding](venusAMIGA1200.png)
+
+### Commodore C64 extra
+
+Early, experimental interlaced modes. You can select max luma difference in blending colors together.
+
+* Naive 320x200 - use max 4 colors in 8x8 screen cell, 27-54 colors can be used without anoying flickering.
+* MCI 320x200 - use max 16 colors in 8x8 screen cell. Not usable yet. Very early stage, only a few suitable pictures can be converted. They must be dark or monochrome.
+
+Exports to executable PRG. In the future release one of standard format will be supported (editing).
+
+![Hires](venusC64Extra.png)
