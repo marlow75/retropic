@@ -13,9 +13,9 @@ import pl.dido.image.utils.neural.Network;
 
 public class PetsciiRenderer extends AbstractRenderer {
 
-	// C64 palette
-	private final static int colors[] = new int[] { 0, 0xFFFFFF, 0x68372B, 0x70A4B2, 0x6F3D86, 0x588D43, 0x352879,
-			0xB8C76F, 0x6F4F25, 0x433900, 0x9A6759, 0x444444, 0x6C6C6C, 0x9AD284, 0x6C5EB5, 0x959595 };
+//	// C64 palette
+	private final static int colors[] = new int[] { 0, 0xffffff, 0x813338, 0x75cec8, 0x8e3c97, 0x56ac4d, 0x2e2c9b,
+			0xedf171, 0x8e5029, 0x553800, 0xc46c71, 0x4a4a4a, 0x7b7b7b, 0xa9ff9f, 0x706deb, 0xb2b2b2 };
 
 	private final static int power2[] = new int[] { 128, 64, 32, 16, 8, 4, 2, 1 };
 
@@ -90,7 +90,7 @@ public class PetsciiRenderer extends AbstractRenderer {
 
 	@Override
 	protected void setupPalette() {
-		switch (colorModel) {
+		switch (pixelType) {
 		case BufferedImage.TYPE_3BYTE_BGR:
 			for (int i = 0; i < colors.length; i++) {
 				palette[i][0] = colors[i] & 0x0000ff; // blue
@@ -130,8 +130,8 @@ public class PetsciiRenderer extends AbstractRenderer {
 			nb = pixels[i + 2] & 0xff;
 
 			// dimmer better
-			occurrence[Gfx.getColorIndex(colorAlg, colorModel, palette, nr, ng, nb)] += (255
-					- Gfx.getLumaByCM(colorModel, nr, ng, nb));
+			occurrence[Gfx.getColorIndex(colorAlg, pixelType, palette, nr, ng, nb)] += (255
+					- Gfx.getLumaByCM(pixelType, nr, ng, nb));
 		}
 
 		// get background color with maximum occurrence
@@ -151,7 +151,7 @@ public class PetsciiRenderer extends AbstractRenderer {
 		ng = palette[k][1];
 		nb = palette[k][2];
 
-		final float backLuma = Gfx.getLumaByCM(colorModel, nr, ng, nb);
+		final float backLuma = Gfx.getLumaByCM(pixelType, nr, ng, nb);
 
 		for (int y = 0; y < 200; y += 8) {
 			final int p = y * 320 * 3;
@@ -175,10 +175,10 @@ public class PetsciiRenderer extends AbstractRenderer {
 						work[index++] = g;
 						work[index++] = b;
 
-						final float distance = Math.abs(Gfx.getLumaByCM(colorModel, r, g, b) - backLuma);
+						final float distance = Math.abs(Gfx.getLumaByCM(pixelType, r, g, b) - backLuma);
 						if (max_distance < distance) {
 							max_distance = distance;
-							f = Gfx.getColorIndex(colorAlg, colorModel, palette, r, g, b);
+							f = Gfx.getColorIndex(colorAlg, pixelType, palette, r, g, b);
 						}
 					}
 				}
@@ -198,8 +198,8 @@ public class PetsciiRenderer extends AbstractRenderer {
 						final int b = work[pyx0 + 2];
 
 						// fore or background color?
-						final float df = Gfx.getDistanceByCM(colorAlg, colorModel, r, g, b, fr, fg, fb);
-						final float db = Gfx.getDistanceByCM(colorAlg, colorModel, r, g, b, nr, ng, nb);
+						final float df = Gfx.getDistanceByCM(colorAlg, pixelType, r, g, b, fr, fg, fb);
+						final float db = Gfx.getDistanceByCM(colorAlg, pixelType, r, g, b, nr, ng, nb);
 
 						// ones as color of the bright pixels
 						tile[(y0 << 3) + x0] = (df <= db) ? 1 : 0;

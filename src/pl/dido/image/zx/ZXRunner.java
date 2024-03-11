@@ -26,7 +26,7 @@ public class ZXRunner extends AbstractRendererRunner {
 
 	public ZXRunner(final AbstractRenderer renderer, final String fileName) {
 		super(renderer, fileName);
-		zx = (ZXSpectrumRenderer) zx;
+		zx = (ZXSpectrumRenderer) renderer;
 	}
 
 	private void hiresExport(final String fileName) {

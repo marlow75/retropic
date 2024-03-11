@@ -17,23 +17,23 @@ import pl.dido.image.utils.Utils;
 
 public abstract class AbstractRendererRunner implements Runnable {
 	private AbstractRenderer renderer;
-	
+
 	protected int width;
 	protected int height;
-	
+
 	protected JFrame frame;
 	protected Canvas canvas;
 
 	protected BufferStrategy bufferStrategy;
 	protected boolean windowVisible = false;
-	
+
 	protected String fileName;
-	
+
 	public AbstractRendererRunner(final AbstractRenderer renderer, final String fileName) {
 		this.renderer = renderer;
 		this.fileName = fileName;
 	}
-	
+
 	protected void initializeView() {
 		width = renderer.image.getWidth();
 		height = renderer.image.getHeight();
@@ -68,7 +68,7 @@ public abstract class AbstractRendererRunner implements Runnable {
 		canvas.createBufferStrategy(2);
 		bufferStrategy = canvas.getBufferStrategy();
 	}
-	
+
 	protected void showImage() {
 		final Graphics gfx = bufferStrategy.getDrawGraphics();
 
@@ -89,28 +89,26 @@ public abstract class AbstractRendererRunner implements Runnable {
 
 	public void run() {
 		initializeView();
-		
-		// wait for window
-		while (!windowVisible)
-			try {
-				Thread.sleep(100);
-			} catch (final InterruptedException e) {
-				e.printStackTrace();
-			}
 
 		try {
+			// wait for window
+			while (!windowVisible)
+				Thread.sleep(100);
+
 			canvas.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-			
+
 			renderer.imageProcess();
 			addWaterMark();
 
 			// show image after
-			showImage();			
+			showImage();
+		} catch (final InterruptedException ie) {
+			ie.printStackTrace();
 		} finally {
 			canvas.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		}
 	}
-	
+
 	private class ImageWindowListener extends WindowAdapter {
 		private AbstractRendererRunner runner;
 
@@ -132,7 +130,8 @@ public abstract class AbstractRendererRunner implements Runnable {
 			showImage();
 		}
 	}
-	
+
 	protected abstract String getTitle();
+
 	protected abstract JMenuBar getMenuBar();
 }

@@ -19,7 +19,7 @@ import pl.dido.image.utils.Config.NEAREST_COLOR;
 
 public class GuiUtils {
 
-	public final static Font std = new Font("Tahoma", Font.BOLD, 10);
+	public final static Font std = new Font("Tahoma", Font.PLAIN, 12);
 	public final static Font bold = new Font("Tahoma", Font.BOLD, 10);
 	
 	public static final JPanel addDitheringControls(final JPanel panel, final Config config) {		
@@ -124,8 +124,6 @@ public class GuiUtils {
 					
 			}
 		});
-
-		sldWindow.setPaintLabels(true);
 
 		// create the label table
 		final Hashtable<Integer, JLabel> labelTable1 = new Hashtable<Integer, JLabel>();

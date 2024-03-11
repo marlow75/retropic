@@ -10,16 +10,9 @@ import pl.dido.image.utils.neural.SOMWinnerFixedPalette;
 public class CPCRenderer extends AbstractRenderer {
 
 	// CPC palette 27 colors
-	// real palette
-//	private final static int colors[] = new int[] { 0x000201, 0x00026B, 0x0C02F4, 0x6C0201, 0x690268, 0x6C02F2,
-//			0xF30506, 0xF00268, 0xF302F4, 0x027801, 0x007868, 0x0C7BF4, 0x6E7B01, 0x6E7D6B, 0x6E7BF6, 0xF37D0D,
-//			0xF37D6B, 0xFA80F9, 0x02F001, 0x00F36B, 0x0FF3F2, 0x71F504, 0x71F36B, 0x71F3F4, 0xF3F30D, 0xF3F36D,
-//			0xFFF3F9 };
-
-	// palette
-	private final static int colors[] = new int[] { 0x040404, 0x00007f, 0x0000ff, 0x800000, 0x800080, 0x7f00ff,
-			0xff0000, 0xff0080, 0xff00ff, 0x008000, 0x008080, 0x0080ff, 0x808000, 0x808080, 0x8080ff, 0xff7f00,
-			0xff8080, 0xff80ff, 0x01ff00, 0x01ff80, 0x01ffff, 0x80ff00, 0x80ff80, 0x80ffff, 0xffff00, 0xffff80, 
+	private final static int colors[] = new int[] { 0x000000, 0x001290, 0x0027fb, 0x9b1708, 0x9a2091, 0x952ffb,
+			0xff3016, 0xff3492, 0xff3ffc, 0x008f15, 0x009092, 0x0094fc, 0x949119, 0x929292, 0x8e96fc, 0xff9621,
+			0xff9794, 0xff9afd, 0x00f92c, 0x00fa96, 0x00fcfe, 0x80fa2e, 0x7efb96, 0x78fdfe, 0xfffd33, 0xfffd98,
 			0xffffff };
 
 	protected int bitmap[] = new int[16384];
@@ -37,7 +30,7 @@ public class CPCRenderer extends AbstractRenderer {
 
 	@Override
 	protected void setupPalette() {
-		switch (colorModel) {
+		switch (pixelType) {
 		case BufferedImage.TYPE_3BYTE_BGR:
 			for (int i = 0; i < colors.length; i++) {
 				final int pixel[] = palette[i];
@@ -114,7 +107,7 @@ public class CPCRenderer extends AbstractRenderer {
 
 			for (int i = 0; i < size; i++) {
 				final int c[] = p[i];
-				final float luma = Gfx.getLumaByCM(colorModel, c[0], c[1], c[2]);
+				final float luma = Gfx.getLumaByCM(pixelType, c[0], c[1], c[2]);
 
 				if (luma < min) {
 					min = luma;
@@ -170,7 +163,7 @@ public class CPCRenderer extends AbstractRenderer {
 				g0 = work[pyx + 1];
 				b0 = work[pyx + 2];
 
-				final int color = Gfx.getColorIndex(colorAlg, colorModel, pictureColors, r0, g0, b0);
+				final int color = Gfx.getColorIndex(colorAlg, pixelType, pictureColors, r0, g0, b0);
 				final int c[] = pictureColors[color];
 
 				final int r = c[0];
@@ -268,6 +261,7 @@ public class CPCRenderer extends AbstractRenderer {
 				final int b2 = pixels[ph + 5] & 0xff;
 
 				final int r, g, b;
+				
 				switch (((CPCConfig) config).pixel_merge) {
 				case AVERAGE:
 					// average color
@@ -276,20 +270,19 @@ public class CPCRenderer extends AbstractRenderer {
 					b = (b1 + b2) >> 1;
 					break;
 				default:
-					if (Gfx.getLumaByCM(colorModel, r1, g1, b1) > Gfx.getLumaByCM(colorModel, r2, g2, b2)) {
-						r = r1;
-						g = g1;
-						b = b1;
-					} else {
-						r = r2;
-						g = g2;
-						b = b2;
-					}
-
+					final float l1 = Gfx.getLumaByCM(pixelType, r1, g1, b1) / 255;
+					final float l2 = Gfx.getLumaByCM(pixelType, r2, g2, b2) / 255;
+					
+					final float sum = (l1 + l2);
+					
+					r = (int) ((r1 * l1 + r2 * l2) / sum);
+					g = (int) ((g1 * l1 + g2 * l2) / sum);
+					b = (int) ((b1 * l1 + b2 * l2) / sum);
+					
 					break;
 				}
 
-				final int color = Gfx.getColorIndex(colorAlg, colorModel, pictureColors, r, g, b);
+				final int color = Gfx.getColorIndex(colorAlg, pixelType, pictureColors, r, g, b);
 				final int data = ((color & 1) != 0 ? bit0 : 0) | ((color & 2) != 0 ? bit1 : 0)
 						| ((color & 4) != 0 ? bit2 : 0) | ((color & 8) != 0 ? bit3 : 0);
 

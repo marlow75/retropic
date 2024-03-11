@@ -35,7 +35,7 @@ public class Amiga1200Renderer extends AbstractPictureColorsRenderer {
 		case HAM8_320x256:
 		case HAM8_320x512:
 		case HAM8_640x512:
-			training = new HAMFixedPalette(8, 8, 8); // 4x4 = 16 colors (4 bits)
+			training = new HAMFixedPalette(8, 8, 8); // 8x8 = 64 colors (8 bits)
 			pictureColors = training.train(pixels);
 
 			ham8Encoded();
@@ -74,7 +74,7 @@ public class Amiga1200Renderer extends AbstractPictureColorsRenderer {
 				g0 = Gfx.saturate(work[pyx + 1]);
 				b0 = Gfx.saturate(work[pyx + 2]);
 
-				final int color = Gfx.getColorIndex(colorAlg, colorModel, pictureColors, r0, g0, b0); // 256 colors
+				final int color = Gfx.getColorIndex(colorAlg, pixelType, pictureColors, r0, g0, b0); // 256 colors
 				final int c[] = pictureColors[color];
 
 				final int r = c[0];
@@ -208,12 +208,12 @@ public class Amiga1200Renderer extends AbstractPictureColorsRenderer {
 				b0 = Gfx.saturate((int) work[pyx + 2]);
 
 				// find closest palette color
-				int action = Gfx.getColorIndex(colorAlg, colorModel, pictureColors, r0, g0, b0); // 64 color palette
+				int action = Gfx.getColorIndex(colorAlg, pixelType, pictureColors, r0, g0, b0); // 64 color palette
 				final int pc[] = pictureColors[action];
 
 				if (nextPixel) { // it's not first pixel in a row so use best matching color
 					// distance to palette match
-					final float dpc = Gfx.getDistanceByCM(colorAlg, colorModel, r0, g0, b0, pc[0], pc[1], pc[2]);
+					final float dpc = Gfx.getDistanceByCM(colorAlg, pixelType, r0, g0, b0, pc[0], pc[1], pc[2]);
 
 					float min_r = Float.MAX_VALUE; // minimum red
 					float min_g = min_r;
@@ -229,9 +229,9 @@ public class Amiga1200Renderer extends AbstractPictureColorsRenderer {
 						final int scaled = (int)(i * 4.048f);
 
 						// which component change gets minimum error?
-						final float dr = Gfx.getDistanceByCM(colorAlg, colorModel, r0, g0, b0, scaled, g, b);
-						final float dg = Gfx.getDistanceByCM(colorAlg, colorModel, r0, g0, b0, r, scaled, b);
-						final float db = Gfx.getDistanceByCM(colorAlg, colorModel, r0, g0, b0, r, g, scaled);
+						final float dr = Gfx.getDistanceByCM(colorAlg, pixelType, r0, g0, b0, scaled, g, b);
+						final float dg = Gfx.getDistanceByCM(colorAlg, pixelType, r0, g0, b0, r, scaled, b);
+						final float db = Gfx.getDistanceByCM(colorAlg, pixelType, r0, g0, b0, r, g, scaled);
 
 						if (dr < min_r) {
 							ri = scaled;

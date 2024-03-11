@@ -43,7 +43,7 @@ public class STRenderer extends AbstractPictureColorsRenderer {
 	@Override
 	protected void imagePostproces() {
 		final SOMFixedPalette training = new SOMFixedPalette(4, 4, 3); // 4x4 = 16 colors
-		pictureColors = training.train(pixels);
+		pictureColors = normalizePalette(training.train(pixels));
 
 		std16();
 	}
@@ -69,7 +69,7 @@ public class STRenderer extends AbstractPictureColorsRenderer {
 				g0 = Gfx.saturate(work[pyx + 1]);
 				b0 = Gfx.saturate(work[pyx + 2]);
 
-				final int color = Gfx.getColorIndex(colorAlg, colorModel, pictureColors, r0, g0, b0);
+				final int color = Gfx.getColorIndex(colorAlg, pixelType, pictureColors, r0, g0, b0);
 				final int c[] = pictureColors[color];
 
 				final int r = c[0];

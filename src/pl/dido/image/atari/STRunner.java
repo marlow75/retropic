@@ -82,7 +82,7 @@ public class STRunner extends AbstractRendererRunner {
 				final int b;
 
 				final int color[] = st.pictureColors[i];
-				switch (st.colorModel) {
+				switch (st.pixelType) {
 				case BufferedImage.TYPE_3BYTE_BGR:
 					b = color[0] / 32; // 8 -> 3 bits
 					g = color[1] / 32;

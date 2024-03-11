@@ -78,7 +78,7 @@ public class ZXSpectrumRenderer extends AbstractRenderer {
 						work[position + 1] = g;
 						work[position + 2] = b;
 
-						final float luma = Gfx.getLumaByCM(colorModel, r, g, b);
+						final float luma = Gfx.getLumaByCM(pixelType, r, g, b);
 
 						if (luma >= 128) {
 							rf += r;
@@ -147,8 +147,8 @@ public class ZXSpectrumRenderer extends AbstractRenderer {
 						int ng = palette[n][1];
 						int nb = palette[n][2];
 
-						final float d1 = Gfx.getDistanceByCM(colorAlg, colorModel, r, g, b, fr, fg, fb);
-						final float d2 = Gfx.getDistanceByCM(colorAlg, colorModel, r, g, b, nr, ng, nb);
+						final float d1 = Gfx.getDistanceByCM(colorAlg, pixelType, r, g, b, fr, fg, fb);
+						final float d2 = Gfx.getDistanceByCM(colorAlg, pixelType, r, g, b, nr, ng, nb);
 
 						if (d1 < d2) {
 							nr = fr;

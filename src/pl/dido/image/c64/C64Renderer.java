@@ -8,8 +8,8 @@ import pl.dido.image.utils.Gfx;
 public class C64Renderer extends AbstractRenderer {
 
 	// C64 palette
-	private final static int colors[] = new int[] { 0, 0xFFFFFF, 0x68372B, 0x70A4B2, 0x6F3D86, 0x588D43, 0x352879,
-			0xB8C76F, 0x6F4F25, 0x433900, 0x9A6759, 0x444444, 0x6C6C6C, 0x9AD284, 0x6C5EB5, 0x959595 };
+	private final static int colors[] = new int[] { 0, 0xffffff, 0x813338, 0x75cec8, 0x8e3c97, 0x56ac4d, 0x2e2c9b,
+			0xedf171, 0x8e5029, 0x553800, 0xc46c71, 0x4a4a4a, 0x7b7b7b, 0xa9ff9f, 0x706deb, 0xb2b2b2 };
 
 	protected int bitmap[] = new int[40 * 200];
 	protected int screen[] = new int[1000];
@@ -25,7 +25,7 @@ public class C64Renderer extends AbstractRenderer {
 
 	@Override
 	protected void setupPalette() {
-		switch (colorModel) {
+		switch (pixelType) {
 		case BufferedImage.TYPE_3BYTE_BGR:
 			for (int i = 0; i < colors.length; i++) {
 				palette[i][0] = (colors[i] & 0x0000ff); // blue
@@ -97,7 +97,7 @@ public class C64Renderer extends AbstractRenderer {
 							break;
 						}
 
-						final float luma = Gfx.getLumaByCM(colorModel, r, g, b);
+						final float luma = Gfx.getLumaByCM(pixelType, r, g, b);
 
 						if (luma > max) {
 							max = luma;
@@ -141,8 +141,8 @@ public class C64Renderer extends AbstractRenderer {
 						int ng = cn[1];
 						int nb = cn[2];
 
-						final float d1 = Gfx.getDistanceByCM(colorAlg, colorModel, r, g, b, fr, fg, fb);
-						final float d2 = Gfx.getDistanceByCM(colorAlg, colorModel, r, g, b, nr, ng, nb);
+						final float d1 = Gfx.getDistanceByCM(colorAlg, pixelType, r, g, b, fr, fg, fb);
+						final float d2 = Gfx.getDistanceByCM(colorAlg, pixelType, r, g, b, nr, ng, nb);
 
 						if (d1 < d2) {
 							nr = fr;
@@ -274,11 +274,11 @@ public class C64Renderer extends AbstractRenderer {
 							b = (b1 + b2) >> 1;
 							break;
 						default:
-							final float l1 = Gfx.getLumaByCM(colorModel, r1, g1, b1);
-							final float l2 = Gfx.getLumaByCM(colorModel, r2, g2, b2);
-							
+							final float l1 = Gfx.getLumaByCM(pixelType, r1, g1, b1);
+							final float l2 = Gfx.getLumaByCM(pixelType, r2, g2, b2);
+
 							final float sum = l1 + l2;
-							
+
 							r = (int) ((r1 * l1 + r2 * l2) / sum);
 							g = (int) ((g1 * l1 + g2 * l2) / sum);
 							b = (int) ((b1 * l1 + b2 * l2) / sum);
@@ -406,7 +406,7 @@ public class C64Renderer extends AbstractRenderer {
 						final int g = work[pyx0 + 1];
 						final int b = work[pyx0 + 2];
 
-						index = Gfx.getColorIndex(colorAlg, colorModel, tilePalette, r, g, b);
+						index = Gfx.getColorIndex(colorAlg, pixelType, tilePalette, r, g, b);
 						final int c[] = tilePalette[index];
 
 						final int nr = c[0];

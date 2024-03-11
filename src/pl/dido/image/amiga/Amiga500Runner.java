@@ -100,7 +100,7 @@ public class Amiga500Runner extends AbstractRendererRunner {
 			final boolean compressed = ((AmigaConfig) a500.config).rleCompress;
 			chk.write(IFF.getILBMFormat(
 					IFF.chunk("BMHD", IFF.getILBMHD(width, height, aspectX, aspectY, planes, compressed)),
-					IFF.chunk("CMAP", IFF.getCMAP(a500.pictureColors, a500.colorModel)),
+					IFF.chunk("CMAP", IFF.getCMAP(a500.pictureColors, a500.pixelType)),
 					IFF.chunk("CAMG", IFF.bigEndianDWORD(videoMode)),
 					IFF.chunk("BODY", IFF.getBitmap(width, height, a500.bitplanes, compressed))));
 

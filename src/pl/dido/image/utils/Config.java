@@ -35,7 +35,7 @@ abstract public class Config implements Cloneable {
 		
 		highContrast = HIGH_CONTRAST.NONE;		
 		windowSize = 40;
-		details = 1;
+		details = 3;
 
 		export_path = "export";
 	}	

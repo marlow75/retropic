@@ -101,6 +101,6 @@ public class PetsciiRunner extends AbstractRendererRunner {
 
 	@Override
 	protected String getTitle() {
-		return "PETSCII ";
+		return "C64 PETSCII ";
 	}
 }

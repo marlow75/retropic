@@ -17,12 +17,13 @@ public abstract class AbstractRenderer {
 	protected int height;
 
 	protected int[] work = null;
+	protected AbstractRendererRunner runner; 
 
 	protected BufferedImage image;
 	protected NEAREST_COLOR colorAlg;
 
 	public Config config;
-	public int colorModel;
+	public int pixelType;
 
 	private void initialize(final Config config) {
 		this.config = config;
@@ -46,7 +47,7 @@ public abstract class AbstractRenderer {
 		this.image = scaleImage(image);
 
 		pixels = ((DataBufferByte) this.image.getRaster().getDataBuffer()).getData();
-		colorModel = image.getType();
+		pixelType = image.getType();
 	}
 
 	public BufferedImage getImage() {
@@ -70,14 +71,14 @@ public abstract class AbstractRenderer {
 		// contrast correction
 		switch (config.highContrast) {
 		case HE:
-			Gfx.HE(pixels, colorModel);
+			Gfx.HE(pixels, pixelType);
 			break;
 		case CLAHE:
 			final int window = config instanceof AmigaConfig ? 16 : 8;
-			Gfx.CLAHE(pixels, colorModel, window, config.details, width, height);
+			Gfx.CLAHE(pixels, pixelType, window, config.details, width, height);
 			break;
 		case SWAHE:
-			Gfx.SWAHE(pixels, colorModel, config.windowSize, config.details, width, height);
+			Gfx.SWAHE(pixels, pixelType, config.windowSize, config.details, width, height);
 			break;
 		default:
 			break;
@@ -87,7 +88,7 @@ public abstract class AbstractRenderer {
 		
 		if (config.dithering)
 			imageDithering();
-
+		
 		imagePostproces();
 	}
 
@@ -96,10 +97,10 @@ public abstract class AbstractRenderer {
 	protected abstract void setupPalette();
 
 	protected void imageDithering() {
-		Gfx.dithering(pixels, colorModel, palette, config);
+		Gfx.dithering(pixels, pixelType, palette, config);
 	}
 
 	protected int getColorIndex(final int r, final int g, final int b) {
-		return Gfx.getColorIndex(colorAlg, colorModel, palette, r, g, b);
+		return Gfx.getColorIndex(colorAlg, pixelType, palette, r, g, b);
 	}
 }

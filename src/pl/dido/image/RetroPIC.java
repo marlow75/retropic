@@ -51,8 +51,12 @@ import pl.dido.image.atari.STRenderer;
 import pl.dido.image.atari.STRunner;
 import pl.dido.image.c64.C64Config;
 import pl.dido.image.c64.C64Gui;
+import pl.dido.image.c64.C64ExtraGui;
 import pl.dido.image.c64.C64Renderer;
+import pl.dido.image.c64.C64ExtraRenderer;
+import pl.dido.image.c64.C64ExtraConfig;
 import pl.dido.image.c64.C64Runner;
+import pl.dido.image.c64.C64ExtraRunner;
 import pl.dido.image.cpc.CPCConfig;
 import pl.dido.image.cpc.CPCGui;
 import pl.dido.image.cpc.CPCRenderer;
@@ -72,16 +76,17 @@ public class RetroPIC {
 	protected JFrame frame;
 	protected String default_path;
 	
-	protected PetsciiConfig petsciiConfig = new PetsciiConfig();
+	protected PetsciiConfig petsciiConfig;
+	protected C64ExtraConfig c64ExtraConfig;
 
-	protected C64Config c64Config = new C64Config();
-	protected ZXConfig zxConfig = new ZXConfig();
+	protected C64Config c64Config;
+	protected ZXConfig zxConfig;
 
-	protected CPCConfig cpcConfig = new CPCConfig();
-	protected STConfig stConfig = new STConfig();
+	protected CPCConfig cpcConfig;
+	protected STConfig stConfig;
 
-	protected Amiga500Config amiga500Config = new Amiga500Config();
-	protected Amiga1200Config amiga1200Config = new Amiga1200Config();
+	protected Amiga500Config amiga500Config;
+	protected Amiga1200Config amiga1200Config;
 
 	public static void main(final String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -98,6 +103,18 @@ public class RetroPIC {
 	}
 
 	public RetroPIC() {
+		petsciiConfig = new PetsciiConfig();
+		c64ExtraConfig = new C64ExtraConfig();
+
+		c64Config = new C64Config();
+		zxConfig = new ZXConfig();
+
+		cpcConfig = new CPCConfig();
+		stConfig = new STConfig();
+
+		amiga500Config = new Amiga500Config();
+		amiga1200Config = new Amiga1200Config();
+		
 		frame = new JFrame("RetroPIC");
 		frame.setIconImage(Toolkit.getDefaultToolkit().getImage(Utils.getResourceAsURL("retro.png")));
 		frame.setResizable(false);
@@ -106,18 +123,19 @@ public class RetroPIC {
 		frame.getContentPane().setLayout(new BorderLayout());
 
 		final JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		tabbedPane.setFont(GuiUtils.std);
 
 		final Button btnLoad = new Button("Load file...");
 
 		frame.getContentPane().add(tabbedPane, BorderLayout.CENTER);
 		tabbedPane.addTab("Commodore 64", null, C64Gui.c64Tab(c64Config), null);
-		tabbedPane.addTab("PETSCII", null, PetsciiGui.petsciiTab(petsciiConfig), null);
+		tabbedPane.addTab("C64 PETSCII", null, PetsciiGui.petsciiTab(petsciiConfig), null);
 		tabbedPane.addTab("ZX Spectrum 48/+", null, ZXGui.zxTab(zxConfig), null);
 		tabbedPane.addTab("Amstrad CPC", null, CPCGui.cpcTab(cpcConfig), null);
 		tabbedPane.addTab("Atari ST", null, STGui.stTab(stConfig), null);
 		tabbedPane.addTab("Amiga 500", null, Amiga500Gui.amigaTab(amiga500Config), null);
 		tabbedPane.addTab("Amiga 1200", null, Amiga1200Gui.amigaTab(amiga1200Config), null);
+		tabbedPane.addTab("Commodore 64 extra", null, C64ExtraGui.c64Extra(c64ExtraConfig), null);
 		tabbedPane.addTab("About", null, AboutGui.aboutTab("aboutRetroPIC.htm"), null);
 		
 		tabbedPane.addChangeListener(new ChangeListener() {
@@ -247,7 +265,11 @@ public class RetroPIC {
 				case 6:
 					new Thread(new Amiga1200Runner(new Amiga1200Renderer(img, amiga1200Config), fileName)).start();
 					break;
+				case 7:
+					new Thread(new C64ExtraRunner(new C64ExtraRenderer(img, c64ExtraConfig), fileName)).start();
+					break;
 				}
+				
 				break;
 			default:
 				JOptionPane.showMessageDialog(null, "ERROR", "Unsupported pixel format !!!", JOptionPane.ERROR_MESSAGE);

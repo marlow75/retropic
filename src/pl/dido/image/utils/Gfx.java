@@ -21,7 +21,7 @@ public class Gfx {
 	public static final void yuv2RGB(final int y, final int u, final int v, final byte pixels[], final int i) {
 		final float u128 = u - 128;
 		final float v128 = v - 128;
-		
+
 		final float r = y + 1.402f * v128;
 		final float g = y - 0.34414f * u128 - 0.71414f * v128;
 		final float b = y + 1.772f * u128;
@@ -73,7 +73,7 @@ public class Gfx {
 		final int rpr = r - pr;
 		final int gpg = g - pg;
 		final int bpb = b - pb;
-		
+
 		return (rpr * rpr) + (gpg * gpg) + (bpb * bpb);
 	}
 
@@ -82,7 +82,7 @@ public class Gfx {
 		final int rpr = r - pr;
 		final int gpg = g - pg;
 		final int bpb = b - pb;
-		
+
 		final int delta = (r + pr) >> 1;
 		return ((2 + (delta >> 8)) * rpr * rpr) + (4 * (gpg * gpg)) + ((2 + ((255 - delta) >> 8)) * bpb * bpb);
 	}
@@ -105,10 +105,10 @@ public class Gfx {
 
 		final float rpr = r - pr;
 		final float gpg = g - pg;
-		
+
 		final float bpb = b - pb;
 		final float delta = (r + pr) / 2;
-		
+
 		return ((2 + (delta / 256)) * rpr * rpr) + (4 * (gpg * gpg)) + ((2 + (255 - delta) / 256) * bpb * bpb);
 	}
 
@@ -121,7 +121,7 @@ public class Gfx {
 		final float w = a < b ? a : b;
 		return w < c ? w : c;
 	}
-	
+
 	public static final BufferedImage scaleWithStretching(final BufferedImage image, final int maxX, final int maxY) {
 		final int x = image.getWidth();
 		final int y = image.getHeight();
@@ -138,27 +138,28 @@ public class Gfx {
 		return scaled;
 	}
 
-	public static final BufferedImage scaleWithPreservedAspect(final BufferedImage image, final int maxX, final int maxY) {
+	public static final BufferedImage scaleWithPreservedAspect(final BufferedImage image, final int maxX,
+			final int maxY) {
 		final BufferedImage img = new BufferedImage(maxX, maxY, image.getType());
 		final Graphics2D g = img.createGraphics();
 
 		g.setPaint(new Color(0, 0, 0)); // white background
 		g.fillRect(0, 0, maxX, maxY);
-		
+
 		final double x = image.getWidth();
 		final double y = image.getHeight();
-		
+
 		final double ratio = Math.min(maxX / x, maxY / y);
-				
+
 		final BufferedImage scaled = new BufferedImage(maxX, maxY, image.getType());
 		final AffineTransform si = AffineTransform.getScaleInstance(ratio, ratio);
-		
+
 		final AffineTransformOp scale = new AffineTransformOp(si, AffineTransformOp.TYPE_BILINEAR);
 		scale.filter(image, scaled);
-		
+
 		final int px = (int) ((maxX - x * ratio) / 2);
 		final int py = (int) ((maxY - y * ratio) / 2);
-		
+
 		g.drawImage(scaled, px, py, null);
 		return img;
 	}
@@ -200,7 +201,6 @@ public class Gfx {
 	}
 
 	private static final void calcCdf(final int cdf[], final int histogram[]) {
-
 		// cdf - cumulative distributed function
 		cdf[0] = histogram[0];
 		for (int i = 1; i < 256; i++)
@@ -221,19 +221,19 @@ public class Gfx {
 			b = pixels[i + 2] & 0xff;
 
 			rgb2YUV(pixelFormat, r, g, b, yuv, i);
-			final int luma = yuv[i]; 
+			final int luma = yuv[i];
 			histogram[luma]++;
 
 			if (luma > max)
 				max = luma;
 		}
-		
+
 		calcCdf(cdf, histogram);
 
 		for (int i = 0; i < len; i += 3)
 			yuv2RGB(pixelFormat, cdfScale(cdf, yuv[i], max), yuv[i + 1], yuv[i + 2], pixels, i);
 	}
-	
+
 	private static final void clipHistogram(final int histogram[], final int brightness) {
 		// clip the brightest
 		int clippedCount;
@@ -244,7 +244,7 @@ public class Gfx {
 			clippedCount = 0;
 
 			for (int i = 0; i < 256; i++)
-				// clip if is above dmax
+				// clip if is above brightness
 				if (histogram[i] > brightness) {
 					total += histogram[i] - brightness;
 					histogram[i] = brightness;
@@ -341,7 +341,7 @@ public class Gfx {
 
 				// clip histogram
 				clipHistogram(histogram, brightness);
-		
+
 				// cdf - cumulative distributed function
 				calcCdf(cdf, histogram);
 
@@ -351,8 +351,8 @@ public class Gfx {
 	}
 
 	// CLAHE
-	public static final void CLAHE(final byte pixels[], final int pixelFormat, final int window,
-			int brightness, final int width, final int height) {
+	public static final void CLAHE(final byte pixels[], final int pixelFormat, final int window, int brightness,
+			final int width, final int height) {
 
 		final int yuv[] = new int[pixels.length];
 		final int lumas[] = new int[pixels.length];
@@ -406,12 +406,12 @@ public class Gfx {
 							max = luma;
 					}
 				}
-				
+
 				clipHistogram(histogram, brightness);
-				
+
 				// cdf - cumulative distributed function
 				calcCdf(cdf, histogram);
-				
+
 				// window center pixel - luma
 				lumas[wp] = cdfScale(cdf, yuv[wp], max);
 			}
@@ -420,11 +420,11 @@ public class Gfx {
 		for (int y = midY; y < maxY - midY; y += window) {
 			final int y1 = y;
 			final int y2 = y + window;
-			
+
 			for (int x = midX; x < maxX - midX; x += window) {
 				final int x1 = x;
 				final int x2 = x + window;
-				
+
 				final int y1maxX = y1 * maxX;
 				final int y2maxX = y2 * maxX;
 
@@ -476,7 +476,7 @@ public class Gfx {
 
 				final int y1maxX = y1 * maxX;
 				final int y2maxX = y2 * maxX;
-				
+
 				final int wp1 = (x1 + y1maxX) * 3;
 				final int wp2 = (x2 + y1maxX) * 3;
 
@@ -536,7 +536,6 @@ public class Gfx {
 				final int l3 = lumas[wp3];
 				final int l4 = lumas[wp4];
 
-
 				for (int xw1 = 0; xw1 < midX; xw1++) {
 					float dx2w = x2 - xw1;
 					float dwx1 = xw1 - x1;
@@ -546,7 +545,7 @@ public class Gfx {
 
 					final int a1 = Math.round(p * l1 + q * l2);
 					final int xw2 = (maxX - 1) - xw1;
-					
+
 					dx2w = x2 - xw2;
 					dwx1 = xw2 - x1;
 
@@ -564,16 +563,16 @@ public class Gfx {
 			}
 		}
 	}
-	
+
 	public static void dithering(final byte pixels[], final int pixelType, final int palette[][], final Config cfg) {
 		final int work[] = Gfx.copy2Int(pixels);
-		
+
 		final int width = cfg.getWidth();
 		final int height = cfg.getHeight();
-		
+
 		final DITHERING dither = cfg.dither_alg;
 		final NEAREST_COLOR colorAlg = cfg.color_alg;
-		
+
 		final int width3 = width * 3;
 
 		int r0, g0, b0;
@@ -611,21 +610,21 @@ public class Gfx {
 				switch (dither) {
 				case STD_FS:
 					if (x < (width - 1) * 3) {
-						work[pyx + 3]     += (r_error * 7) / 16;
+						work[pyx + 3] += (r_error * 7) / 16;
 						work[pyx + 3 + 1] += (g_error * 7) / 16;
 						work[pyx + 3 + 2] += (b_error * 7) / 16;
 					}
 					if (y < height - 1) {
-						work[py1x - 3]     += (r_error * 3) / 16;
+						work[py1x - 3] += (r_error * 3) / 16;
 						work[py1x - 3 + 1] += (g_error * 3) / 16;
 						work[py1x - 3 + 2] += (b_error * 3) / 16;
 
-						work[py1x]     += (r_error * 5) / 16;
+						work[py1x] += (r_error * 5) / 16;
 						work[py1x + 1] += (g_error * 5) / 16;
 						work[py1x + 2] += (b_error * 5) / 16;
 
 						if (x < (width - 1) * 3) {
-							work[py1x + 3]     += r_error / 16;
+							work[py1x + 3] += r_error / 16;
 							work[py1x + 3 + 1] += g_error / 16;
 							work[py1x + 3 + 2] += b_error / 16;
 						}
@@ -633,33 +632,33 @@ public class Gfx {
 					break;
 				case ATKINSON:
 					if (x < (width - 1) * 3) {
-						work[pyx + 3]     += r_error >> 3;
+						work[pyx + 3] += r_error >> 3;
 						work[pyx + 3 + 1] += g_error >> 3;
 						work[pyx + 3 + 2] += b_error >> 3;
 
 						if (x < (width - 2) * 3) {
-							work[pyx + 6]     += r_error >> 3;
+							work[pyx + 6] += r_error >> 3;
 							work[pyx + 6 + 1] += g_error >> 3;
 							work[pyx + 6 + 2] += b_error >> 3;
 						}
 					}
 					if (y < height - 1) {
-						work[py1x - 3]     += r_error >> 3;
+						work[py1x - 3] += r_error >> 3;
 						work[py1x - 3 + 1] += g_error >> 3;
 						work[py1x - 3 + 2] += b_error >> 3;
 
-						work[py1x]     += r_error >> 3;
+						work[py1x] += r_error >> 3;
 						work[py1x + 1] += g_error >> 3;
 						work[py1x + 2] += b_error >> 3;
 
 						if (x < (width - 1) * 3) {
-							work[py1x + 3]     += r_error >> 3;
+							work[py1x + 3] += r_error >> 3;
 							work[py1x + 3 + 1] += g_error >> 3;
 							work[py1x + 3 + 2] += b_error >> 3;
 						}
 
 						if (y < height - 2) {
-							work[py2x]     += r_error >> 3;
+							work[py2x] += r_error >> 3;
 							work[py2x + 1] += g_error >> 3;
 							work[py2x + 2] += b_error >> 3;
 						}
@@ -670,8 +669,8 @@ public class Gfx {
 		}
 	}
 
-	protected final static float getDistance(final NEAREST_COLOR color, final int r0, final int g0, final int b0, final int r1, final int g1,
-			final int b1) {
+	protected final static float getDistance(final NEAREST_COLOR color, final int r0, final int g0, final int b0,
+			final int r1, final int g1, final int b1) {
 		switch (color) {
 		case EUCLIDEAN:
 			return Gfx.euclideanDistance(r0, g0, b0, r1, g1, b1);
@@ -682,7 +681,8 @@ public class Gfx {
 		}
 	}
 
-	public static int getColorIndex(final NEAREST_COLOR color, final int pixelType, final int palette[][], final int r0, final int g0, final int b0) {
+	public static int getColorIndex(final NEAREST_COLOR color, final int pixelType, final int palette[][], final int r0,
+			final int g0, final int b0) {
 		switch (color) {
 		case EUCLIDEAN:
 			return getEuclideanColorIndex(palette, r0, g0, b0);
@@ -701,11 +701,11 @@ public class Gfx {
 
 	protected static int getEuclideanColorIndex(final int palette[][], final int r, final int g, final int b) {
 		int index = 0;
-		float min = Float.MAX_VALUE;
-		final int len = palette.length;
+		int color[] = palette[0];
+		float min = Gfx.euclideanDistance(r, g, b, color[0], color[1], color[2]);
 
-		for (int i = len; i-- > 0;) { // euclidean distance
-			final int color[] = palette[i];
+		for (int i = 1; i < palette.length; i++) { // euclidean distance
+			color = palette[i];
 			final float distance = Gfx.euclideanDistance(r, g, b, color[0], color[1], color[2]);
 
 			if (distance < min) {
@@ -717,12 +717,14 @@ public class Gfx {
 		return index;
 	}
 
-	protected static int getPerceptedColorIndex(final int pixelType, final int palette[][], final int r, final int g, final int b) {
+	protected static int getPerceptedColorIndex(final int pixelType, final int palette[][], final int r, final int g,
+			final int b) {
 		int index = 0;
-		float min = Float.MAX_VALUE;
+		int color[] = palette[0];
+		float min = perceptedDistanceCM(pixelType, r, g, b, color[0], color[1], color[2]);
 
-		for (int i = palette.length; i-- > 0;) { // euclidean distance
-			final int color[] = palette[i];
+		for (int i = 1; i < palette.length; i++) { // distance
+			color = palette[i];
 			final float distance = perceptedDistanceCM(pixelType, r, g, b, color[0], color[1], color[2]);
 
 			if (distance < min) {
@@ -734,11 +736,13 @@ public class Gfx {
 		return index;
 	}
 
-	protected int[] matchingLumaColor(final int pixelType, final int palette[][], final int r, final int g, final int b) {
+	protected int[] matchingLumaColor(final int pixelType, final int palette[][], final int r, final int g,
+			final int b) {
 		return palette[getLumaColorIndex(pixelType, palette, r, g, b)];
 	}
 
-	protected static int getLumaColorIndex(final int pixelType, final int palette[][], final int r, final int g, final int b) {
+	protected static int getLumaColorIndex(final int pixelType, final int palette[][], final int r, final int g,
+			final int b) {
 		int index = 0, old_index = 0;
 		float y1 = 0, oy1 = 0;
 
@@ -768,8 +772,8 @@ public class Gfx {
 		return Math.abs(y1 - y) < Math.abs(oy1 - y) ? index : old_index;
 	}
 
-	protected static float perceptedDistanceCM(final int pixelType, final int r, final int g, final int b, final int pr, final int pg,
-			final int pb) {
+	public static float perceptedDistanceCM(final int pixelType, final int r, final int g, final int b, final int pr,
+			final int pg, final int pb) {
 		switch (pixelType) {
 		case BufferedImage.TYPE_3BYTE_BGR:
 			return Gfx.perceptedDistance(b, g, r, pb, pg, pr);
@@ -791,8 +795,8 @@ public class Gfx {
 		}
 	}
 
-	public final static float getDistanceByCM(final NEAREST_COLOR color, final int pixelType, final int r1, final int g1, final int b1, final int r2, final int g2,
-			final int b2) {
+	public final static float getDistanceByCM(final NEAREST_COLOR color, final int pixelType, final int r1,
+			final int g1, final int b1, final int r2, final int g2, final int b2) {
 		switch (pixelType) {
 		case BufferedImage.TYPE_3BYTE_BGR:
 			return getDistance(color, b1, g1, r1, b2, g2, r2);
