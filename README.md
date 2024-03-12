@@ -121,7 +121,7 @@ Export to Delux Paint IFF file format.
 
 ### Commodore C64 extra
 
-Early, experimental interlaced modes. You can select max luma difference in blending colors together.
+Early, experimental interlaced modes. You can select max luma difference in blending colors together. Adjusted for C64C palette (9 luma levels), best experience with PEPTO palette.
 
 * Naive 320x200 - use max 4 colors in 8x8 screen cell, 27-54 colors can be used without annoying flickering.
 * MCI 320x200 - use max 16 colors in 8x8 screen cell. Very early stage. If you get errors, like mono color squares try adjust luma.
