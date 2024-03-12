@@ -129,7 +129,7 @@ Early, experimental interlaced modes. You can select max luma difference in blen
 
 Exports to executable PRG. In the future release one of the standard format will be supported (for editing).
 
-Below naive hires and following MCI....
+Below naive hires and following MCI picture. More working examples in MCI folder, a few pictures from my city dated at 99/00.
 
 ![Naive hires](venusC64Extra.png)
 ![Naive hires](venusC64ExtraMCI.png)
