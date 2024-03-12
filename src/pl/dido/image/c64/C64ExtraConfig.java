@@ -6,25 +6,42 @@ public class C64ExtraConfig extends C64Config {
 		HIRES_INTERLACED, MULTI_COLOR_INTERLACED;
 	}
 	
-	public int lumaThreshold;
-	public EXTRA_MODE extraMode;
+	public int luma_threshold;
+	public EXTRA_MODE extra_mode;
 	
 	public C64ExtraConfig() {
 		super();
 		
-		extraMode = EXTRA_MODE.MULTI_COLOR_INTERLACED;
-		lumaThreshold = 11;
+		extra_mode = EXTRA_MODE.MULTI_COLOR_INTERLACED;
+		luma_threshold = 6;
+	}
+	
+	@Override
+	public String getColorsNumber() {
+		String configString = "";
+		
+		switch (extra_mode) {
+		case HIRES_INTERLACED:
+			configString += "x4 ";
+			break;
+		case MULTI_COLOR_INTERLACED:
+			configString += "x16 ";
+		default:
+			break;
+		}
+		
+		return configString;
 	}
 
 	@Override
 	public String getConfigString() {
 		String configString = "";
 		
-		switch (screen_mode) {
-		case HIRES:
+		switch (extra_mode) {
+		case HIRES_INTERLACED:
 			configString += "laced ";
 			break;
-		case MULTICOLOR:
+		case MULTI_COLOR_INTERLACED:
 			configString += "MCI ";
 		default:
 			break;

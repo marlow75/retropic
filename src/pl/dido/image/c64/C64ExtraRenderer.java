@@ -35,7 +35,7 @@ public class C64ExtraRenderer extends AbstractRenderer {
 		for (int i = 0; i < 16; i++)
 			alphas[i] = 15 + Math.abs(15 - lumas[i]);
 
-		lumaThreshold = ((C64ExtraConfig) config).lumaThreshold;
+		lumaThreshold = ((C64ExtraConfig) config).luma_threshold;
 	}
 
 	@Override
@@ -58,9 +58,14 @@ public class C64ExtraRenderer extends AbstractRenderer {
 					final float a2 = alphas[j];
 					final float sum = a1 + a2;
 					
-					palette[index][0] = (int) ((machinePalette[i][0] * a1 + machinePalette[j][0] * a2) / sum);
-					palette[index][1] = (int) ((machinePalette[i][1] * a1 + machinePalette[j][1] * a2) / sum);
-					palette[index][2] = (int) ((machinePalette[i][2] * a1 + machinePalette[j][2] * a2) / sum);
+					final int color1[] = machinePalette[i];
+					final int color2[] = machinePalette[j];
+					
+					final int color[] = palette[index];
+					
+					color[0] = (int) ((color1[0] * a1 + color2[0] * a2) / sum);
+					color[1] = (int) ((color1[1] * a1 + color2[1] * a2) / sum);
+					color[2] = (int) ((color1[2] * a1 + color2[2] * a2) / sum);
 
 					// save colors
 					blend[index][0] = i;
@@ -71,13 +76,14 @@ public class C64ExtraRenderer extends AbstractRenderer {
 			}
 		}
 
+		// shrink palette to actual size
 		palette = Arrays.copyOf(palette, index);
 		blend = Arrays.copyOf(blend, index);
 	}
 
 	@Override
 	protected void imagePostproces() {
-		switch (((C64ExtraConfig) config).extraMode) {
+		switch (((C64ExtraConfig) config).extra_mode) {
 		case HIRES_INTERLACED:
 			hiresInterlaced();
 			break;
@@ -532,8 +538,6 @@ public class C64ExtraRenderer extends AbstractRenderer {
 				final int c11 = tileColors[3];
 
 				screen1[address] = c01 | c10;
-				screen2[address] = c01 | c10;
-
 				nibbles[address] = c11;
 
 				int even = 0, value1 = 0, value2 = 0, bitcount = 0;

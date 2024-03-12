@@ -23,11 +23,11 @@ import pl.dido.image.utils.Utils;
 
 public class C64ExtraRunner extends AbstractRendererRunner {
 
-	protected C64ExtraRenderer c64;
+	protected C64ExtraRenderer c64Extra;
 
 	public C64ExtraRunner(final AbstractRenderer renderer, final String fileName) {
 		super(renderer, fileName);
-		c64 = (C64ExtraRenderer) renderer;
+		c64Extra = (C64ExtraRenderer) renderer;
 	}
 
 	private void hiresExportPRG(final String fileName) {
@@ -56,14 +56,14 @@ public class C64ExtraRunner extends AbstractRendererRunner {
 				out.write(0xff);
 			
 			// background1
-			out.write(c64.backgroundColor);
+			out.write(c64Extra.backgroundColor);
 			
 			// background2
-			out.write(c64.backgroundColor);
+			out.write(c64Extra.backgroundColor);
 
 			// attributes 1
 			for (int i = 0; i < 1000; i++)
-				out.write(c64.screen1[i] & 0xff);
+				out.write(c64Extra.screen1[i] & 0xff);
 
 			// trim to kb
 			for (int i = 0; i < 24 + 4096; i++)
@@ -71,7 +71,7 @@ public class C64ExtraRunner extends AbstractRendererRunner {
 			
 			// bitmap 1
 			for (int i = 0; i < 8000; i++)
-				out.write(c64.bitmap1[i] & 0xff);
+				out.write(c64Extra.bitmap1[i] & 0xff);
 			
 			// trim to kb
 			for (int i = 0; i < 192; i++)
@@ -79,7 +79,7 @@ public class C64ExtraRunner extends AbstractRendererRunner {
 			
 			// bitmap 2
 			for (int i = 0; i < 8000; i++)
-				out.write(c64.bitmap2[i] & 0xff);
+				out.write(c64Extra.bitmap2[i] & 0xff);
 
 			// trim to kb
 			for (int i = 0; i < 192; i++)
@@ -87,7 +87,7 @@ public class C64ExtraRunner extends AbstractRendererRunner {
 			
 			// attributes 2
 			for (int i = 0; i < 1000; i++)
-				out.write(c64.screen2[i] & 0xff);
+				out.write(c64Extra.screen2[i] & 0xff);
 
 			out.close();
 			frame.setTitle(frame.getTitle() + " SAVED");
@@ -101,6 +101,14 @@ public class C64ExtraRunner extends AbstractRendererRunner {
 			final BufferedInputStream in = new BufferedInputStream(Utils.getResourceAsStream("mci.prg"), 8192);
 			final BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(new File(fileName)), 8192);
 
+			// MCI File Format
+			// $0801 - loader and player 
+			// $0BFF - background color		- 1 byte
+			// $0C00 - attributes 1			- 1000 bytes
+			// $2000 - bitmap 1     		- 8000 bytes
+			// $4000 - bitmap 2				- 8000 bytes
+			// $6000 - nibbles				- 1000 bytes
+			
 			// loading address BASIC
 			out.write(0x01);
 			out.write(0x08);
@@ -117,27 +125,24 @@ public class C64ExtraRunner extends AbstractRendererRunner {
 			in.close();
 			
 			// spare bytes
-			final int spare = 1021 - prg_len;
+			final int spare = 1022 - prg_len;
 			for (int i = 0; i < spare; i++)
 				out.write(0xff);
 			
 			// background1
-			out.write(c64.backgroundColor);
+			out.write(c64Extra.backgroundColor);
 			
-			// background2
-			out.write(c64.backgroundColor);
-
 			// attributes 1
 			for (int i = 0; i < 1000; i++)
-				out.write(c64.screen1[i] & 0xff);
+				out.write(c64Extra.screen1[i] & 0xff);
 
-			// trim to kb
+			// fill the gap
 			for (int i = 0; i < 24 + 4096; i++)
 				out.write(0xff);
 			
 			// bitmap 1
 			for (int i = 0; i < 8000; i++)
-				out.write(c64.bitmap1[i] & 0xff);
+				out.write(c64Extra.bitmap1[i] & 0xff);
 			
 			// trim to kb
 			for (int i = 0; i < 192; i++)
@@ -145,23 +150,15 @@ public class C64ExtraRunner extends AbstractRendererRunner {
 			
 			// bitmap 2
 			for (int i = 0; i < 8000; i++)
-				out.write(c64.bitmap2[i] & 0xff);
+				out.write(c64Extra.bitmap2[i] & 0xff);
 
 			// trim to kb
 			for (int i = 0; i < 192; i++)
 				out.write(0xff);
 			
-			// attributes 2
-			for (int i = 0; i < 1000; i++)
-				out.write(c64.screen2[i] & 0xff);
-			
-			// trim to kb
-			for (int i = 0; i < 24; i++)
-				out.write(0xff);
-			
 			// nibbles
 			for (int i = 0; i < 1000; i++)
-				out.write(c64.nibbles[i] & 0xff);
+				out.write(c64Extra.nibbles[i] & 0xff);
 
 			out.close();
 			frame.setTitle(frame.getTitle() + " SAVED");
@@ -187,7 +184,7 @@ public class C64ExtraRunner extends AbstractRendererRunner {
 							JOptionPane.YES_NO_OPTION);
 					
 					if (result == 0) {
-						switch (((C64ExtraConfig) c64.config).extraMode) {
+						switch (((C64ExtraConfig) c64Extra.config).extra_mode) {
 						case HIRES_INTERLACED:
 							hiresExportPRG(exportFileName);
 							break;

@@ -33,16 +33,30 @@ public class C64Config extends Config {
 		pixel_merge = PIXEL_MERGE.AVERAGE;		
 	}
 	
+	public String getColorsNumber() {
+		String configString = "";
+		
+		switch (screen_mode) {
+		case HIRES:
+			configString += "x2 ";
+			break;
+		case MULTICOLOR:
+			configString += "x4 ";
+		}
+		
+		return configString;
+	}
+	
 	@Override
 	public String getConfigString() {
 		String configString = "";
 		
 		switch (screen_mode) {
 		case HIRES:
-			configString += "320x200x2 ";
+			configString += "320x200" + getColorsNumber();
 			break;
 		default:
-			configString += "160x200x4 ";
+			configString += "160x200" + getColorsNumber();
 			switch (pixel_merge) {
 			case AVERAGE:
 				configString += "average ";

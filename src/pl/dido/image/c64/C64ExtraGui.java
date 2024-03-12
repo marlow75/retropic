@@ -30,13 +30,13 @@ public class C64ExtraGui {
 
 		final JRadioButton rdbtnHiresButton = new JRadioButton("Hires interlaced");
 		rdbtnHiresButton.setToolTipText(
-				"High resolution mode. Three colors in 8x8 block");
+				"High resolution mode. Four colors in 8x8 block");
 		rdbtnHiresButton.setFont(GuiUtils.std);
 		rdbtnHiresButton.setBounds(46, 82, 150, 23);
-		rdbtnHiresButton.setSelected(config.extraMode == EXTRA_MODE.HIRES_INTERLACED);
+		rdbtnHiresButton.setSelected(config.extra_mode == EXTRA_MODE.HIRES_INTERLACED);
 		rdbtnHiresButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				config.extraMode = EXTRA_MODE.HIRES_INTERLACED;
+				config.extra_mode = EXTRA_MODE.HIRES_INTERLACED;
 			}});
 
 		panelC64Extra.add(rdbtnHiresButton);
@@ -46,10 +46,10 @@ public class C64ExtraGui {
 				"High resolution mode. 16 colors in 8x8 block");
 		rdbtnMCIButton.setFont(GuiUtils.std);
 		rdbtnMCIButton.setBounds(200, 82, 150, 23);
-		rdbtnMCIButton.setSelected(config.extraMode == EXTRA_MODE.MULTI_COLOR_INTERLACED);
+		rdbtnMCIButton.setSelected(config.extra_mode == EXTRA_MODE.MULTI_COLOR_INTERLACED);
 		rdbtnMCIButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				config.extraMode = EXTRA_MODE.MULTI_COLOR_INTERLACED;
+				config.extra_mode = EXTRA_MODE.MULTI_COLOR_INTERLACED;
 			}});
 
 		panelC64Extra.add(rdbtnMCIButton);
@@ -67,7 +67,7 @@ public class C64ExtraGui {
 		sizeLabel.setBounds(46, 120, 120, 20);
 		panelC64Extra.add(sizeLabel);
 
-		final JSlider sldLuma = new JSlider(JSlider.HORIZONTAL, 1, 32, config.lumaThreshold);
+		final JSlider sldLuma = new JSlider(JSlider.HORIZONTAL, 1, 32, config.luma_threshold);
 		sldLuma.setBounds(41, 140, 220, 35);
 		sldLuma.setFont(GuiUtils.std);
 		sldLuma.addChangeListener(new ChangeListener() {
@@ -75,7 +75,7 @@ public class C64ExtraGui {
 				final JSlider source = (JSlider) e.getSource();
 
 				if (!source.getValueIsAdjusting())
-					config.lumaThreshold = source.getValue();
+					config.luma_threshold = source.getValue();
 			}
 		});
 
