@@ -10,7 +10,7 @@ Requirements: JRE16 installed.
 
 ## Versions
 
-* 1.2 - Improved palette & color handling for C64, CPC, Amiga 500, experimental C64 extra 
+* 1.2 - Improved palette & color handling for C64 [improved pepto] (https://www.pepto.de/projects/colorvic/), CPC, Amiga 500, experimental C64 extra 
 * 1.1 - Minor bug fixes, CPC new palette
 * 1.0 - Minor changes, time to start versioning
 * 0.1 - Initial version, bug fixes
