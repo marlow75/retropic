@@ -44,8 +44,8 @@ Try all options available.
 
 16 colors total, 4 modes, 2 useful for graphics
 
-* 320x200 - use 2 colors in 8x8 screen cell.
-* 160x200 - use 4 colors in 4x8 screen cell, average or brightest color are choosen when shrinking 320->160.
+* 320x200 - uses 2 colors in 8x8 screen cell.
+* 160x200 - uses 4 colors in 4x8 screen cell, average or brightest color are choosen when shrinking 320->160.
 
 Exports to executable PRG or to Art Studio (hires) and Koala Paint (multicolor).
 
@@ -67,7 +67,7 @@ Exports to executable PRG.
 16 colors total, 1 screen mode.
 
 * try apple dithering - produces more tinty picture insted of hue explosion.
-* 256x192 - use 2 colors in 8x8 screen cell.
+* 256x192 - uses 2 colors in 8x8 screen cell.
 
 Exports to native SCR snapshoot.
 
@@ -80,8 +80,8 @@ Exports to native SCR snapshoot.
 * dithering – Atkinson dithering, colors of the original picture are replaced by retro machine palette
 * replace brightest - replaces brightest color with dimmed yellow
 
-* 320x200 - use 4 colors on whole screen.
-* 160x200 - use 16 colors on whole screen, average or brightest color are choosen when shrinking 320->160.
+* 320x200 - uses 4 colors on whole screen.
+* 160x200 - uses 16 colors on whole screen, average or brightest color are choosen when shrinking 320->160.
 
 Palette is result of Kohonen pixel classification. Exports to Advanced Art Studio with standalone palette file. All files generated with AMSDOS headers.
 
@@ -89,7 +89,9 @@ Palette is result of Kohonen pixel classification. Exports to Advanced Art Studi
 
 ### Atari ST
 
-* 320x200 - use 16 colors, palette is result of Kohonen pixel classification.
+512 colors total, 1 mode useful for graphics. 
+
+* 320x200 - uses 16 colors, palette is result of Kohonen pixel classification.
 
 Export to DEGAS paint program.
 
@@ -121,11 +123,11 @@ Export to Delux Paint IFF file format.
 
 ### Commodore C64 extra
 
-Early, experimental interlaced modes. You can select max luma difference in blending colors together. Adjusted for C64C palette (9 luma levels), best experience with PEPTO palette.
+Early, experimental interlace modes. You can select max luma difference in blending colors together. Adjusted for C64C (9 luma levels), best experience with PEPTO palette.
 
 * Naive 320x200 - use max 4 colors in 8x8 screen cell, 27-54 colors can be used without annoying flickering.
 * MCI 320x200 - use max 16 colors in 8x8 screen cell. Very early stage. If you get errors, like mono color squares try adjust luma.
-* luma threshold - interlace is about blending, only colors with the same luminance can produce non flickering new color. White has 32 black is 0, choose luminance difference which is not annoying.
+* luma threshold - interlace is about blending, only colors with the same luminance can produce non flickering new one. White has luma set to 32 black is 0, choose luminance difference which is not annoying for you.
 
 Exports to executable PRG. In the future release one of the standard format will be supported (for editing).
 
@@ -133,7 +135,7 @@ Below naive hires played on VICE...
 
 ![Naive hires](venusC64Extra.png)
 
-... and following MCI picture. More working examples in MCI folder. A few pictures of my city dated at 1990s.
+... and following MCI picture. More working examples in MCI project folder. It contains a few pictures of my city dated back 1990s.
 
 ![Naive hires](venusC64ExtraMCI.png)
 
