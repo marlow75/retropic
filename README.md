@@ -101,8 +101,8 @@ Export to DEGAS paint program.
 
 4096 colors total, 4 modes useful for graphics.
 
-* 320x256, 320x512 (lace) - use 32 colors, palette is result of Kohonen pixel classification.
-* 320x256, 320x512 (lace) - use HAM6 coding, 16 color palette as a result of Kohonen classification.
+* 320x256, 320x512 (lace) - uses 32 colors, palette is result of Kohonen pixel classification.
+* 320x256, 320x512 (lace) - uses HAM6 coding, 16 color palette as a result of Kohonen classification.
 * export with RLE compression - use RLE compression run1byte.
 
 Export to Delux Paint IFF file format.
@@ -113,8 +113,8 @@ Export to Delux Paint IFF file format.
 
 16M colors total, 4 modes useful for graphics.
 
-* 320x256, 320x512 (lace), 640x512 (lace) - use 256 colors, palette is result of Kohonen pixel classification.
-* 320x256, 320x512 (lace), 640x512 (lace) - use HAM8 coding, 64 color palette as a result of Kohonen classification.
+* 320x256, 320x512 (lace), 640x512 (lace) - uses 256 colors, palette is result of Kohonen pixel classification.
+* 320x256, 320x512 (lace), 640x512 (lace) - uses HAM8 coding, 64 color palette as a result of Kohonen classification.
 * export with RLE compression - use RLE compression run1byte.
 
 Export to Delux Paint IFF file format.
@@ -125,8 +125,8 @@ Export to Delux Paint IFF file format.
 
 Early, experimental interlace modes. You can select max luma difference in blending colors together. Adjusted for C64C (9 luma levels), best experience with PEPTO palette.
 
-* Naive 320x200 - use max 4 colors in 8x8 screen cell, 27-54 colors can be used without annoying flickering.
-* MCI 320x200 - use max 16 colors in 8x8 screen cell. Very early stage. If you get errors, like mono color squares try adjust luma.
+* Naive 320x200 - uses max 4 colors in 8x8 screen cell, 27-54 colors can be used without annoying flickering.
+* MCI 320x200 - uses max 16 colors in 8x8 screen cell. Very early stage. If you get errors, like mono color squares try adjust luma.
 * luma threshold - interlace is about blending, only colors with the same luminance can produce non flickering new one. White has luma set to 32 black is 0, choose luminance difference which is not annoying for you.
 
 Exports to executable PRG. In the future release one of the standard format will be supported (for editing).
