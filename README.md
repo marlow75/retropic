@@ -124,9 +124,13 @@ Export to Delux Paint IFF file format.
 Early, experimental interlaced modes. You can select max luma difference in blending colors together.
 
 * Naive 320x200 - use max 4 colors in 8x8 screen cell, 27-54 colors can be used without annoying flickering.
-* MCI 320x200 - use max 16 colors in 8x8 screen cell. Very early stage. If you get errors, like mono color squares  try adjust luma.
+* MCI 320x200 - use max 16 colors in 8x8 screen cell. Very early stage. If you get errors, like mono color squares try adjust luma.
 * luma threshold - interlace is about blending, only colors with the same luminance can produce non flickering new color. White has 32 black is 0, choose luminance difference which is not annoying.
 
 Exports to executable PRG. In the future release one of the standard format will be supported (for editing).
 
-![Hires](venusC64Extra.png)
+Below naive hires and following MCI....
+
+![Naive hires](venusC64Extra.png)
+![Naive hires](venusC64ExtraMCI.png)
+
