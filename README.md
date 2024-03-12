@@ -42,7 +42,7 @@ Try all options available.
 
 ### Commodore C64
 
-16 colors total, 4 modes, 2 usefull for graphics
+16 colors total, 4 modes, 2 useful for graphics
 
 * 320x200 - use 2 colors in 8x8 screen cell.
 * 160x200 - use 4 colors in 4x8 screen cell, average or brightest color are choosen when shrinking 320->160.
@@ -64,7 +64,7 @@ Exports to executable PRG.
 
 ### ZX Spectrum 48/+
 
-8 colors total, 1 screen mode.
+16 colors total, 1 screen mode.
 
 * try apple dithering - produces more tinty picture insted of hue explosion.
 * 256x192 - use 2 colors in 8x8 screen cell.
@@ -75,7 +75,7 @@ Exports to native SCR snapshoot.
 
 ### Amstrad CPC
 
-27 colors total, 3 modes, 2 usefull.
+27 colors total, 3 modes, 2 useful.
 
 * dithering – Atkinson dithering, colors of the original picture are replaced by retro machine palette
 * replace brightest - replaces brightest color with dimmed yellow
@@ -97,7 +97,7 @@ Export to DEGAS paint program.
 
 ### Amiga 500
 
-4096 colors total, 4 modes usefull for graphics.
+4096 colors total, 4 modes useful for graphics.
 
 * 320x256, 320x512 (lace) - use 32 colors, palette is result of Kohonen pixel classification.
 * 320x256, 320x512 (lace) - use HAM6 coding, 16 color palette as a result of Kohonen classification.
@@ -109,7 +109,7 @@ Export to Delux Paint IFF file format.
 
 ### Amiga 1200
 
-16M colors total, 2 modes usefull for graphics.
+16M colors total, 4 modes useful for graphics.
 
 * 320x256, 320x512 (lace), 640x512 (lace) - use 256 colors, palette is result of Kohonen pixel classification.
 * 320x256, 320x512 (lace), 640x512 (lace) - use HAM8 coding, 64 color palette as a result of Kohonen classification.
