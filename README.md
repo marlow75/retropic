@@ -17,7 +17,7 @@ Requirements: JRE16 installed.
 
 ## Supported machines
 
-* C64, hires 320x200, multicolor 160x200, standard text mode 40x25, interlaced, MCI (first atempt, unworking yet)
+* C64, hires 320x200, multicolor 160x200, standard text mode 40x25, interlaced, MCI (first attempt, unworking yet)
 * ZX Spectrum 48/+ 256x192 in 16 colors.
 * Amstrad CPC series mode0 160x200 16 colors, mode1 320x200 in 4 colors.
 * Atari ST, 320x200 in 16 on screen from 512 palette colors.
