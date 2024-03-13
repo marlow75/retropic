@@ -10,7 +10,7 @@ Requirements: JRE16 installed.
 
 ## Versions
 
-* 1.2 - Improved palette [improved pepto](https://www.pepto.de/projects/colorvic/) & color handling for C64, CPC, Amiga 500, experimental C64 extra 
+* 1.2 - Improved palette & color handling for C64, CPC, Amiga 500, experimental C64 extra 
 * 1.1 - Minor bug fixes, CPC new palette
 * 1.0 - Minor changes, time to start versioning
 * 0.1 - Initial version, bug fixes
@@ -123,10 +123,10 @@ Export to Delux Paint IFF file format.
 
 ### Commodore C64 extra
 
-Early, experimental interlace modes. You can select max luma difference in blending colors together. Adjusted for C64C (9 luma levels), best experience with PEPTO palette.
+Early, experimental interlace modes. You can select max luma difference in blending colors together. Adjusted for C64C (9 luma levels), best experience with PEPTO palette [calculated](https://www.pepto.de/projects/colorvic/).
 
 * Naive 320x200 - uses max 4 colors in 8x8 screen cell, 27-54 colors can be used without annoying flickering.
-* MCI 320x200 - uses max 16 colors in 8x8 screen cell. Very early stage. If you get errors, like mono color squares try adjust luma.
+* MCI 320x200 - uses max 16 colors in 8x8 screen cell. Very early stage. If you get errors like mono color squares, try adjust luma.
 * luma threshold - interlace is about blending, only colors with the same luminance can produce non flickering new one. White has luma set to 32 black is 0, choose luminance difference which is not annoying for you.
 
 Exports to executable PRG. In the future release one of the standard format will be supported (for editing).
