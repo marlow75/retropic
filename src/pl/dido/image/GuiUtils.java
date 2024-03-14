@@ -19,13 +19,18 @@ import pl.dido.image.utils.Config.NEAREST_COLOR;
 
 public class GuiUtils {
 
-	public final static Font std = new Font("Tahoma", Font.PLAIN, 12);
+	public final static Font std = new Font("Tahoma", Font.BOLD, 10);
+	public final static Font title = new Font("Tahoma", Font.PLAIN, 12);
 	public final static Font bold = new Font("Tahoma", Font.BOLD, 10);
 	
-	public static final JPanel addDitheringControls(final JPanel panel, final Config config) {		
-		final JLabel lblDitherLabel = new JLabel("Dithering & aspect:");
+	public static final JPanel addDASControls(final JPanel panel, final Config config) {
+		return addDASControls(panel, config, true);
+	}
+	
+	public static final JPanel addDASControls(final JPanel panel, final Config config, final boolean extra) {		
+		final JLabel lblDitherLabel = new JLabel("Dithering & aspect & scanline:");
 		lblDitherLabel.setFont(bold);
-		lblDitherLabel.setBounds(20, 10, 100, 20);
+		lblDitherLabel.setBounds(20, 10, 200, 20);
 		panel.add(lblDitherLabel);
 		
 		final JRadioButton rdbtnNoDitherButton = new JRadioButton("none");
@@ -44,7 +49,7 @@ public class GuiUtils {
 		final JRadioButton rdbtnFSButton = new JRadioButton("floyds");
 		rdbtnFSButton.setToolTipText("Floyd-Steinberg dithering, global color error");
 		rdbtnFSButton.setFont(std);
-		rdbtnFSButton.setBounds(116, 30, 60, 20);
+		rdbtnFSButton.setBounds(106, 30, 60, 20);
 		rdbtnFSButton.setSelected(config.dithering && (config.dither_alg == Config.DITHERING.STD_FS));
 		
 		rdbtnFSButton.addActionListener(new ActionListener() {
@@ -58,7 +63,7 @@ public class GuiUtils {
 		final JRadioButton rdbtnAtkinsonButton = new JRadioButton("apple");
 		rdbtnAtkinsonButton.setToolTipText("Atkinson dithering, lokal color error");
 		rdbtnAtkinsonButton.setFont(std);
-		rdbtnAtkinsonButton.setBounds(186, 30, 60, 20);
+		rdbtnAtkinsonButton.setBounds(166, 30, 55, 20);
 		rdbtnAtkinsonButton.setSelected(config.dithering && (config.dither_alg == Config.DITHERING.ATKINSON));
 		
 		rdbtnAtkinsonButton.addActionListener(new ActionListener() {
@@ -74,18 +79,33 @@ public class GuiUtils {
 		groupContrast.add(rdbtnFSButton);
 		groupContrast.add(rdbtnAtkinsonButton);
 		
-		final JCheckBox chckbxAspectCheckBox = new JCheckBox("keep aspect");
+		final JCheckBox chckbxAspectCheckBox = new JCheckBox("aspect");
 		chckbxAspectCheckBox.setToolTipText("Preserve orginal image aspect ratio");
 		chckbxAspectCheckBox.setFont(GuiUtils.std);
-		chckbxAspectCheckBox.setBounds(246, 30, 85, 20);
-		chckbxAspectCheckBox.setSelected(config.keepAspect);
+		chckbxAspectCheckBox.setBounds(220, 30, 58, 20);
+		chckbxAspectCheckBox.setSelected(config.preserveAspect);
 		
 		chckbxAspectCheckBox.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				config.keepAspect = !config.keepAspect;
+				config.preserveAspect = !config.preserveAspect;
 			}});
 		
 		panel.add(chckbxAspectCheckBox);
+		
+		if (extra) {
+			final JCheckBox chckbxRasterCheckBox = new JCheckBox("scan");
+			chckbxRasterCheckBox.setToolTipText("Scan line simulation");
+			chckbxRasterCheckBox.setFont(GuiUtils.std);
+			chckbxRasterCheckBox.setBounds(274, 30, 58, 20);
+			chckbxRasterCheckBox.setSelected(config.scanline);
+			
+			chckbxRasterCheckBox.addActionListener(new ActionListener() {
+				public void actionPerformed(final ActionEvent e) {
+					config.scanline = !config.scanline;
+				}});
+			
+			panel.add(chckbxRasterCheckBox);
+		}
 		
 		return panel;
 	}
@@ -144,7 +164,7 @@ public class GuiUtils {
 
 		final JSlider sldBrightness = new JSlider(JSlider.HORIZONTAL, 1, 5, config.details);
 		sldBrightness.setEnabled(config.highContrast == Config.HIGH_CONTRAST.SWAHE || config.highContrast == Config.HIGH_CONTRAST.CLAHE);
-		sldBrightness.setFont(GuiUtils.std);
+		sldBrightness.setFont(std);
 		sldBrightness.setBounds(350, 255, 120, 35);
 		sldBrightness.addChangeListener(new ChangeListener() {
 			public void stateChanged(final ChangeEvent e) {

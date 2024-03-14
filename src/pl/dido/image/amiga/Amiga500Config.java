@@ -33,7 +33,7 @@ public class Amiga500Config extends AmigaConfig {
 	}
 
 	@Override
-	public int getHeight() {
+	public int getScreenHeight() {
 		switch (video_mode) {
 		case HAM6_320x256:
 		case STD_320x256:
@@ -48,17 +48,17 @@ public class Amiga500Config extends AmigaConfig {
 	}
 
 	@Override
-	public int getWidth() {
+	public int getScreenWidth() {
 		return 320;
 	}
 	
 	@Override
-	public int getScreenHeight() {
-		return 384;
+	public int getWindowHeight() {
+		return 384; 
 	}
 
 	@Override
-	public int getScreenWidth() {
-		return 480;
+	public int getWindowWidth() {		
+		return 480;  
 	}
 }

@@ -13,7 +13,7 @@ public class STGui {
 		final JPanel panelST = new JPanel();
 		panelST.setLayout(null);
 
-		GuiUtils.addDitheringControls(panelST, config);
+		GuiUtils.addDASControls(panelST, config);
 
 		final Canvas stLogo = new ImageCanvas("st.png");
 		stLogo.setBounds(310, 15, 200, 85);

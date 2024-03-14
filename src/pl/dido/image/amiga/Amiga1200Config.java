@@ -38,7 +38,7 @@ public class Amiga1200Config extends AmigaConfig {
 	}
 
 	@Override
-	public int getHeight() {
+	public int getScreenHeight() {
 		switch (video_mode) {
 		case HAM8_320x256:
 		case STD_320x256:
@@ -55,7 +55,7 @@ public class Amiga1200Config extends AmigaConfig {
 	}
 
 	@Override
-	public int getWidth() {
+	public int getScreenWidth() {
 		switch (video_mode) {
 		case HAM8_320x256:
 		case STD_320x256:
@@ -72,12 +72,12 @@ public class Amiga1200Config extends AmigaConfig {
 	}
 
 	@Override
-	public int getScreenWidth() {
+	public int getWindowWidth() {
 		return 480;
 	}
 
 	@Override
-	public int getScreenHeight() {
+	public int getWindowHeight() {
 		return 384;
 	}
 }

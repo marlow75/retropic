@@ -26,7 +26,7 @@ public class Amiga500Gui {
 	public static JPanel amigaTab(final Amiga500Config config) {
 		final JPanel panelAmiga = new JPanel();
 		panelAmiga.setLayout(null);
-		GuiUtils.addDitheringControls(panelAmiga, config);		
+		GuiUtils.addDASControls(panelAmiga, config, false);		
 
 		final Canvas amigaLogo = new ImageCanvas("amiga.png");
 		amigaLogo.setBounds(340, 17, 200, 87);

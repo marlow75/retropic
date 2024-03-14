@@ -16,22 +16,28 @@ public class ZXConfig extends Config {
 	}
 
 	@Override
-	public int getWidth() {
+	public int getScreenWidth() {
 		return 256;
 	}
 
 	@Override
-	public int getHeight() {
+	public int getScreenHeight() {
 		return 192;
 	}
 	
 	@Override
-	public int getScreenWidth() {
+	public int getWindowWidth() {
+		if (scanline)
+			return 512;
+			
 		return 384;
 	}
 
 	@Override
-	public int getScreenHeight() {
+	public int getWindowHeight() {
+		if (scanline)
+			return 384;
+		
 		return 288;
 	}
 }

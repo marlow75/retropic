@@ -2,9 +2,13 @@ package pl.dido.image.utils;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.awt.image.Raster;
+import java.io.IOException;
 import java.util.Arrays;
 
 import pl.dido.image.utils.Config.DITHERING;
@@ -126,13 +130,13 @@ public class Gfx {
 		final int x = image.getWidth();
 		final int y = image.getHeight();
 
-		final double sx = maxX / (double) x;
-		final double sy = maxY / (double) y;
+		final float sx = maxX / (float) x;
+		final float sy = maxY / (float) y;
 
 		final BufferedImage scaled = new BufferedImage(maxX, maxY, image.getType());
 		final AffineTransform si = AffineTransform.getScaleInstance(sx, sy);
 
-		final AffineTransformOp transform = new AffineTransformOp(si, AffineTransformOp.TYPE_BILINEAR);
+		final AffineTransformOp transform = new AffineTransformOp(si, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
 		transform.filter(image, scaled);
 
 		return scaled;
@@ -146,15 +150,15 @@ public class Gfx {
 		g.setPaint(new Color(0, 0, 0)); // white background
 		g.fillRect(0, 0, maxX, maxY);
 
-		final double x = image.getWidth();
-		final double y = image.getHeight();
+		final float x = image.getWidth();
+		final float y = image.getHeight();
 
-		final double ratio = Math.min(maxX / x, maxY / y);
+		final float ratio = Math.min(maxX / x, maxY / y);
 
 		final BufferedImage scaled = new BufferedImage(maxX, maxY, image.getType());
 		final AffineTransform si = AffineTransform.getScaleInstance(ratio, ratio);
 
-		final AffineTransformOp scale = new AffineTransformOp(si, AffineTransformOp.TYPE_BILINEAR);
+		final AffineTransformOp scale = new AffineTransformOp(si, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
 		scale.filter(image, scaled);
 
 		final int px = (int) ((maxX - x * ratio) / 2);
@@ -564,14 +568,49 @@ public class Gfx {
 		}
 	}
 
-	public static void dithering(final byte pixels[], final int pixelType, final int palette[][], final Config cfg) {
+	public static byte[] makeScanlines(final byte pixels[], final int pixelType, final int window) {
+		final int ymax = pixels.length / 3 / window;
+		final byte out[] = new byte[pixels.length * 2];
+
+		final int yuv[] = new int[3];
+
+		for (int y = 0; y < ymax; y++) {
+			final int ywindow = y * window * 3;
+			final int ywindow2 = 2 * ywindow;
+			final int ywindow21 = (2 * y + 1) * window * 3;
+			
+			for (int x = 0; x < window * 3; x += 3) {
+				final int ys = ywindow + x;
+				final int y0 = ywindow2 + x;
+				final int y1 = ywindow21 + x;
+
+				final byte r = pixels[ys];
+				final byte g = pixels[ys + 1];
+				final byte b = pixels[ys + 2];
+
+				out[y0] = r;
+				out[y0 + 1] = g;
+				out[y0 + 2] = b;
+
+				if (y < ymax - 1) {
+					// scanline as dimmed previous line
+					rgb2YUV(pixelType, r, g, b, yuv, 0);
+					yuv2RGB(pixelType, Math.round(yuv[0] * 0.67f), yuv[1], yuv[2], out, y1);
+				}
+			}
+		}
+
+		return out;
+	}
+
+	public static void dithering(final byte pixels[], final int pixelType, final int palette[][], final Config config) {
 		final int work[] = Gfx.copy2Int(pixels);
 
-		final int width = cfg.getWidth();
-		final int height = cfg.getHeight();
+		final int width = config.getScreenWidth();
+		final int height = config.getScreenHeight();
 
-		final DITHERING dither = cfg.dither_alg;
-		final NEAREST_COLOR colorAlg = cfg.color_alg;
+		final DITHERING dither = config.dither_alg;
+		final NEAREST_COLOR colorAlg = config.color_alg;
 
 		final int width3 = width * 3;
 
@@ -667,6 +706,27 @@ public class Gfx {
 				}
 			}
 		}
+	}
+
+	public static BufferedImage byteArrayToImage(final byte[] data, final int width, final int height,
+			final int pixelType) throws IOException {
+		
+		final BufferedImage bufferedImage = new BufferedImage(width, height, pixelType);
+		final Raster raster = Raster.createRaster(bufferedImage.getSampleModel(),
+				new DataBufferByte(data, data.length), new Point());
+		
+		bufferedImage.setData(raster);
+		return bufferedImage;
+	}
+	
+	public final static BufferedImage scaleImage(final BufferedImage image, final int width, final int height, final boolean preserveAspect) {
+		if (image.getWidth() != width || image.getHeight() != height)
+			if (preserveAspect)
+				return Gfx.scaleWithPreservedAspect(image, width, height);
+			else
+				return Gfx.scaleWithStretching(image, width, height);
+
+		return image;
 	}
 
 	protected final static float getDistance(final NEAREST_COLOR color, final int r0, final int g0, final int b0,

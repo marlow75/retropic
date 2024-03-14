@@ -3,7 +3,6 @@ package pl.dido.image.renderer;
 import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Cursor;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
@@ -13,13 +12,14 @@ import java.awt.image.BufferStrategy;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 
+import pl.dido.image.utils.Gfx;
 import pl.dido.image.utils.Utils;
 
 public abstract class AbstractRendererRunner implements Runnable {
 	private AbstractRenderer renderer;
 
-	protected int width;
-	protected int height;
+	protected int windowWidth;
+	protected int windowHeight;
 
 	protected JFrame frame;
 	protected Canvas canvas;
@@ -35,19 +35,16 @@ public abstract class AbstractRendererRunner implements Runnable {
 	}
 
 	protected void initializeView() {
-		width = renderer.image.getWidth();
-		height = renderer.image.getHeight();
-
+		windowWidth = renderer.config.getWindowWidth();
+		windowHeight = renderer.config.getWindowHeight();
+		
 		frame = new JFrame(getTitle() + renderer.config.getConfigString());
 		frame.setJMenuBar(getMenuBar());
 		frame.setIconImage(Toolkit.getDefaultToolkit().getImage(Utils.getResourceAsURL("retro.png")));
 
 		frame.addWindowListener(new ImageWindowListener(this));
-
-		final int width = renderer.config.getScreenWidth();
-		final int height = renderer.config.getScreenHeight();
-
-		frame.setSize(width, height);
+		
+		frame.setSize(windowWidth, windowHeight);
 		frame.setLocationRelativeTo(null);
 
 		frame.setResizable(false);
@@ -56,7 +53,7 @@ public abstract class AbstractRendererRunner implements Runnable {
 		canvas = new PictureCanvas();
 		frame.setLocationRelativeTo(null);
 
-		canvas.setSize(width, height);
+		canvas.setSize(windowWidth, windowHeight);
 		canvas.setBackground(Color.BLACK);
 
 		canvas.setVisible(true);
@@ -71,20 +68,11 @@ public abstract class AbstractRendererRunner implements Runnable {
 
 	protected void showImage() {
 		final Graphics gfx = bufferStrategy.getDrawGraphics();
-
-		gfx.drawImage(renderer.image, 0, 0, canvas.getWidth(), canvas.getHeight(), 0, 0, width, height, null);
+		
+		gfx.drawImage(Gfx.scaleImage(renderer.image, windowWidth, windowHeight, false), 0, 0, canvas.getWidth(), canvas.getHeight(), 0, 0, windowWidth, windowHeight, null);
 		gfx.dispose();
 
 		bufferStrategy.show();
-	}
-
-	protected void addWaterMark() {
-		final Graphics gfx = renderer.image.createGraphics();
-
-		gfx.setColor(Color.WHITE);
-		gfx.setFont(new Font("Tahoma", Font.BOLD, 8));
-		gfx.drawString("RetroPIC", width - 40, height - 5);
-		gfx.dispose();
 	}
 
 	public void run() {
@@ -96,10 +84,8 @@ public abstract class AbstractRendererRunner implements Runnable {
 				Thread.sleep(100);
 
 			canvas.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-
 			renderer.imageProcess();
-			addWaterMark();
-
+		
 			// show image after
 			showImage();
 		} catch (final InterruptedException ie) {
@@ -132,6 +118,5 @@ public abstract class AbstractRendererRunner implements Runnable {
 	}
 
 	protected abstract String getTitle();
-
 	protected abstract JMenuBar getMenuBar();
 }

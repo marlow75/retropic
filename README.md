@@ -10,6 +10,7 @@ Requirements: JRE16 installed.
 
 ## Versions
 
+* 1.3 - Scanline view for C64, ZX, CPC, ST, bug fixes
 * 1.2 - Improved palette & color handling for C64, CPC, Amiga 500, experimental C64 extra 
 * 1.1 - Minor bug fixes, CPC new palette
 * 1.0 - Minor changes, time to start versioning
@@ -39,10 +40,11 @@ Try all options available.
 * Dithering - pictures are dithered using Floyds-Steinberg or Atkinson algorythms.
 * Color distance – how color distance in the RGB cube is measured: euclidean, redmean simple approximation (close to human perception), picking highest luminance color.
 * Contrast processing - experimental luma histogram equalizer designed for 8 bit machines primarly, now enabled for every available machine. HE - standard global equalization, CLAHE & SWAHE - clipped local equalization, first fast method for local contrast enhancer, second slow but for more demanding.
+* Aspect & scanline - keeps aspect ratio of original picture, renders scanlines for 8 bit machines. 
 
 ### Commodore C64
 
-16 colors total, 4 modes, 2 useful for graphics
+16 colors total, 2 modes, 2 useful for graphics
 
 * 320x200 - uses 2 colors in 8x8 screen cell.
 * 160x200 - uses 4 colors in 4x8 screen cell, average or brightest color are choosen when shrinking 320->160.
@@ -123,10 +125,11 @@ Export to Delux Paint IFF file format.
 
 ### Commodore C64 extra
 
-Early, experimental interlace modes. You can select max luma difference in blending colors together. Adjusted for C64C (9 luma levels), best experience with PEPTO palette [calculated](https://www.pepto.de/projects/colorvic/).
+Early, experimental interlace modes. You can select max luma difference in blending colors together. Adjusted for C64C (9 luma levels), best experience with PEPTO [calculated](https://www.pepto.de/projects/colorvic/) palette.
 
 * Naive 320x200 - uses max 4 colors in 8x8 screen cell, 27-54 colors can be used without annoying flickering.
 * MCI 320x200 - uses max 16 colors in 8x8 screen cell. Very early stage. If you get errors like mono color squares, try adjust luma.
+
 * luma threshold - interlace is about blending, only colors with the same luminance can produce non flickering new one. White has luma set to 32 black is 0, choose luminance difference which is not annoying for you.
 
 Exports to executable PRG. In the future release one of the standard format will be supported (for editing).

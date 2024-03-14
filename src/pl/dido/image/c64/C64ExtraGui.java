@@ -21,7 +21,7 @@ public class C64ExtraGui {
 	public static JPanel c64Extra(final C64ExtraConfig config) {
 		final JPanel panelC64Extra = new JPanel();
 		panelC64Extra.setLayout(null);
-		GuiUtils.addDitheringControls(panelC64Extra, config);
+		GuiUtils.addDASControls(panelC64Extra, config);
 
 		final JLabel lblConvertLabel = new JLabel("Converter mode:");
 		lblConvertLabel.setFont(GuiUtils.bold);

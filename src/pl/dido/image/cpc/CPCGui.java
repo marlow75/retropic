@@ -32,18 +32,31 @@ public class CPCGui {
 		
 		cpcPanel.add(chckbxVividCheckBox);
 		
-		final JCheckBox chckbxAspectCheckBox = new JCheckBox("keep aspect");
+		final JCheckBox chckbxAspectCheckBox = new JCheckBox("aspect");
 		chckbxAspectCheckBox.setToolTipText("Preserve orginal image aspect ratio");
 		chckbxAspectCheckBox.setFont(GuiUtils.std);
 		chckbxAspectCheckBox.setBounds(150, 23, 100, 20);
-		chckbxAspectCheckBox.setSelected(config.keepAspect);
+		chckbxAspectCheckBox.setSelected(config.preserveAspect);
 		
 		chckbxAspectCheckBox.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				config.keepAspect = !config.keepAspect;
+				config.preserveAspect = !config.preserveAspect;
 			}});
 		
 		cpcPanel.add(chckbxAspectCheckBox);
+		
+		final JCheckBox chckbxRasterCheckBox = new JCheckBox("scan");
+		chckbxRasterCheckBox.setToolTipText("Scan line simulation");
+		chckbxRasterCheckBox.setFont(GuiUtils.std);
+		chckbxRasterCheckBox.setBounds(150, 50, 70, 20);
+		chckbxRasterCheckBox.setSelected(config.scanline);
+		
+		chckbxRasterCheckBox.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				config.scanline = !config.scanline;
+			}});
+		
+		cpcPanel.add(chckbxRasterCheckBox);
 
 		final Canvas cpcLogo = new ImageCanvas("amstrad.png");
 		cpcLogo.setBounds(290, 0, 200, 100);
@@ -52,7 +65,7 @@ public class CPCGui {
 		final JCheckBox chkReplaceBox = new JCheckBox("replace colors");
 		chkReplaceBox.setToolTipText("Replaces brightest and dimmest with white nad black");
 		chkReplaceBox.setFont(GuiUtils.std);
-		chkReplaceBox.setBounds(20, 50, 169, 20);
+		chkReplaceBox.setBounds(20, 50, 100, 20);
 		chkReplaceBox.setSelected(config.replace_white);
 		chkReplaceBox.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {

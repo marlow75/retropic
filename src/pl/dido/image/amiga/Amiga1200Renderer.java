@@ -53,14 +53,14 @@ public class Amiga1200Renderer extends AbstractPictureColorsRenderer {
 
 	protected void standard256() {
 		final int[] work = Gfx.copy2Int(pixels);
-		bitplanes = new int[(width >> 4) * height][8]; // 8 planes
+		bitplanes = new int[(screenWidth >> 4) * screenHeight][8]; // 8 planes
 
 		int r0, g0, b0;
 
-		final int width3 = width * 3;
+		final int width3 = screenWidth * 3;
 		int index = 0, shift = 15; // 16
 
-		for (int y = 0; y < height; y++) {
+		for (int y = 0; y < screenHeight; y++) {
 			final int k = y * width3;
 			final int k1 = (y + 1) * width3;
 			final int k2 = ((y + 2) * width3);
@@ -107,12 +107,12 @@ public class Amiga1200Renderer extends AbstractPictureColorsRenderer {
 
 					switch (config.dither_alg) {
 					case STD_FS:
-						if (x < (width - 1) * 3) {
+						if (x < (screenWidth - 1) * 3) {
 							work[pyx + 3] += (r_error * 7) / 16;
 							work[pyx + 3 + 1] += (g_error * 7) / 16;
 							work[pyx + 3 + 2] += (b_error * 7) / 16;
 						}
-						if (y < height - 1) {
+						if (y < screenHeight - 1) {
 							work[py1x - 3] += (r_error * 3) / 16;
 							work[py1x - 3 + 1] += (g_error * 3) / 16;
 							work[py1x - 3 + 2] += (b_error * 3) / 16;
@@ -121,7 +121,7 @@ public class Amiga1200Renderer extends AbstractPictureColorsRenderer {
 							work[py1x + 1] += (g_error * 5) / 16;
 							work[py1x + 2] += (b_error * 5) / 16;
 
-							if (x < (width - 1) * 3) {
+							if (x < (screenWidth - 1) * 3) {
 								work[py1x + 3] += r_error / 16;
 								work[py1x + 3 + 1] += g_error / 16;
 								work[py1x + 3 + 2] += b_error / 16;
@@ -129,18 +129,18 @@ public class Amiga1200Renderer extends AbstractPictureColorsRenderer {
 						}
 						break;
 					case ATKINSON:
-						if (x < (width - 1) * 3) {
+						if (x < (screenWidth - 1) * 3) {
 							work[pyx + 3] += r_error >> 3;
 							work[pyx + 3 + 1] += g_error >> 3;
 							work[pyx + 3 + 2] += b_error >> 3;
 
-							if (x < (width - 2) * 3) {
+							if (x < (screenWidth - 2) * 3) {
 								work[pyx + 6] += r_error >> 3;
 								work[pyx + 6 + 1] += g_error >> 3;
 								work[pyx + 6 + 2] += b_error >> 3;
 							}
 						}
-						if (y < height - 1) {
+						if (y < screenHeight - 1) {
 							work[py1x - 3] += r_error >> 3;
 							work[py1x - 3 + 1] += g_error >> 3;
 							work[py1x - 3 + 2] += b_error >> 3;
@@ -149,13 +149,13 @@ public class Amiga1200Renderer extends AbstractPictureColorsRenderer {
 							work[py1x + 1] += g_error >> 3;
 							work[py1x + 2] += b_error >> 3;
 
-							if (x < (width - 1) * 3) {
+							if (x < (screenWidth - 1) * 3) {
 								work[py1x + 3] += r_error >> 3;
 								work[py1x + 3 + 1] += g_error >> 3;
 								work[py1x + 3 + 2] += b_error >> 3;
 							}
 
-							if (y < height - 2) {
+							if (y < screenHeight - 2) {
 								work[py2x] += r_error >> 3;
 								work[py2x + 1] += g_error >> 3;
 								work[py2x + 2] += b_error >> 3;
@@ -170,10 +170,10 @@ public class Amiga1200Renderer extends AbstractPictureColorsRenderer {
 
 	protected void ham8Encoded() {
 		final float[] work = Gfx.copy2float(pixels);
-		bitplanes = new int[(width >> 4) * height][8]; // 8 planes
+		bitplanes = new int[(screenWidth >> 4) * screenHeight][8]; // 8 planes
 
 		int r0, g0, b0, r = 0, g = 0, b = 0;
-		final int width3 = width * 3;
+		final int width3 = screenWidth * 3;
 
 		int index = 0, shift = 15; // WORD
 		int modifyRed, modifyBlue;
@@ -189,7 +189,7 @@ public class Amiga1200Renderer extends AbstractPictureColorsRenderer {
 			break;
 		}
 
-		for (int y = 0; y < height; y++) {
+		for (int y = 0; y < screenHeight; y++) {
 			boolean nextPixel = false;
 			final int k = y * width3;
 			
@@ -307,12 +307,12 @@ public class Amiga1200Renderer extends AbstractPictureColorsRenderer {
 				
 				switch (config.dither_alg) {
 				case STD_FS:
-					if (x < (width - 1) * 3) {
+					if (x < (screenWidth - 1) * 3) {
 						work[pyx + 3]     += r_error * 7 / 16;
 						work[pyx + 3 + 1] += g_error * 7 / 16;
 						work[pyx + 3 + 2] += b_error * 7 / 16;
 					}
-					if (y < height - 1) {
+					if (y < screenHeight - 1) {
 						work[py1x - 3]     += r_error * 3 / 16;
 						work[py1x - 3 + 1] += g_error * 3 / 16;
 						work[py1x - 3 + 2] += b_error * 3 / 16;
@@ -321,7 +321,7 @@ public class Amiga1200Renderer extends AbstractPictureColorsRenderer {
 						work[py1x + 1] += g_error * 5 / 16;
 						work[py1x + 2] += b_error * 5 / 16;
 
-						if (x < (width - 1) * 3) {
+						if (x < (screenWidth - 1) * 3) {
 							work[py1x + 3]     += r_error / 16;
 							work[py1x + 3 + 1] += g_error / 16;
 							work[py1x + 3 + 2] += b_error / 16;
@@ -329,18 +329,18 @@ public class Amiga1200Renderer extends AbstractPictureColorsRenderer {
 					}							
 					break;
 				case ATKINSON:
-					if (x < (width - 1) * 3) {
+					if (x < (screenWidth - 1) * 3) {
 						work[pyx + 3]     += r_error * 1 / 8;
 						work[pyx + 3 + 1] += g_error * 1 / 8;
 						work[pyx + 3 + 2] += b_error * 1 / 8;
 						
-						if (x < (width - 2) * 3) {
+						if (x < (screenWidth - 2) * 3) {
 							work[pyx + 6]     += r_error * 1 / 8;
 							work[pyx + 6 + 1] += g_error * 1 / 8;
 							work[pyx + 6 + 2] += b_error * 1 / 8;
 						}
 					}
-					if (y < height - 1) {
+					if (y < screenHeight - 1) {
 						work[py1x - 3]     += r_error * 1 / 8;
 						work[py1x - 3 + 1] += g_error * 1 / 8;
 						work[py1x - 3 + 2] += b_error * 1 / 8;
@@ -349,13 +349,13 @@ public class Amiga1200Renderer extends AbstractPictureColorsRenderer {
 						work[py1x + 1] += g_error * 1 / 8;
 						work[py1x + 2] += b_error * 1 / 8;
 
-						if (x < (width - 1) * 3) {
+						if (x < (screenWidth - 1) * 3) {
 							work[py1x + 3]     += r_error * 1 / 8;
 							work[py1x + 3 + 1] += g_error * 1 / 8;
 							work[py1x + 3 + 2] += b_error * 1 / 8;
 						}
 						
-						if (y < height - 2) {
+						if (y < screenHeight - 2) {
 							work[py2x]     += r_error * 1 / 8;
 							work[py2x + 1] += g_error * 1 / 8;
 							work[py2x + 2] += b_error * 1 / 8;

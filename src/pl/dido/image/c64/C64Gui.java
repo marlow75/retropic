@@ -20,7 +20,7 @@ public class C64Gui {
 	public static JPanel c64Tab(final C64Config config) {
 		final JPanel panelC64 = new JPanel();
 		panelC64.setLayout(null);
-		GuiUtils.addDitheringControls(panelC64, config);
+		GuiUtils.addDASControls(panelC64, config);
 
 		final JLabel lblConvertLabel = new JLabel("Converter mode:");
 		lblConvertLabel.setFont(GuiUtils.bold);

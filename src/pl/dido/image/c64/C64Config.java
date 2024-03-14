@@ -73,22 +73,28 @@ public class C64Config extends Config {
 	}
 
 	@Override
-	public int getWidth() {
+	public int getScreenWidth() {
 		return 320;
 	}
 
 	@Override
-	public int getHeight() {
+	public int getScreenHeight() {
 		return 200;
 	}
 	
 	@Override
-	public int getScreenHeight() {
-		return 300;
+	public int getWindowHeight() {
+		if (scanline)
+			return 400;
+		
+		return 260;
 	}
 
 	@Override
-	public int getScreenWidth() {
-		return 480;
+	public int getWindowWidth() {
+		if (scanline)
+			return 640;
+		
+		return 416;
 	}
 }

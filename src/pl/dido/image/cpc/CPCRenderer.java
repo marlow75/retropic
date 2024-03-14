@@ -143,10 +143,10 @@ public class CPCRenderer extends AbstractRenderer {
 
 		int r0, g0, b0;
 
-		final int width3 = width * 3;
+		final int width3 = screenWidth * 3;
 		int bit0 = 128, bit1 = 8;
 
-		for (int y = 0; y < height; y++) {
+		for (int y = 0; y < screenHeight; y++) {
 			int index = 0;
 
 			final int i = y >> 3;
@@ -196,18 +196,18 @@ public class CPCRenderer extends AbstractRenderer {
 					final int g_error = Gfx.saturate(g0 - g);
 					final int b_error = Gfx.saturate(b0 - b);
 
-					if (x < (width - 1) * 3) {
+					if (x < (screenWidth - 1) * 3) {
 						work[pyx + 3] += r_error >> 3;
 						work[pyx + 3 + 1] += g_error >> 3;
 						work[pyx + 3 + 2] += b_error >> 3;
 
-						if (x < (width - 2) * 3) {
+						if (x < (screenWidth - 2) * 3) {
 							work[pyx + 6] += r_error >> 3;
 							work[pyx + 6 + 1] += g_error >> 3;
 							work[pyx + 6 + 2] += b_error >> 3;
 						}
 					}
-					if (y < (height - 1)) {
+					if (y < (screenHeight - 1)) {
 						work[py1x - 3] += r_error >> 3;
 						work[py1x - 3 + 1] += g_error >> 3;
 						work[py1x - 3 + 2] += b_error >> 3;
@@ -216,13 +216,13 @@ public class CPCRenderer extends AbstractRenderer {
 						work[py1x + 1] += g_error >> 3;
 						work[py1x + 2] += b_error >> 3;
 
-						if (x < (width - 1) * 3) {
+						if (x < (screenWidth - 1) * 3) {
 							work[py1x + 3] += r_error >> 3;
 							work[py1x + 3 + 1] += g_error >> 3;
 							work[py1x + 3 + 2] += b_error >> 3;
 						}
 
-						if (y < (height - 2)) {
+						if (y < (screenHeight - 2)) {
 							work[py2x] += r_error >> 3;
 							work[py2x + 1] += g_error >> 3;
 							work[py2x + 2] += b_error >> 3;

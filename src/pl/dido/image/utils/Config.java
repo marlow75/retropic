@@ -15,7 +15,8 @@ abstract public class Config implements Cloneable {
 	};
 
 	public boolean dithering;
-	public boolean keepAspect; 
+	public boolean preserveAspect; 
+	public boolean scanline;
 	
 	public HIGH_CONTRAST highContrast;	
 	public int windowSize;
@@ -31,20 +32,22 @@ abstract public class Config implements Cloneable {
 		color_alg = NEAREST_COLOR.PERCEPTED;
 
 		dithering = false;
-		keepAspect = false;
+		preserveAspect = false;
 		
 		highContrast = HIGH_CONTRAST.NONE;		
 		windowSize = 40;
+		
 		details = 3;
-
 		export_path = "export";
+		
+		scanline = false;
 	}	
-	
-	public abstract int getWidth();
-	public abstract int getHeight();
 	
 	public abstract int getScreenWidth();
 	public abstract int getScreenHeight();
+	
+	public abstract int getWindowWidth();
+	public abstract int getWindowHeight();
 	
 	public String getConfigString() {
 		String configString = "";

@@ -4,6 +4,7 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -102,6 +103,10 @@ public class Amiga1200Runner extends AbstractRendererRunner {
 				aspectY = 44;
 				break;
 			}
+			
+			final BufferedImage image = a1200.getImage();
+			final int width = image.getWidth();
+			final int height = image.getHeight();
 
 			final boolean compressed = ((AmigaConfig) a1200.config).rleCompress;
 			chk.write(IFF.getILBMFormat(IFF.chunk("BMHD", IFF.getILBMHD(width, height, aspectX, aspectY, 8, compressed)), 
@@ -118,6 +123,6 @@ public class Amiga1200Runner extends AbstractRendererRunner {
 
 	@Override
 	protected String getTitle() {
-		return "A1200 " + a1200.config.getWidth() + "x" + a1200.config.getHeight();
+		return "A1200 " + a1200.getImage().getWidth() + "x" + a1200.getImage().getHeight();
 	}
 }

@@ -123,7 +123,7 @@ public class RetroPIC {
 		frame.getContentPane().setLayout(new BorderLayout());
 
 		final JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane.setFont(GuiUtils.std);
+		tabbedPane.setFont(GuiUtils.title);
 
 		final Button btnLoad = new Button("Load file...");
 

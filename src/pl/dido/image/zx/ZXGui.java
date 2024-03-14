@@ -29,18 +29,31 @@ public class ZXGui {
 		
 		panelZX.add(chckbxVividCheckBox);
 		
-		final JCheckBox chckbxAspectCheckBox = new JCheckBox("keep aspect");
+		final JCheckBox chckbxAspectCheckBox = new JCheckBox("aspect");
 		chckbxAspectCheckBox.setToolTipText("Preserve orginal image aspect ratio");
 		chckbxAspectCheckBox.setFont(GuiUtils.std);
 		chckbxAspectCheckBox.setBounds(20, 50, 100, 20);
-		chckbxAspectCheckBox.setSelected(config.keepAspect);
+		chckbxAspectCheckBox.setSelected(config.preserveAspect);
 		
 		chckbxAspectCheckBox.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				config.keepAspect = !config.keepAspect;
+				config.preserveAspect = !config.preserveAspect;
 			}});
 		
 		panelZX.add(chckbxAspectCheckBox);
+		
+		final JCheckBox chckbxRasterCheckBox = new JCheckBox("scan");
+		chckbxRasterCheckBox.setToolTipText("Scan line simulation");
+		chckbxRasterCheckBox.setFont(GuiUtils.std);
+		chckbxRasterCheckBox.setBounds(150, 23, 70, 20);
+		chckbxRasterCheckBox.setSelected(config.scanline);
+		
+		chckbxRasterCheckBox.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				config.scanline = !config.scanline;
+			}});
+		
+		panelZX.add(chckbxRasterCheckBox);
 		
 		final Canvas zxLogo = new ImageCanvas("sinclair.png");
 		zxLogo.setBounds(230, 7, 252, 65);

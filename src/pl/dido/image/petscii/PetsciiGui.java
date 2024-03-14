@@ -18,7 +18,7 @@ public class PetsciiGui {
 	public static JPanel petsciiTab(final PetsciiConfig config) {
 		final JPanel petsciiC64 = new JPanel();
 		petsciiC64.setLayout(null);
-		GuiUtils.addDitheringControls(petsciiC64, config);
+		GuiUtils.addDASControls(petsciiC64, config);
 
 		final JLabel lblConvertLabel = new JLabel("Converter mode:");
 		lblConvertLabel.setFont(GuiUtils.bold);

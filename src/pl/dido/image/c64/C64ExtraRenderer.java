@@ -4,8 +4,8 @@ import java.awt.image.BufferedImage;
 import java.util.Arrays;
 
 import pl.dido.image.renderer.AbstractRenderer;
-import pl.dido.image.utils.Gfx;
 import pl.dido.image.utils.C64PaletteCalculator;
+import pl.dido.image.utils.Gfx;
 import pl.dido.image.utils.neural.SOMPalette;
 
 public class C64ExtraRenderer extends AbstractRenderer {
@@ -173,32 +173,38 @@ public class C64ExtraRenderer extends AbstractRenderer {
 					// 4 colors palette (blended new colors)
 					tilePalette = new int[4][3];
 					
-					final int cf0 = blend[f][0];
-					final int cn1 = blend[n][1];
+					final int if0 = blend[f][0];
+					final int in1 = blend[n][1];
 					
-					final int cf1 = blend[f][1];
-					final int cn0 = blend[n][0];
+					final int if1 = blend[f][1];
+					final int in0 = blend[n][0];
 					
-					final float acf0 = alphas[cf0];
-					final float acn1 = alphas[cn1];
+					final int cf0[] = machinePalette[if0];
+					final int cn1[] = machinePalette[in1];
+					
+					final float acf0 = alphas[if0];
+					final float acn1 = alphas[in1];
 					
 					final float sum1 = acf0 + acn1;
 
 					// calculate blended colors
-					r = (int) ((machinePalette[cf0][0] * acf0 + machinePalette[cn1][0] * acn1) / sum1);
-					g = (int) ((machinePalette[cf0][1] * acf0 + machinePalette[cn1][1] * acn1) / sum1);
-					b = (int) ((machinePalette[cf0][2] * acf0 + machinePalette[cn1][2] * acn1) / sum1);
+					r = (int) ((cf0[0] * acf0 + cn1[0] * acn1) / sum1);
+					g = (int) ((cf0[1] * acf0 + cn1[1] * acn1) / sum1);
+					b = (int) ((cf0[2] * acf0 + cn1[2] * acn1) / sum1);
 				
 					final int i2 = Gfx.getColorIndex(colorAlg, pixelType, palette, r, g, b);
+					
+					final int cf1[] = machinePalette[if1];
+					final int cn0[] = machinePalette[in0];
 
-					final float acn0 = alphas[cn0];
-					final float acf1 = alphas[cf1];
+					final float acn0 = alphas[in0];
+					final float acf1 = alphas[if1];
 					
 					final float sum2 = acf1 + acn0;
 
-					r = (int) ((machinePalette[cf1][0] * acf1 + machinePalette[cn0][0] * acn0) / sum2);
-					g = (int) ((machinePalette[cf1][1] * acf1 + machinePalette[cn0][1] * acn0) / sum2);
-					b = (int) ((machinePalette[cf1][2] * acf1 + machinePalette[cn0][2] * acn0) / sum2);
+					r = (int) ((cf1[0] * acf1 + cn0[0] * acn0) / sum2);
+					g = (int) ((cf1[1] * acf1 + cn0[1] * acn0) / sum2);
+					b = (int) ((cf1[2] * acf1 + cn0[2] * acn0) / sum2);
 					
 					final int i3 = Gfx.getColorIndex(colorAlg, pixelType, palette, r, g, b);
 
