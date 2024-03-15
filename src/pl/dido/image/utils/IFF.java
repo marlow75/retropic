@@ -1,6 +1,5 @@
 package pl.dido.image.utils;
 
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
@@ -31,9 +30,9 @@ public class IFF {
 
 		for (final byte[] p : data)
 			size += p.length;
-		
+
 		final boolean padding = (size % 2 == 1);
-		final ByteArrayOutputStream mem = new ByteArrayOutputStream(padding ? size + 1: size);
+		final ByteArrayOutputStream mem = new ByteArrayOutputStream(padding ? size + 1 : size);
 
 		mem.write(name.getBytes());
 		mem.write(bigEndianDWORD(size));
@@ -43,28 +42,29 @@ public class IFF {
 
 		if (padding)
 			mem.write(0);
-		
+
 		return mem.toByteArray();
 	}
 
-	public static final byte[] getBitmap(final int width, final int height, final int bitplanes[][], final boolean compressed) throws IOException {		
+	public static final byte[] getBitmap(final int width, final int height, final int bitplanes[][],
+			final boolean compressed) throws IOException {
 		final int planes = bitplanes[0].length;
 		final int size = width >> 4;
-		
+
 		final ByteArrayOutputStream mem = new ByteArrayOutputStream((width * height / 8) * planes); // bitplanes
-		
-		if (compressed) {			
+
+		if (compressed) {
 			for (int y = 0; y < height; y++)
 				for (int plane = 0; plane < planes; plane++) {
 					final RLEByteArrayOutputStream out = new RLEByteArrayOutputStream(40);
-					
+
 					for (int x = 0; x < size; x++) {
 						final int a = size * y + x;
 						final int d = bitplanes[a][plane]; // WORD
 
 						out.write(bigEndianWORD(d));
 					}
-					
+
 					final byte bytes[] = out.toByteArray();
 					mem.write(bytes);
 				}
@@ -78,12 +78,12 @@ public class IFF {
 						mem.write(bigEndianWORD(d));
 					}
 		}
-		
+
 		return mem.toByteArray();
 	}
 
-	public static final byte[] getILBMHD(final int width, final int height, final int aspectX, 
-			final int aspectY, final int bitplanes, final boolean compressed) throws IOException {
+	public static final byte[] getILBMHD(final int width, final int height, final int aspectX, final int aspectY,
+			final int bitplanes, final boolean compressed) throws IOException {
 		final ByteArrayOutputStream mem = new ByteArrayOutputStream(28);
 
 		mem.write(bigEndianWORD(width));
@@ -123,25 +123,16 @@ public class IFF {
 		return mem.toByteArray();
 	}
 
-	public static final byte[] getCMAP(final int palette[][], final int pixelMode) throws IOException {
+	public static final byte[] getCMAP(final int palette[][]) throws IOException {
 		final int size = palette.length;
 		final ByteArrayOutputStream mem = new ByteArrayOutputStream(size * 3);
 
 		for (int i = 0; i < size; i++) {
 			final int color[] = palette[i];
 
-			switch (pixelMode) {
-			case BufferedImage.TYPE_3BYTE_BGR:
-				mem.write(color[2]);
-				mem.write(color[1]);
-				mem.write(color[0]);
-				break;
-			case BufferedImage.TYPE_INT_RGB:
-				mem.write(color[0]);
-				mem.write(color[1]);
-				mem.write(color[2]);
-				break;
-			}
+			mem.write(color[2]);
+			mem.write(color[1]);
+			mem.write(color[0]);
 		}
 
 		return mem.toByteArray();

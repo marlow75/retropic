@@ -2,7 +2,6 @@ package pl.dido.image.renderer;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
-import java.io.IOException;
 
 import pl.dido.image.amiga.AmigaConfig;
 import pl.dido.image.utils.Config;
@@ -18,14 +17,12 @@ public abstract class AbstractRenderer {
 	protected int screenWidth;
 	protected int screenHeight;
 
-	protected int[] work = null;
-	protected AbstractRendererRunner runner; 
+	protected int[] work = null; 
 
 	protected BufferedImage image;
 	protected NEAREST_COLOR colorAlg;
 
 	public Config config;
-	public int pixelType;
 
 	private void initialize(final Config config) {
 		this.config = config;
@@ -49,7 +46,6 @@ public abstract class AbstractRenderer {
 		this.image = Gfx.scaleImage(image, screenWidth, screenHeight, config.preserveAspect);
 		
 		pixels = ((DataBufferByte) this.image.getRaster().getDataBuffer()).getData();
-		pixelType = image.getType();
 	}
 
 	public BufferedImage getImage() {
@@ -65,32 +61,28 @@ public abstract class AbstractRenderer {
 		
 		imagePostproces();
 		if (config.scanline)
-			rasterizeImage();
+			makeScanlines();
 	}
 	
 	private void processContrast() {
 		// contrast correction
 		switch (config.highContrast) {
 		case HE:
-			Gfx.HE(pixels, pixelType);
+			Gfx.HE(pixels);
 			break;
 		case CLAHE:
-			Gfx.CLAHE(pixels, pixelType, config instanceof AmigaConfig ? 16 : 8, config.details, screenWidth, screenHeight);
+			Gfx.CLAHE(pixels, config instanceof AmigaConfig ? 16 : 8, config.details, screenWidth, screenHeight);
 			break;
 		case SWAHE:
-			Gfx.SWAHE(pixels, pixelType, config.windowSize, config.details, screenWidth, screenHeight);
+			Gfx.SWAHE(pixels, config.windowSize, config.details, screenWidth, screenHeight);
 			break;
 		default:
 			break;
 		}
 	}
 	
-	private void rasterizeImage() {
-		try {			
-			this.image = Gfx.byteArrayToImage(Gfx.makeScanlines(pixels, pixelType, image.getWidth()), screenWidth, 2 * screenHeight, pixelType);
-		} catch (final IOException e) {
-			e.printStackTrace();
-		}
+	private void makeScanlines() {
+		this.image = Gfx.byteArrayToBGRImage(Gfx.makeScanlines(pixels, image.getWidth()), screenWidth, 2 * screenHeight);
 	}
 
 	protected abstract void imagePostproces();
@@ -98,10 +90,10 @@ public abstract class AbstractRenderer {
 	protected abstract void setupPalette();
 
 	protected void imageDithering() {
-		Gfx.dithering(pixels, pixelType, palette, config);
+		Gfx.dithering(pixels, palette, config);
 	}
 
 	protected int getColorIndex(final int r, final int g, final int b) {
-		return Gfx.getColorIndex(colorAlg, pixelType, palette, r, g, b);
+		return Gfx.getColorIndex(colorAlg, palette, r, g, b);
 	}
 }

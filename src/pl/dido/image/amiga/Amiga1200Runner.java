@@ -110,7 +110,7 @@ public class Amiga1200Runner extends AbstractRendererRunner {
 
 			final boolean compressed = ((AmigaConfig) a1200.config).rleCompress;
 			chk.write(IFF.getILBMFormat(IFF.chunk("BMHD", IFF.getILBMHD(width, height, aspectX, aspectY, 8, compressed)), 
-					IFF.chunk("CMAP", IFF.getCMAP(a1200.pictureColors, a1200.pixelType)),
+					IFF.chunk("CMAP", IFF.getCMAP(a1200.pictureColors)),
 					IFF.chunk("CAMG", IFF.bigEndianDWORD(videoMode)), 
 					IFF.chunk("BODY", IFF.getBitmap(width, height, a1200.bitplanes, compressed))));
 			chk.close();

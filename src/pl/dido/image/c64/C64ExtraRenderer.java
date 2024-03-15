@@ -43,7 +43,7 @@ public class C64ExtraRenderer extends AbstractRenderer {
 		palette = new int[136][3];
 		blend = new int[136][2];
 
-		machinePalette = C64PaletteCalculator.getCalculatedPalette(pixelType);
+		machinePalette = C64PaletteCalculator.getCalculatedPalette();
 		int index = 0;
 
 		// get mixed colors
@@ -117,7 +117,7 @@ public class C64ExtraRenderer extends AbstractRenderer {
 			final int g1 = (int) ((c[1] * a1 + a0g0) / suma0a1);
 			final int b1 = (int) ((c[2] * a1 + a0b0) / suma0a1);
 
-			final float distance = Gfx.perceptedDistanceCM(pixelType, r, g, b, r1, g1, b1);
+			final float distance = Gfx.perceptedDistance(r, g, b, r1, g1, b1);
 
 			if (distance < min) {
 				min = distance;
@@ -155,15 +155,15 @@ public class C64ExtraRenderer extends AbstractRenderer {
 						work[index++] = g;
 						work[index++] = b;
 
-						final float luma = Gfx.getLumaByCM(pixelType, r, g, b);
+						final float luma = Gfx.getLuma(r, g, b);
 						if (luma > max) {
 							max = luma;
-							f = Gfx.getColorIndex(colorAlg, pixelType, palette, r, g, b);
+							f = Gfx.getColorIndex(colorAlg, palette, r, g, b);
 						}
 
 						if (luma < min) {
 							min = luma;
-							n = Gfx.getColorIndex(colorAlg, pixelType, palette, r, g, b);
+							n = Gfx.getColorIndex(colorAlg, palette, r, g, b);
 						}
 					}
 				}
@@ -192,7 +192,7 @@ public class C64ExtraRenderer extends AbstractRenderer {
 					g = (int) ((cf0[1] * acf0 + cn1[1] * acn1) / sum1);
 					b = (int) ((cf0[2] * acf0 + cn1[2] * acn1) / sum1);
 				
-					final int i2 = Gfx.getColorIndex(colorAlg, pixelType, palette, r, g, b);
+					final int i2 = Gfx.getColorIndex(colorAlg, palette, r, g, b);
 					
 					final int cf1[] = machinePalette[if1];
 					final int cn0[] = machinePalette[in0];
@@ -206,7 +206,7 @@ public class C64ExtraRenderer extends AbstractRenderer {
 					g = (int) ((cf1[1] * acf1 + cn0[1] * acn0) / sum2);
 					b = (int) ((cf1[2] * acf1 + cn0[2] * acn0) / sum2);
 					
-					final int i3 = Gfx.getColorIndex(colorAlg, pixelType, palette, r, g, b);
+					final int i3 = Gfx.getColorIndex(colorAlg, palette, r, g, b);
 
 					tilePalette[2] = palette[i2];
 					tilePalette[3] = palette[i3];
@@ -236,7 +236,7 @@ public class C64ExtraRenderer extends AbstractRenderer {
 						g = Gfx.saturate(work[pyx0 + 1]);
 						b = Gfx.saturate(work[pyx0 + 2]);
 
-						final int color = Gfx.getColorIndex(colorAlg, pixelType, tilePalette, r, g, b);
+						final int color = Gfx.getColorIndex(colorAlg, tilePalette, r, g, b);
 						final int cn[] = tilePalette[color];
 
 						final int nr = cn[0];
@@ -446,7 +446,7 @@ public class C64ExtraRenderer extends AbstractRenderer {
 		g /= 320 * 200;
 		b /= 320 * 200;
 		
-		backgroundColor = Gfx.getColorIndex(colorAlg, pixelType, machinePalette, r, g, b);
+		backgroundColor = Gfx.getColorIndex(colorAlg, machinePalette, r, g, b);
 
 		final int br = machinePalette[backgroundColor][0];
 		final int bg = machinePalette[backgroundColor][1];
@@ -512,7 +512,7 @@ public class C64ExtraRenderer extends AbstractRenderer {
 
 				for (int i = 0; i < 4; i++) {
 					final int c[] = tilePalette[i];
-					colorIndex = Gfx.getColorIndex(colorAlg, pixelType, machinePalette, c[0], c[1], c[2]);
+					colorIndex = Gfx.getColorIndex(colorAlg, machinePalette, c[0], c[1], c[2]);
 
 					c[0] = machinePalette[colorIndex][0];
 					c[1] = machinePalette[colorIndex][1];
@@ -522,7 +522,7 @@ public class C64ExtraRenderer extends AbstractRenderer {
 				}
 
 				// map background color to the nearest color tile palette
-				colorIndex = Gfx.getColorIndex(colorAlg, pixelType, tilePalette, br, bg, bb);
+				colorIndex = Gfx.getColorIndex(colorAlg, tilePalette, br, bg, bb);
 				if (colorIndex != 0) {
 					tilePalette[colorIndex][0] = tilePalette[0][0]; // first entry = background color
 					tilePalette[colorIndex][1] = tilePalette[0][1];
@@ -574,7 +574,7 @@ public class C64ExtraRenderer extends AbstractRenderer {
 							ng = (int) ((tilePalette[colorIndex][1] * a1 + machinePalette[prevColorIndex[y0]][1] * a0) / sum);
 							nb = (int) ((tilePalette[colorIndex][2] * a1 + machinePalette[prevColorIndex[y0]][2] * a0) / sum);
 						} else {
-							colorIndex = Gfx.getColorIndex(colorAlg, pixelType, tilePalette, r, g, b);
+							colorIndex = Gfx.getColorIndex(colorAlg, tilePalette, r, g, b);
 
 							nr = tilePalette[colorIndex][0];
 							ng = tilePalette[colorIndex][1];

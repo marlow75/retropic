@@ -26,12 +26,12 @@ public class PetsciiRenderer extends AbstractRenderer {
 
 	protected int screen[] = new int[1000];
 	protected int nibble[] = new int[1000];
-	
+
 	protected int backgroundColor = 0;
-	
+
 	protected Network neural; // matches pattern with petscii
 	protected byte charset[]; // charset 8x8 pixels per char
-	
+
 	protected void initialize() {
 		palette = new int[16][3];
 		final String networkFile;
@@ -57,19 +57,19 @@ public class PetsciiRenderer extends AbstractRenderer {
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	public int getBackgroundColor() {
 		return backgroundColor;
 	}
-	
+
 	public int[] getScreen() {
 		return screen;
 	}
-	
+
 	public int[] getNibble() {
 		return nibble;
 	}
-	
+
 	public byte[] getCharset() {
 		return charset;
 	}
@@ -90,23 +90,10 @@ public class PetsciiRenderer extends AbstractRenderer {
 
 	@Override
 	protected void setupPalette() {
-		switch (pixelType) {
-		case BufferedImage.TYPE_3BYTE_BGR:
-			for (int i = 0; i < colors.length; i++) {
-				palette[i][0] = colors[i] & 0x0000ff; // blue
-				palette[i][1] = (colors[i] & 0x00ff00) >> 8; // green
-				palette[i][2] = (colors[i] & 0xff0000) >> 16; // red
-			}
-			break;
-		case BufferedImage.TYPE_INT_RGB:
-			for (int i = 0; i < colors.length; i++) {
-				palette[i][0] = (colors[i] & 0xff0000) >> 16; // red
-				palette[i][1] = (colors[i] & 0x00ff00) >> 8; // green
-				palette[i][2] = colors[i] & 0x0000ff; // blue
-			}
-			break;
-		default:
-			throw new RuntimeException("Unsupported Pixel format !!!");
+		for (int i = 0; i < colors.length; i++) {
+			palette[i][0] = colors[i] & 0x0000ff; // blue
+			palette[i][1] = (colors[i] & 0x00ff00) >> 8; // green
+			palette[i][2] = (colors[i] & 0xff0000) >> 16; // red
 		}
 	}
 
@@ -130,8 +117,7 @@ public class PetsciiRenderer extends AbstractRenderer {
 			nb = pixels[i + 2] & 0xff;
 
 			// dimmer better
-			occurrence[Gfx.getColorIndex(colorAlg, pixelType, palette, nr, ng, nb)] += (255
-					- Gfx.getLumaByCM(pixelType, nr, ng, nb));
+			occurrence[Gfx.getColorIndex(colorAlg, palette, nr, ng, nb)] += (255 - Gfx.getLuma(nr, ng, nb));
 		}
 
 		// get background color with maximum occurrence
@@ -151,7 +137,7 @@ public class PetsciiRenderer extends AbstractRenderer {
 		ng = palette[k][1];
 		nb = palette[k][2];
 
-		final float backLuma = Gfx.getLumaByCM(pixelType, nr, ng, nb);
+		final float backLuma = Gfx.getLuma(nr, ng, nb);
 
 		for (int y = 0; y < 200; y += 8) {
 			final int p = y * 320 * 3;
@@ -175,10 +161,10 @@ public class PetsciiRenderer extends AbstractRenderer {
 						work[index++] = g;
 						work[index++] = b;
 
-						final float distance = Math.abs(Gfx.getLumaByCM(pixelType, r, g, b) - backLuma);
+						final float distance = Math.abs(Gfx.getLuma(r, g, b) - backLuma);
 						if (max_distance < distance) {
 							max_distance = distance;
-							f = Gfx.getColorIndex(colorAlg, pixelType, palette, r, g, b);
+							f = Gfx.getColorIndex(colorAlg, palette, r, g, b);
 						}
 					}
 				}
@@ -198,8 +184,8 @@ public class PetsciiRenderer extends AbstractRenderer {
 						final int b = work[pyx0 + 2];
 
 						// fore or background color?
-						final float df = Gfx.getDistanceByCM(colorAlg, pixelType, r, g, b, fr, fg, fb);
-						final float db = Gfx.getDistanceByCM(colorAlg, pixelType, r, g, b, nr, ng, nb);
+						final float df = Gfx.getDistance(colorAlg, r, g, b, fr, fg, fb);
+						final float db = Gfx.getDistance(colorAlg, r, g, b, nr, ng, nb);
 
 						// ones as color of the bright pixels
 						tile[(y0 << 3) + x0] = (df <= db) ? 1 : 0;

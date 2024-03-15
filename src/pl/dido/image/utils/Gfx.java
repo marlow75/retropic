@@ -7,8 +7,8 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferInt;
 import java.awt.image.Raster;
-import java.io.IOException;
 import java.util.Arrays;
 
 import pl.dido.image.utils.Config.DITHERING;
@@ -16,7 +16,7 @@ import pl.dido.image.utils.Config.NEAREST_COLOR;
 
 public class Gfx {
 
-	public static final void rgb2YUV(final int r, final int g, final int b, final int yuv[], final int i) {
+	public static final void rgb2YUV(final int b, final int g, final int r, final int yuv[], final int i) {
 		yuv[i] = Math.round(r * .299000f + g * .587000f + b * .114000f);
 		yuv[i + 1] = Math.round(r * -.168736f + g * -.331264f + b * .500000f + 128f);
 		yuv[i + 2] = Math.round(r * .500000f + g * -.418688f + b * -.081312f + 128f);
@@ -31,9 +31,9 @@ public class Gfx {
 		final float b = y + 1.772f * u128;
 
 		// clamp to [0,255]
-		pixels[i] = (byte) (r > 0 ? (r > 255 ? 255 : r) : 0);
+		pixels[i + 2] = (byte) (r > 0 ? (r > 255 ? 255 : r) : 0);
 		pixels[i + 1] = (byte) (g > 0 ? (g > 255 ? 255 : g) : 0);
-		pixels[i + 2] = (byte) (b > 0 ? (b > 255 ? 255 : b) : 0);
+		pixels[i] = (byte) (b > 0 ? (b > 255 ? 255 : b) : 0);
 	}
 
 	public static final int saturate(final int i) {
@@ -72,8 +72,8 @@ public class Gfx {
 		return array;
 	}
 
-	public static final float euclideanDistance(final int r, final int g, final int b, final int pr, final int pg,
-			final int pb) {
+	public static final float euclideanDistance(final int b, final int g, final int r, final int pb, final int pg,
+			final int pr) {
 		final int rpr = r - pr;
 		final int gpg = g - pg;
 		final int bpb = b - pb;
@@ -81,8 +81,8 @@ public class Gfx {
 		return (rpr * rpr) + (gpg * gpg) + (bpb * bpb);
 	}
 
-	public static final float perceptedDistance(final int r, final int g, final int b, final int pr, final int pg,
-			final int pb) {
+	public static final float perceptedDistance(final int b, final int g, final int r, final int pb, final int pg,
+			final int pr) {
 		final int rpr = r - pr;
 		final int gpg = g - pg;
 		final int bpb = b - pb;
@@ -91,12 +91,12 @@ public class Gfx {
 		return ((2 + (delta >> 8)) * rpr * rpr) + (4 * (gpg * gpg)) + ((2 + ((255 - delta) >> 8)) * bpb * bpb);
 	}
 
-	public static final float getLuma(final int r, final int g, final int b) {
+	public static final float getLuma(final int b, final int g, final int r) {
 		return 0.299f * r + 0.587f * g + 0.114f * b;
 	}
 
-	public static final float euclideanDistance(final float pr, final float pg, final float pb, final float r,
-			final float g, final float b) {
+	public static final float euclideanDistance(final float pb, final float pg, final float pr, final float b,
+			final float g, final float r) {
 		final float rpr = r - pr;
 		final float gpg = g - pg;
 		final float bpb = b - pb;
@@ -104,8 +104,8 @@ public class Gfx {
 		return (rpr * rpr) + (gpg * gpg) + (bpb * bpb);
 	}
 
-	public static final float perceptedDistance(final float r, final float g, final float b, final float pr,
-			final float pg, final float pb) {
+	public static final float perceptedDistance(final float b, final float g, final float r, final float pb,
+			final float pg, final float pr) {
 
 		final float rpr = r - pr;
 		final float gpg = g - pg;
@@ -176,34 +176,6 @@ public class Gfx {
 		return (cdf[luma] * 255) / cdf[max];
 	}
 
-	private static final void rgb2YUV(final int type, final int r, final int g, final int b, final int yuv[],
-			final int i) {
-		switch (type) {
-		case BufferedImage.TYPE_3BYTE_BGR:
-			Gfx.rgb2YUV(b, g, r, yuv, i);
-			break;
-		case BufferedImage.TYPE_INT_RGB:
-			Gfx.rgb2YUV(r, g, b, yuv, i);
-			break;
-		default:
-			throw new RuntimeException("Unsupported pixel format !!!");
-		}
-	}
-
-	private static final void yuv2RGB(final int type, final int y, final int u, final int v, final byte[] pixels,
-			final int i) {
-		Gfx.yuv2RGB(y, u, v, pixels, i);
-
-		switch (type) {
-		case BufferedImage.TYPE_3BYTE_BGR:
-			final byte t = pixels[i];
-			pixels[i] = pixels[i + 2];
-			pixels[i + 2] = t;
-
-			break;
-		}
-	}
-
 	private static final void calcCdf(final int cdf[], final int histogram[]) {
 		// cdf - cumulative distributed function
 		cdf[0] = histogram[0];
@@ -211,7 +183,7 @@ public class Gfx {
 			cdf[i] = cdf[i - 1] + histogram[i];
 	}
 
-	public static final void HE(final byte pixels[], final int pixelFormat) {
+	public static final void HE(final byte pixels[]) {
 		final int histogram[] = new int[256];
 		final int cdf[] = new int[256];
 
@@ -224,7 +196,7 @@ public class Gfx {
 			g = pixels[i + 1] & 0xff;
 			b = pixels[i + 2] & 0xff;
 
-			rgb2YUV(pixelFormat, r, g, b, yuv, i);
+			rgb2YUV(r, g, b, yuv, i);
 			final int luma = yuv[i];
 			histogram[luma]++;
 
@@ -235,7 +207,7 @@ public class Gfx {
 		calcCdf(cdf, histogram);
 
 		for (int i = 0; i < len; i += 3)
-			yuv2RGB(pixelFormat, cdfScale(cdf, yuv[i], max), yuv[i + 1], yuv[i + 2], pixels, i);
+			yuv2RGB(cdfScale(cdf, yuv[i], max), yuv[i + 1], yuv[i + 2], pixels, i);
 	}
 
 	private static final void clipHistogram(final int histogram[], final int brightness) {
@@ -270,7 +242,7 @@ public class Gfx {
 	}
 
 	// SWAHE
-	public final static void SWAHE(final byte pixels[], final int pixelFormat, final int window, int brightness,
+	public final static void SWAHE(final byte pixels[], final int window, int brightness,
 			final int width, final int height) {
 		// cdf & yuv
 		final int cdf[] = new int[256];
@@ -327,12 +299,12 @@ public class Gfx {
 						if (xw == 0 && yw == 0) {
 							wp = sp;
 
-							rgb2YUV(pixelFormat, r, g, b, yuv, 3);
+							rgb2YUV(r, g, b, yuv, 3);
 							luma = yuv[3];
 
 							histogram[luma]++; // add center pixel to histogram
 						} else {
-							rgb2YUV(pixelFormat, r, g, b, yuv, 0);
+							rgb2YUV(r, g, b, yuv, 0);
 							luma = yuv[0];
 
 							histogram[luma]++; // add current pixel to histogram
@@ -350,12 +322,12 @@ public class Gfx {
 				calcCdf(cdf, histogram);
 
 				// window center pixel - luma
-				yuv2RGB(pixelFormat, cdfScale(cdf, yuv[3], max), yuv[3 + 1], yuv[3 + 2], pixels, wp);
+				yuv2RGB(cdfScale(cdf, yuv[3], max), yuv[3 + 1], yuv[3 + 2], pixels, wp);
 			}
 	}
 
 	// CLAHE
-	public static final void CLAHE(final byte pixels[], final int pixelFormat, final int window, int brightness,
+	public static final void CLAHE(final byte pixels[], final int window, int brightness,
 			final int width, final int height) {
 
 		final int yuv[] = new int[pixels.length];
@@ -374,7 +346,6 @@ public class Gfx {
 		final int histogram[] = new int[256];
 
 		int r, g, b;
-		final int type = pixelFormat;
 		brightness *= 3;
 
 		// process all inner pixel image to get central pixel luma
@@ -401,7 +372,7 @@ public class Gfx {
 						g = pixels[sp + 1] & 0xff;
 						b = pixels[sp + 2] & 0xff;
 
-						rgb2YUV(type, r, g, b, yuv, sp);
+						rgb2YUV(r, g, b, yuv, sp);
 
 						final int luma = yuv[sp];
 						histogram[luma]++;
@@ -463,7 +434,7 @@ public class Gfx {
 						final int a = Math.round(dy2w / dy21 * i1 + dwy1 / dy21 * i2);
 						final int sp = 3 * (xw + yw * maxX);
 
-						yuv2RGB(type, lumaBlend(yuv[sp], a), yuv[sp + 1], yuv[sp + 2], pixels, sp);
+						yuv2RGB(lumaBlend(yuv[sp], a), yuv[sp + 1], yuv[sp + 2], pixels, sp);
 					}
 				}
 			}
@@ -509,8 +480,8 @@ public class Gfx {
 					final int sp1 = 3 * (xw + yw1 * maxX);
 					final int sp2 = 3 * (xw + yw2 * maxX);
 
-					yuv2RGB(type, lumaBlend(yuv[sp1], a1), yuv[sp1 + 1], yuv[sp1 + 2], pixels, sp1);
-					yuv2RGB(type, lumaBlend(yuv[sp2], a2), yuv[sp2 + 1], yuv[sp2 + 2], pixels, sp2);
+					yuv2RGB(lumaBlend(yuv[sp1], a1), yuv[sp1 + 1], yuv[sp1 + 2], pixels, sp1);
+					yuv2RGB(lumaBlend(yuv[sp2], a2), yuv[sp2 + 1], yuv[sp2 + 2], pixels, sp2);
 				}
 			}
 		}
@@ -561,14 +532,14 @@ public class Gfx {
 					final int sp1 = 3 * (xw1 + yw * maxX);
 					final int sp2 = 3 * (xw2 + yw * maxX);
 
-					yuv2RGB(type, lumaBlend(yuv[sp1], a1), yuv[sp1 + 1], yuv[sp1 + 2], pixels, sp1);
-					yuv2RGB(type, lumaBlend(yuv[sp2], a2), yuv[sp2 + 1], yuv[sp2 + 2], pixels, sp2);
+					yuv2RGB(lumaBlend(yuv[sp1], a1), yuv[sp1 + 1], yuv[sp1 + 2], pixels, sp1);
+					yuv2RGB(lumaBlend(yuv[sp2], a2), yuv[sp2 + 1], yuv[sp2 + 2], pixels, sp2);
 				}
 			}
 		}
 	}
 
-	public static byte[] makeScanlines(final byte pixels[], final int pixelType, final int window) {
+	public static byte[] makeScanlines(final byte pixels[], final int window) {
 		final int ymax = pixels.length / 3 / window;
 		final byte out[] = new byte[pixels.length * 2];
 
@@ -578,7 +549,7 @@ public class Gfx {
 			final int ywindow = y * window * 3;
 			final int ywindow2 = 2 * ywindow;
 			final int ywindow21 = (2 * y + 1) * window * 3;
-			
+
 			for (int x = 0; x < window * 3; x += 3) {
 				final int ys = ywindow + x;
 				final int y0 = ywindow2 + x;
@@ -594,8 +565,8 @@ public class Gfx {
 
 				if (y < ymax - 1) {
 					// scanline as dimmed previous line
-					rgb2YUV(pixelType, r, g, b, yuv, 0);
-					yuv2RGB(pixelType, Math.round(yuv[0] * 0.67f), yuv[1], yuv[2], out, y1);
+					rgb2YUV(r, g, b, yuv, 0);
+					yuv2RGB(Math.round(yuv[0] * 0.67f), yuv[1], yuv[2], out, y1);
 				}
 			}
 		}
@@ -603,7 +574,7 @@ public class Gfx {
 		return out;
 	}
 
-	public static void dithering(final byte pixels[], final int pixelType, final int palette[][], final Config config) {
+	public static void dithering(final byte pixels[], final int palette[][], final Config config) {
 		final int work[] = Gfx.copy2Int(pixels);
 
 		final int width = config.getScreenWidth();
@@ -631,7 +602,7 @@ public class Gfx {
 				g0 = Gfx.saturate(work[pyx + 1]);
 				b0 = Gfx.saturate(work[pyx + 2]);
 
-				final int color = getColorIndex(colorAlg, pixelType, palette, r0, g0, b0);
+				final int color = getColorIndex(colorAlg, palette, r0, g0, b0);
 				final int pixel[] = palette[color];
 
 				final int r = pixel[0];
@@ -708,18 +679,18 @@ public class Gfx {
 		}
 	}
 
-	public static BufferedImage byteArrayToImage(final byte[] data, final int width, final int height,
-			final int pixelType) throws IOException {
-		
-		final BufferedImage bufferedImage = new BufferedImage(width, height, pixelType);
-		final Raster raster = Raster.createRaster(bufferedImage.getSampleModel(),
-				new DataBufferByte(data, data.length), new Point());
-		
+	public static BufferedImage byteArrayToBGRImage(final byte[] data, final int width, final int height) {
+
+		final BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+		final Raster raster = Raster.createRaster(bufferedImage.getSampleModel(), new DataBufferByte(data, data.length),
+				new Point());
+
 		bufferedImage.setData(raster);
 		return bufferedImage;
 	}
-	
-	public final static BufferedImage scaleImage(final BufferedImage image, final int width, final int height, final boolean preserveAspect) {
+
+	public final static BufferedImage scaleImage(final BufferedImage image, final int width, final int height,
+			final boolean preserveAspect) {
 		if (image.getWidth() != width || image.getHeight() != height)
 			if (preserveAspect)
 				return Gfx.scaleWithPreservedAspect(image, width, height);
@@ -729,27 +700,27 @@ public class Gfx {
 		return image;
 	}
 
-	protected final static float getDistance(final NEAREST_COLOR color, final int r0, final int g0, final int b0,
+	public final static float getDistance(final NEAREST_COLOR color, final int r0, final int g0, final int b0,
 			final int r1, final int g1, final int b1) {
 		switch (color) {
 		case EUCLIDEAN:
 			return Gfx.euclideanDistance(r0, g0, b0, r1, g1, b1);
 		case PERCEPTED:
-			return Gfx.perceptedDistance(r0, g0, b0, r1, g1, b1);
+			return Gfx.perceptedDistance(b0, g0, r0, b1, g1, r1);
 		default:
 			return Gfx.euclideanDistance(r0, g0, b0, r1, g1, b1);
 		}
 	}
 
-	public static int getColorIndex(final NEAREST_COLOR color, final int pixelType, final int palette[][], final int r0,
+	public static int getColorIndex(final NEAREST_COLOR color, final int palette[][], final int r0,
 			final int g0, final int b0) {
 		switch (color) {
 		case EUCLIDEAN:
 			return getEuclideanColorIndex(palette, r0, g0, b0);
 		case PERCEPTED:
-			return getPerceptedColorIndex(pixelType, palette, r0, g0, b0);
+			return getPerceptedColorIndex(palette, r0, g0, b0);
 		case LUMA_WEIGHTED:
-			return getLumaColorIndex(pixelType, palette, r0, g0, b0);
+			return getLumaColorIndex(palette, r0, g0, b0);
 		default:
 			return getEuclideanColorIndex(palette, r0, g0, b0);
 		}
@@ -777,15 +748,15 @@ public class Gfx {
 		return index;
 	}
 
-	protected static int getPerceptedColorIndex(final int pixelType, final int palette[][], final int r, final int g,
+	protected static int getPerceptedColorIndex(final int palette[][], final int r, final int g,
 			final int b) {
 		int index = 0;
 		int color[] = palette[0];
-		float min = perceptedDistanceCM(pixelType, r, g, b, color[0], color[1], color[2]);
+		float min = perceptedDistance(r, g, b, color[0], color[1], color[2]);
 
 		for (int i = 1; i < palette.length; i++) { // distance
 			color = palette[i];
-			final float distance = perceptedDistanceCM(pixelType, r, g, b, color[0], color[1], color[2]);
+			final float distance = perceptedDistance(r, g, b, color[0], color[1], color[2]);
 
 			if (distance < min) {
 				min = distance;
@@ -796,18 +767,18 @@ public class Gfx {
 		return index;
 	}
 
-	protected int[] matchingLumaColor(final int pixelType, final int palette[][], final int r, final int g,
+	protected int[] matchingLumaColor(final int palette[][], final int r, final int g,
 			final int b) {
-		return palette[getLumaColorIndex(pixelType, palette, r, g, b)];
+		return palette[getLumaColorIndex(palette, r, g, b)];
 	}
 
-	protected static int getLumaColorIndex(final int pixelType, final int palette[][], final int r, final int g,
+	protected static int getLumaColorIndex(final int palette[][], final int r, final int g,
 			final int b) {
 		int index = 0, old_index = 0;
 		float y1 = 0, oy1 = 0;
 
 		float min = Float.MAX_VALUE;
-		final float y = getLumaByCM(pixelType, r, g, b);
+		final float y = getLuma(r, g, b);
 		final int len = palette.length;
 
 		for (int i = len; i-- > 0;) { // euclidean distance
@@ -825,45 +796,42 @@ public class Gfx {
 				index = i;
 
 				oy1 = y1;
-				y1 = getLumaByCM(pixelType, pr, pg, pb);
+				y1 = getLuma(pr, pg, pb);
 			}
 		}
 
 		return Math.abs(y1 - y) < Math.abs(oy1 - y) ? index : old_index;
 	}
 
-	public static float perceptedDistanceCM(final int pixelType, final int r, final int g, final int b, final int pr,
-			final int pg, final int pb) {
-		switch (pixelType) {
-		case BufferedImage.TYPE_3BYTE_BGR:
-			return Gfx.perceptedDistance(b, g, r, pb, pg, pr);
-		case BufferedImage.TYPE_INT_RGB:
-			return Gfx.perceptedDistance(r, g, b, pr, pg, pb);
-		default:
-			throw new RuntimeException("Unsupported pixel format !!!");
+	public static final BufferedImage grey2BGR(final BufferedImage image) {
+		final byte[] pixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
+		final byte[] data = new byte[pixels.length * 3];
+
+		for (int i = 0; i < pixels.length; i++) {
+			final int address = i * 3;
+			data[address] = pixels[i];
+			data[address + 1] = pixels[i];
+			data[address + 2] = pixels[i];
 		}
+
+		return Gfx.byteArrayToBGRImage(data, image.getWidth(), image.getHeight());
 	}
 
-	public static float getLumaByCM(final int pixelType, final int pr, final int pg, final int pb) {
-		switch (pixelType) {
-		case BufferedImage.TYPE_3BYTE_BGR:
-			return Gfx.getLuma(pb, pg, pr);
-		case BufferedImage.TYPE_INT_RGB:
-			return Gfx.getLuma(pr, pg, pb);
-		default:
-			throw new RuntimeException("Unsupported pixel format !!!");
-		}
-	}
+	public static BufferedImage rgb2BGR(final BufferedImage image) {
+		final int[] pixels = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
+		final byte[] data = new byte[pixels.length * 3];
 
-	public final static float getDistanceByCM(final NEAREST_COLOR color, final int pixelType, final int r1,
-			final int g1, final int b1, final int r2, final int g2, final int b2) {
-		switch (pixelType) {
-		case BufferedImage.TYPE_3BYTE_BGR:
-			return getDistance(color, b1, g1, r1, b2, g2, r2);
-		case BufferedImage.TYPE_INT_RGB:
-			return getDistance(color, r1, g1, b1, r2, g2, b2);
-		default:
-			throw new RuntimeException("Unsupported pixel format !!!");
+		for (int i = 0; i < pixels.length; i++) {
+			final int address = i * 3;
+			final int r = pixels[i] & 0xff0000;
+			final int g = pixels[i] & 0xff0000;
+			final int b = pixels[i] & 0xff0000;
+
+			data[address] = (byte) r;
+			data[address + 1] = (byte) g;
+			data[address + 2] = (byte) b;
 		}
+
+		return Gfx.byteArrayToBGRImage(data, image.getWidth(), image.getHeight());
 	}
 }

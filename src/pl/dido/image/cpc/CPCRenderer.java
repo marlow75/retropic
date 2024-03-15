@@ -30,27 +30,12 @@ public class CPCRenderer extends AbstractRenderer {
 
 	@Override
 	protected void setupPalette() {
-		switch (pixelType) {
-		case BufferedImage.TYPE_3BYTE_BGR:
-			for (int i = 0; i < colors.length; i++) {
-				final int pixel[] = palette[i];
+		for (int i = 0; i < colors.length; i++) {
+			final int pixel[] = palette[i];
 
-				pixel[0] = (colors[i] & 0x0000ff); // blue
-				pixel[1] = (colors[i] & 0x00ff00) >> 8; // green
-				pixel[2] = (colors[i] & 0xff0000) >> 16; // red
-			}
-			break;
-		case BufferedImage.TYPE_INT_RGB:
-			for (int i = 0; i < colors.length; i++) {
-				final int pixel[] = palette[i];
-
-				pixel[0] = (colors[i] & 0xff0000) >> 16; // red
-				pixel[1] = (colors[i] & 0x00ff00) >> 8; // green
-				pixel[2] = (colors[i] & 0x0000ff); // blue
-			}
-			break;
-		default:
-			throw new RuntimeException("Unsupported Pixel format !!!");
+			pixel[0] = (colors[i] & 0x0000ff); // blue
+			pixel[1] = (colors[i] & 0x00ff00) >> 8; // green
+			pixel[2] = (colors[i] & 0xff0000) >> 16; // red
 		}
 	}
 
@@ -107,7 +92,7 @@ public class CPCRenderer extends AbstractRenderer {
 
 			for (int i = 0; i < size; i++) {
 				final int c[] = p[i];
-				final float luma = Gfx.getLumaByCM(pixelType, c[0], c[1], c[2]);
+				final float luma = Gfx.getLuma(c[0], c[1], c[2]);
 
 				if (luma < min) {
 					min = luma;
@@ -163,7 +148,7 @@ public class CPCRenderer extends AbstractRenderer {
 				g0 = work[pyx + 1];
 				b0 = work[pyx + 2];
 
-				final int color = Gfx.getColorIndex(colorAlg, pixelType, pictureColors, r0, g0, b0);
+				final int color = Gfx.getColorIndex(colorAlg, pictureColors, r0, g0, b0);
 				final int c[] = pictureColors[color];
 
 				final int r = c[0];
@@ -261,7 +246,7 @@ public class CPCRenderer extends AbstractRenderer {
 				final int b2 = pixels[ph + 5] & 0xff;
 
 				final int r, g, b;
-				
+
 				switch (((CPCConfig) config).pixel_merge) {
 				case AVERAGE:
 					// average color
@@ -270,19 +255,19 @@ public class CPCRenderer extends AbstractRenderer {
 					b = (b1 + b2) >> 1;
 					break;
 				default:
-					final float l1 = Gfx.getLumaByCM(pixelType, r1, g1, b1) / 255;
-					final float l2 = Gfx.getLumaByCM(pixelType, r2, g2, b2) / 255;
-					
+					final float l1 = Gfx.getLuma(r1, g1, b1) / 255;
+					final float l2 = Gfx.getLuma(r2, g2, b2) / 255;
+
 					final float sum = (l1 + l2);
-					
+
 					r = (int) ((r1 * l1 + r2 * l2) / sum);
 					g = (int) ((g1 * l1 + g2 * l2) / sum);
 					b = (int) ((b1 * l1 + b2 * l2) / sum);
-					
+
 					break;
 				}
 
-				final int color = Gfx.getColorIndex(colorAlg, pixelType, pictureColors, r, g, b);
+				final int color = Gfx.getColorIndex(colorAlg, pictureColors, r, g, b);
 				final int data = ((color & 1) != 0 ? bit0 : 0) | ((color & 2) != 0 ? bit1 : 0)
 						| ((color & 4) != 0 ? bit2 : 0) | ((color & 8) != 0 ? bit3 : 0);
 

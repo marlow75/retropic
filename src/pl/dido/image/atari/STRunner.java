@@ -4,7 +4,6 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.image.BufferedImage;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -82,21 +81,11 @@ public class STRunner extends AbstractRendererRunner {
 				final int b;
 
 				final int color[] = st.pictureColors[i];
-				switch (st.pixelType) {
-				case BufferedImage.TYPE_3BYTE_BGR:
-					b = color[0] / 32; // 8 -> 3 bits
-					g = color[1] / 32;
-					r = color[2] / 32;
-					break;
-				case BufferedImage.TYPE_INT_RGB:
-					r = color[0] / 32; // 8 -> 3 bits
-					g = color[1] / 32;
-					b = color[2] / 32;
-					break;
-				default:
-					throw new RuntimeException("Unsupported pixel format !!!");
-				}
 
+				b = color[0] / 32; // 8 -> 3 bits
+				g = color[1] / 32;
+				r = color[2] / 32;
+					
 				final int value = (r << 8) | (g << 4) | b;
 
 				final int hi = (value & 0xff00) >> 8;

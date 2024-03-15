@@ -2,7 +2,7 @@
 
 RetroPIC is a simple graphics converter for retro machines. It can turn your modern picture into a retro graphic which can be displayed on real C64 or Amiga. Just drag and drop your picture on the machine options panel.
 
-Accepts JPG, PNG file formats and RGB, BGR pixel formats.
+Accepts JPG, PNG file formats.
 
 You can download executable jar [here](retropic.jar).
 
@@ -10,6 +10,7 @@ Requirements: JRE16 installed.
 
 ## Versions
 
+* 1.4 - Refactoring, new pixel formats
 * 1.3 - Scanline view for C64, ZX, CPC, ST, bug fixes
 * 1.2 - Improved palette & color handling for C64, CPC, Amiga 500, experimental C64 extra 
 * 1.1 - Minor bug fixes, CPC new palette

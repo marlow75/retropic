@@ -24,23 +24,10 @@ public class ZXSpectrumRenderer extends AbstractRenderer {
 
 	@Override
 	protected void setupPalette() {
-		switch (image.getType()) {
-		case BufferedImage.TYPE_3BYTE_BGR:
-			for (int i = 0; i < colors.length; i++) {
-				palette[i][0] = (colors[i] & 0x0000ff); // blue
-				palette[i][1] = (colors[i] & 0x00ff00) >> 8; // green
-				palette[i][2] = (colors[i] & 0xff0000) >> 16; // red
-			}
-			break;
-		case BufferedImage.TYPE_INT_RGB:
-			for (int i = 0; i < colors.length; i++) {
-				palette[i][0] = (colors[i] & 0xff0000) >> 16; // red
-				palette[i][1] = (colors[i] & 0x00ff00) >> 8; // green
-				palette[i][2] = (colors[i] & 0x0000ff); // blue
-			}
-			break;
-		default:
-			throw new RuntimeException("Unsupported Pixel format !!!");
+		for (int i = 0; i < colors.length; i++) {
+			palette[i][0] = (colors[i] & 0x0000ff); // blue
+			palette[i][1] = (colors[i] & 0x00ff00) >> 8; // green
+			palette[i][2] = (colors[i] & 0xff0000) >> 16; // red
 		}
 	}
 
@@ -78,7 +65,7 @@ public class ZXSpectrumRenderer extends AbstractRenderer {
 						work[position + 1] = g;
 						work[position + 2] = b;
 
-						final float luma = Gfx.getLumaByCM(pixelType, r, g, b);
+						final float luma = Gfx.getLuma(r, g, b);
 
 						if (luma >= 128) {
 							rf += r;
@@ -97,7 +84,7 @@ public class ZXSpectrumRenderer extends AbstractRenderer {
 						}
 					}
 				}
-				
+
 				if (max > 0) {
 					rf /= max;
 					gf /= max;
@@ -147,8 +134,8 @@ public class ZXSpectrumRenderer extends AbstractRenderer {
 						int ng = palette[n][1];
 						int nb = palette[n][2];
 
-						final float d1 = Gfx.getDistanceByCM(colorAlg, pixelType, r, g, b, fr, fg, fb);
-						final float d2 = Gfx.getDistanceByCM(colorAlg, pixelType, r, g, b, nr, ng, nb);
+						final float d1 = Gfx.getDistance(colorAlg, r, g, b, fr, fg, fb);
+						final float d2 = Gfx.getDistance(colorAlg, r, g, b, nr, ng, nb);
 
 						if (d1 < d2) {
 							nr = fr;

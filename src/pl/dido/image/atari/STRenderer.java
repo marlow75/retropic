@@ -69,7 +69,7 @@ public class STRenderer extends AbstractPictureColorsRenderer {
 				g0 = Gfx.saturate(work[pyx + 1]);
 				b0 = Gfx.saturate(work[pyx + 2]);
 
-				final int color = Gfx.getColorIndex(colorAlg, pixelType, pictureColors, r0, g0, b0);
+				final int color = Gfx.getColorIndex(colorAlg, pictureColors, r0, g0, b0);
 				final int c[] = pictureColors[color];
 
 				final int r = c[0];

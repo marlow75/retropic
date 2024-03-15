@@ -65,6 +65,7 @@ import pl.dido.image.petscii.PetsciiConfig;
 import pl.dido.image.petscii.PetsciiGui;
 import pl.dido.image.petscii.PetsciiRenderer;
 import pl.dido.image.petscii.PetsciiRunner;
+import pl.dido.image.utils.Gfx;
 import pl.dido.image.utils.Utils;
 import pl.dido.image.zx.ZXConfig;
 import pl.dido.image.zx.ZXGui;
@@ -75,7 +76,7 @@ public class RetroPIC {
 
 	protected JFrame frame;
 	protected String default_path;
-	
+
 	protected PetsciiConfig petsciiConfig;
 	protected C64ExtraConfig c64ExtraConfig;
 
@@ -114,7 +115,7 @@ public class RetroPIC {
 
 		amiga500Config = new Amiga500Config();
 		amiga1200Config = new Amiga1200Config();
-		
+
 		frame = new JFrame("RetroPIC");
 		frame.setIconImage(Toolkit.getDefaultToolkit().getImage(Utils.getResourceAsURL("retro.png")));
 		frame.setResizable(false);
@@ -137,7 +138,7 @@ public class RetroPIC {
 		tabbedPane.addTab("Amiga 1200", null, Amiga1200Gui.amigaTab(amiga1200Config), null);
 		tabbedPane.addTab("Commodore 64 extra", null, C64ExtraGui.c64Extra(c64ExtraConfig), null);
 		tabbedPane.addTab("About", null, AboutGui.aboutTab("aboutRetroPIC.htm"), null);
-		
+
 		tabbedPane.addChangeListener(new ChangeListener() {
 			public void stateChanged(final ChangeEvent changeEvent) {
 				final JTabbedPane sourceTabbedPane = (JTabbedPane) changeEvent.getSource();
@@ -173,7 +174,7 @@ public class RetroPIC {
 		final JPanel buttonsPanel = new JPanel();
 		buttonsPanel.setLayout(new BoxLayout(buttonsPanel, BoxLayout.LINE_AXIS));
 		buttonsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-		
+
 		buttonsPanel.add(Box.createHorizontalGlue());
 		buttonsPanel.add(btnLoad);
 		buttonsPanel.add(Box.createRigidArea(new Dimension(10, 0)));
@@ -187,11 +188,11 @@ public class RetroPIC {
 			}
 		});
 
-		new DropTarget(frame, new DropTargetListener() {	
+		new DropTarget(frame, new DropTargetListener() {
 			@Override
 			public void drop(final DropTargetDropEvent event) {
 				event.acceptDrop(DnDConstants.ACTION_COPY);
-				
+
 				final Transferable transferable = event.getTransferable();
 				final DataFlavor[] flavors = transferable.getTransferDataFlavors();
 
@@ -215,69 +216,74 @@ public class RetroPIC {
 
 			@Override
 			public void dragEnter(final DropTargetDragEvent dtde) {
-				// nothing		
+				// nothing
 			}
 
 			@Override
 			public void dragExit(final DropTargetEvent dte) {
-				// nothing		
+				// nothing
 			}
 
 			@Override
 			public void dragOver(final DropTargetDragEvent dtde) {
-				// nothing		
+				// nothing
 			}
 
 			@Override
 			public void dropActionChanged(final DropTargetDragEvent dtde) {
-				// nothing		
-			}		
+				// nothing
+			}
 		});
 	}
 
 	public void loadImage(final File selectedFile, final int selectedTab) {
 		try {
-			final BufferedImage img = ImageIO.read(selectedFile);
+			BufferedImage image = ImageIO.read(selectedFile);
+			
+			switch (image.getType()) {
+			case BufferedImage.TYPE_3BYTE_BGR:
+				break;
+			case BufferedImage.TYPE_BYTE_GRAY:
+				image = Gfx.grey2BGR(image);
+				break;
+			case BufferedImage.TYPE_INT_RGB:
+				image = Gfx.rgb2BGR(image);
+				break;
+			default: 
+				throw new IOException("Unsupported pixel format !!!");
+			}
+			
 			final String fileName = selectedFile.getName();
 
-			switch (img.getType()) {
-			case BufferedImage.TYPE_3BYTE_BGR:
-			case BufferedImage.TYPE_INT_RGB:
-				switch (selectedTab) {
-				case 0:
-					new Thread(new C64Runner(new C64Renderer(img, c64Config), fileName)).start();
-					break;
-				case 1:
-					new Thread(new PetsciiRunner(new PetsciiRenderer(img, petsciiConfig), fileName)).start();
-					break;
-				case 2:
-					new Thread(new ZXRunner(new ZXSpectrumRenderer(img, zxConfig), fileName)).start();
-					break;
-				case 3:
-					new Thread(new CPCRunner(new CPCRenderer(img, cpcConfig), fileName)).start();
-					break;
-				case 4:
-					new Thread(new STRunner(new STRenderer(img, stConfig), fileName)).start();
-					break;
-				case 5:
-					new Thread(new Amiga500Runner(new Amiga500Renderer(img, amiga500Config), fileName)).start();
-					break;
-				case 6:
-					new Thread(new Amiga1200Runner(new Amiga1200Renderer(img, amiga1200Config), fileName)).start();
-					break;
-				case 7:
-					new Thread(new C64ExtraRunner(new C64ExtraRenderer(img, c64ExtraConfig), fileName)).start();
-					break;
-				}
-				
+			switch (selectedTab) {
+			case 0:
+				new Thread(new C64Runner(new C64Renderer(image, c64Config), fileName)).start();
 				break;
-			default:
-				JOptionPane.showMessageDialog(null, "ERROR", "Unsupported pixel format !!!", JOptionPane.ERROR_MESSAGE);
+			case 1:
+				new Thread(new PetsciiRunner(new PetsciiRenderer(image, petsciiConfig), fileName)).start();
+				break;
+			case 2:
+				new Thread(new ZXRunner(new ZXSpectrumRenderer(image, zxConfig), fileName)).start();
+				break;
+			case 3:
+				new Thread(new CPCRunner(new CPCRenderer(image, cpcConfig), fileName)).start();
+				break;
+			case 4:
+				new Thread(new STRunner(new STRenderer(image, stConfig), fileName)).start();
+				break;
+			case 5:
+				new Thread(new Amiga500Runner(new Amiga500Renderer(image, amiga500Config), fileName)).start();
+				break;
+			case 6:
+				new Thread(new Amiga1200Runner(new Amiga1200Renderer(image, amiga1200Config), fileName)).start();
+				break;
+			case 7:
+				new Thread(new C64ExtraRunner(new C64ExtraRenderer(image, c64ExtraConfig), fileName)).start();
+				break;
 			}
 
 		} catch (final IOException e) {
-			JOptionPane.showMessageDialog(null, "ERROR", "Can't read selected file !!!", JOptionPane.ERROR_MESSAGE);
-			e.printStackTrace();
+			JOptionPane.showMessageDialog(null, e.getMessage(), "Can't read selected file !!!", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 }
