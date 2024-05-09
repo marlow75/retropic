@@ -10,6 +10,7 @@ Requirements: JRE16 installed.
 
 ## Versions
 
+* 1.5 - New hires interlace and noisy MCI for C64
 * 1.4 - Refactoring, new pixel formats
 * 1.3 - Scanline view for C64, ZX, CPC, ST, bug fixes
 * 1.2 - Improved palette & color handling for C64, CPC, Amiga 500, experimental C64 extra 
@@ -19,7 +20,7 @@ Requirements: JRE16 installed.
 
 ## Supported machines
 
-* C64, hires 320x200, multicolor 160x200, standard text mode 40x25, interlaced, MCI (first attempt)
+* C64, hires 320x200, multicolor 160x200, standard text mode 40x25, interlaced hires and MCI (noisy)
 * ZX Spectrum 48/+ 256x192 in 16 colors.
 * Amstrad CPC series mode0 160x200 16 colors, mode1 320x200 in 4 colors.
 * Atari ST, 320x200 in 16 on screen from 512 palette colors.
@@ -126,16 +127,17 @@ Export to Delux Paint IFF file format.
 
 ### Commodore C64 extra
 
-Early, experimental interlace modes. You can select max luma difference in blending colors together. Adjusted for C64C (9 luma levels), best experience with PEPTO [calculated](https://www.pepto.de/projects/colorvic/) palette.
+Experimental interlace modes - 136 colors. You can select max luma difference in blending colors together. Adjusted for C64C (9 luma levels), best experience with PEPTO [calculated](https://www.pepto.de/projects/colorvic/) palette.
 
-* Naive 320x200 - uses max 4 colors in 8x8 screen cell, 27-54 colors can be used without annoying flickering.
-* MCI 320x200 - uses max 16 colors in 8x8 screen cell. Very early stage. If you get errors like mono color squares, try adjust luma.
+* Hires - uses max 3 colors in 8x8 screen cell.
+* MCI 320x200 - uses max 16 colors in 8x8 screen cell with noise to supress flickering.
 
 * luma threshold - interlace is about blending, only colors with the same luminance can produce non flickering new one. White has luma set to 32 black is 0, choose luminance difference which is not annoying for you.
+* error threshold - max color error you can accept.
 
 Exports to executable PRG. In the future release one of the standard format will be supported (for editing).
 
-Below naive hires played on VICE...
+Below interlace hires played on VICE...
 
 ![Naive hires](venusC64Extra.png)
 
