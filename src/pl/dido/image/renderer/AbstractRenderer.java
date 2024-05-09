@@ -2,6 +2,10 @@ package pl.dido.image.renderer;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
 
 import pl.dido.image.amiga.AmigaConfig;
 import pl.dido.image.utils.Config;
@@ -23,6 +27,7 @@ public abstract class AbstractRenderer {
 	protected NEAREST_COLOR colorAlg;
 
 	public Config config;
+	protected AbstractRendererRunner runner;
 
 	private void initialize(final Config config) {
 		this.config = config;
@@ -59,6 +64,8 @@ public abstract class AbstractRenderer {
 		if (config.dithering)
 			imageDithering();
 		
+		runner.showImage();
+		
 		imagePostproces();
 		if (config.scanline)
 			makeScanlines();
@@ -93,7 +100,19 @@ public abstract class AbstractRenderer {
 		Gfx.dithering(pixels, palette, config);
 	}
 
-	protected int getColorIndex(final int r, final int g, final int b) {
+	protected final int getColorIndex(final int r, final int g, final int b) {
 		return Gfx.getColorIndex(colorAlg, palette, r, g, b);
+	}
+	
+	public void savePreview(final String exportFileName) {
+		try {
+			ImageIO.write(image, "jpg", new File(exportFileName + ".jpg"));
+		} catch (final IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void setRunner(final AbstractRendererRunner runner) {
+		this.runner = runner;
 	}
 }

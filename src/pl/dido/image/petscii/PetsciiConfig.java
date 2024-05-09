@@ -47,13 +47,14 @@ public class PetsciiConfig extends Config {
 	public int getScreenHeight() {
 		return 200;
 	}
+	
 	@Override
 	public int getWindowHeight() {
-		return 300;
+		return 400;
 	}
 
 	@Override
 	public int getWindowWidth() {
-		return 480;
+		return 640;
 	}
 }

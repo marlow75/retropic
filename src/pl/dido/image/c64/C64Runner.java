@@ -190,7 +190,8 @@ public class C64Runner extends AbstractRendererRunner {
 						exportFileName += fileName + ".koa";
 						break;
 					}
-
+					
+					c64.savePreview(exportFileName);
 					final int result = JOptionPane.showConfirmDialog(null, "Export " + exportFileName + "?", "Confirm",
 							JOptionPane.YES_NO_OPTION);
 					if (result == 0)
@@ -217,7 +218,8 @@ public class C64Runner extends AbstractRendererRunner {
 			public void actionPerformed(final ActionEvent e) {
 				try {
 					final String exportFileName = Utils.createDirectory(Config.export_path) + "/" + fileName + ".prg";
-
+					c64.savePreview(exportFileName);
+					
 					final int result = JOptionPane.showConfirmDialog(null, "Export " + exportFileName + "?", "Confirm",
 							JOptionPane.YES_NO_OPTION);
 					if (result == 0)

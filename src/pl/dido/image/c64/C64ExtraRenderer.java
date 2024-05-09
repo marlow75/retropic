@@ -10,6 +10,8 @@ import pl.dido.image.utils.neural.SOMPalette;
 
 public class C64ExtraRenderer extends AbstractRenderer {
 
+	protected final static int maxPosition = 320 * 200 * 3;
+
 	protected final int bitmap1[] = new int[40 * 200];
 	protected final int screen1[] = new int[1000];
 
@@ -18,8 +20,6 @@ public class C64ExtraRenderer extends AbstractRenderer {
 
 	protected final int nibbles[] = new int[1000];
 	protected final int lumas[];
-	
-	protected final float alphas[] = new float[16];
 
 	protected int blend[][];
 	protected int machinePalette[][];
@@ -31,10 +31,6 @@ public class C64ExtraRenderer extends AbstractRenderer {
 		super(image, config);
 
 		lumas = C64PaletteCalculator.lumas;
-		
-		for (int i = 0; i < 16; i++)
-			alphas[i] = 15 + Math.abs(15 - lumas[i]);
-
 		lumaThreshold = ((C64ExtraConfig) config).luma_threshold;
 	}
 
@@ -49,23 +45,19 @@ public class C64ExtraRenderer extends AbstractRenderer {
 		// get mixed colors
 		for (int i = 0; i < machinePalette.length; i++) {
 			final float l1 = lumas[i];
-			
+
 			for (int j = i; j < machinePalette.length; j++) {
 				final float l2 = lumas[j];
 
 				if (Math.abs(l2 - l1) <= lumaThreshold) {
-					final float a1 = alphas[i];
-					final float a2 = alphas[j];
-					final float sum = a1 + a2;
-					
 					final int color1[] = machinePalette[i];
 					final int color2[] = machinePalette[j];
-					
+
 					final int color[] = palette[index];
-					
-					color[0] = (int) ((color1[0] * a1 + color2[0] * a2) / sum);
-					color[1] = (int) ((color1[1] * a1 + color2[1] * a2) / sum);
-					color[2] = (int) ((color1[2] * a1 + color2[2] * a2) / sum);
+
+					color[0] = (int) ((color1[0] + color2[0]) / 2);
+					color[1] = (int) ((color1[1] + color2[1]) / 2);
+					color[2] = (int) ((color1[2] + color2[2]) / 2);
 
 					// save colors
 					blend[index][0] = i;
@@ -100,22 +92,17 @@ public class C64ExtraRenderer extends AbstractRenderer {
 		int index = 0;
 		float min = Float.MAX_VALUE;
 
-		final float a0 = alphas[prevColorIndex];
-
-		final float a0r0 = a0 * machinePalette[prevColorIndex][0];
-		final float a0g0 = a0 * machinePalette[prevColorIndex][1];
-		final float a0b0 = a0 * machinePalette[prevColorIndex][2];
+		final float r0 = machinePalette[prevColorIndex][0];
+		final float g0 = machinePalette[prevColorIndex][1];
+		final float b0 = machinePalette[prevColorIndex][2];
 
 		for (int i = 0; i < tilePalette.length; i++) {
 			final int color = tileColors[i];
 			final int c[] = machinePalette[color];
 
-			final float a1 = alphas[color];
-			final float suma0a1 = a0 + a1;
-
-			final int r1 = (int) ((c[0] * a1 + a0r0) / suma0a1);
-			final int g1 = (int) ((c[1] * a1 + a0g0) / suma0a1);
-			final int b1 = (int) ((c[2] * a1 + a0b0) / suma0a1);
+			final int r1 = (int) ((c[0] + r0) / 2);
+			final int g1 = (int) ((c[1] + g0) / 2);
+			final int b1 = (int) ((c[2] + b0) / 2);
 
 			final float distance = Gfx.perceptedDistance(r, g, b, r1, g1, b1);
 
@@ -129,115 +116,224 @@ public class C64ExtraRenderer extends AbstractRenderer {
 	}
 
 	protected void hiresInterlaced() {
-		final int work[] = new int[64 * 3];
-		int bitmapIndex = 0, r, g, b;
+		final int work[] = Gfx.copy2Int(pixels);
+		int r, g, b, bitmapIndex = 0;
+
+		int f = 0, n = 0;
+		int r_error, g_error, b_error;
+
+		int f1 = 0, n1 = 0;
+		int f2 = 0, n2 = 0;
+		int f3 = 0, n3 = 0;
+		int f4 = 0, n4 = 0;
+
+		int f5 = 0, n5 = 0;
+		int f6 = 0, n6 = 0;
+		int f7 = 0, n7 = 0;
+		int f8 = 0, n8 = 0;
+
+		// get average color
+		final int tilePalette[][] = new int[3][3];
 
 		for (int y = 0; y < 200; y += 8) {
 			final int p = y * 320 * 3;
 
 			for (int x = 0; x < 320; x += 8) {
 				final int offset = p + x * 3;
-				int index = 0, f = 0, n = 0;
+				
+				float max1 = Float.MIN_VALUE, min1 = Float.MAX_VALUE;
+				float max2 = Float.MIN_VALUE, min2 = Float.MAX_VALUE;
 
-				float max = Float.MIN_VALUE;
-				float min = Float.MAX_VALUE;
+				float max3 = Float.MIN_VALUE, min3 = Float.MAX_VALUE;
+				float max4 = Float.MIN_VALUE, min4 = Float.MAX_VALUE;
 
-				// 8x8 tile
+				float max5 = Float.MIN_VALUE, min5 = Float.MAX_VALUE;
+				float max6 = Float.MIN_VALUE, min6 = Float.MAX_VALUE;
+
+				float max7 = Float.MIN_VALUE, min7 = Float.MAX_VALUE;
+				float max8 = Float.MIN_VALUE, min8 = Float.MAX_VALUE;
+
+				// 8x8 tile data
 				for (int y0 = 0; y0 < 8; y0++) {
+					final int k = offset + y0 * 320 * 3;
+
 					for (int x0 = 0; x0 < 24; x0 += 3) {
-						final int position = offset + y0 * 320 * 3 + x0;
+						final int position = k + x0;
 
-						r = pixels[position] & 0xff;
-						g = pixels[position + 1] & 0xff;
-						b = pixels[position + 2] & 0xff;
+						final int color = Gfx.getColorIndex(colorAlg, machinePalette, work[position],
+								work[position + 1], work[position + 2]);
 
-						work[index++] = r;
-						work[index++] = g;
-						work[index++] = b;
+						r = machinePalette[color][0];
+						g = machinePalette[color][1];
+						b = machinePalette[color][2];
 
-						final float luma = Gfx.getLuma(r, g, b);
-						if (luma > max) {
-							max = luma;
-							f = Gfx.getColorIndex(colorAlg, palette, r, g, b);
+						// get minimum/maximum color distance
+						final float dist1 = Gfx.getDistance(colorAlg, 0, 0,   0, r, g, b);
+						final float dist2 = Gfx.getDistance(colorAlg, 0, 0, 255, r, g, b);
+
+						final float dist3 = Gfx.getDistance(colorAlg, 0, 255, 0, r, g, b);
+						final float dist4 = Gfx.getDistance(colorAlg, 255, 0, 0, r, g, b);
+
+						final float dist5 = Gfx.getDistance(colorAlg, 255, 255, 255, r, g, b);
+						final float dist6 = Gfx.getDistance(colorAlg,   0, 255, 255, r, g, b);
+
+						final float dist7 = Gfx.getDistance(colorAlg, 255, 255, 0, r, g, b);
+						final float dist8 = Gfx.getDistance(colorAlg, 255, 0, 255, r, g, b);
+
+						if (dist1 > max1) {
+							max1 = dist1;
+							f1 = color;
 						}
 
-						if (luma < min) {
-							min = luma;
-							n = Gfx.getColorIndex(colorAlg, palette, r, g, b);
+						if (dist1 < min1) {
+							min1 = dist1;
+							n1 = color;
+						}
+
+						if (dist2 > max2) {
+							max2 = dist2;
+							f2 = color;
+						}
+
+						if (dist2 < min2) {
+							min2 = dist2;
+							n2 = color;
+						}
+
+						if (dist3 > max3) {
+							max3 = dist3;
+							f3 = color;
+						}
+
+						if (dist3 < min3) {
+							min3 = dist3;
+							n3 = color;
+						}
+
+						if (dist4 > max4) {
+							max4 = dist4;
+							f4 = color;
+						}
+
+						if (dist4 < min4) {
+							min4 = dist4;
+							n4 = color;
+						}
+
+						if (dist5 > max5) {
+							max5 = dist5;
+							f5 = color;
+						}
+
+						if (dist5 < min5) {
+							min5 = dist5;
+							n5 = color;
+						}
+
+						if (dist6 > max6) {
+							max6 = dist6;
+							f6 = color;
+						}
+
+						if (dist2 < min6) {
+							min6 = dist6;
+							n6 = color;
+						}
+
+						if (dist7 > max7) {
+							max7 = dist7;
+							f7 = color;
+						}
+
+						if (dist7 < min7) {
+							min7 = dist7;
+							n7 = color;
+						}
+
+						if (dist8 > max8) {
+							max8 = dist8;
+							f8 = color;
+						}
+
+						if (dist8 < min8) {
+							min8 = dist8;
+							n8 = color;
 						}
 					}
 				}
 
-				final int tilePalette[][];
-				if (Math.abs(max - min) <= (lumaThreshold * 255) / 32) {
-					// 4 colors palette (blended new colors)
-					tilePalette = new int[4][3];
-					
-					final int if0 = blend[f][0];
-					final int in1 = blend[n][1];
-					
-					final int if1 = blend[f][1];
-					final int in0 = blend[n][0];
-					
-					final int cf0[] = machinePalette[if0];
-					final int cn1[] = machinePalette[in1];
-					
-					final float acf0 = alphas[if0];
-					final float acn1 = alphas[in1];
-					
-					final float sum1 = acf0 + acn1;
+				final float d1 = (float) (Math.sqrt(max1) - Math.sqrt(min1));
+				final float d2 = (float) (Math.sqrt(max2) - Math.sqrt(min2));
 
-					// calculate blended colors
-					r = (int) ((cf0[0] * acf0 + cn1[0] * acn1) / sum1);
-					g = (int) ((cf0[1] * acf0 + cn1[1] * acn1) / sum1);
-					b = (int) ((cf0[2] * acf0 + cn1[2] * acn1) / sum1);
+				final float d3 = (float) (Math.sqrt(max3) - Math.sqrt(min3));
+				final float d4 = (float) (Math.sqrt(max4) - Math.sqrt(min4));
+
+				final float d5 = (float) (Math.sqrt(max5) - Math.sqrt(min5));
+				final float d6 = (float) (Math.sqrt(max6) - Math.sqrt(min6));
+
+				final float d7 = (float) (Math.sqrt(max7) - Math.sqrt(min7));
+				final float d8 = (float) (Math.sqrt(max8) - Math.sqrt(min8));
+
+				final float d = Math.max(Math.max(Math.max(d1, d2), Math.max(d3, d4)),
+						Math.max(Math.max(d5, d6), Math.max(d7, d8)));
 				
-					final int i2 = Gfx.getColorIndex(colorAlg, palette, r, g, b);
-					
-					final int cf1[] = machinePalette[if1];
-					final int cn0[] = machinePalette[in0];
+				if (d == d1) {
+					f = f1;
+					n = n1;
+				} else if (d == d2) {
+					f = f2;
+					n = n2;
+				} else if (d == d3) {
+					f = f3;
+					n = n3;
+				} else if (d == d4) {
+					f = f4;
+					n = n4;
+				} else if (d == d5) {
+					f = f5;
+					n = n5;
+				} else if (d == d6) {
+					f = f6;
+					n = n6;
+				} else if (d == d7) {
+					f = f7;
+					n = n7;
+				} else if (d == d8) {
+					f = f8;
+					n = n8;
+				}
 
-					final float acn0 = alphas[in0];
-					final float acf1 = alphas[if1];
-					
-					final float sum2 = acf1 + acn0;
+				final int cf[] = machinePalette[f];
+				int cn[] = machinePalette[n];
 
-					r = (int) ((cf1[0] * acf1 + cn0[0] * acn0) / sum2);
-					g = (int) ((cf1[1] * acf1 + cn0[1] * acn0) / sum2);
-					b = (int) ((cf1[2] * acf1 + cn0[2] * acn0) / sum2);
-					
-					final int i3 = Gfx.getColorIndex(colorAlg, palette, r, g, b);
+				r = (int) ((cf[0] + cn[0]) / 2);
+				g = (int) ((cf[1] + cn[1]) / 2);
+				b = (int) ((cf[2] + cn[2]) / 2);
 
-					tilePalette[2] = palette[i2];
-					tilePalette[3] = palette[i3];
-				} else
-					// 2 colors palette (no blended color)
-					tilePalette = new int[2][3];
-
-				tilePalette[0] = palette[n]; // first blended color
-				tilePalette[1] = palette[f]; // second blended color
+				tilePalette[0] = palette[getColorIndex(r, g, b)]; // blended color
+				tilePalette[1] = cf;
+				tilePalette[2] = cn;
 
 				final int address = (y >> 3) * 40 + (x >> 3);
 
-				screen1[address] = ((blend[f][0] & 0xf) << 4) | (blend[n][0] & 0xf); // f & b
-				screen2[address] = ((blend[f][1] & 0xf) << 4) | (blend[n][1] & 0xf);
+				screen1[address] = ((f & 0xf) << 4) | (n & 0xf); // f
+				screen2[address] = ((n & 0xf) << 4) | (f & 0xf);
 
 				int value1 = 0, value2 = 0, bitcount = 0;
+
 				for (int y0 = 0; y0 < 8; y0++) {
-					final int k1 = (y0 + 1) * 24;
-					final int k2 = (y0 + 2) * 24;
+					final int k = offset + y0 * 320 * 3;
 
 					for (int x0 = 0; x0 < 24; x0 += 3) {
-						final int pyx0 = y0 * 24 + x0;
-						final int py1x0 = k1 + x0;
-						final int py2x0 = k2 + x0;
+						final int position = k + x0;
 
-						r = Gfx.saturate(work[pyx0]);
-						g = Gfx.saturate(work[pyx0 + 1]);
-						b = Gfx.saturate(work[pyx0 + 2]);
+						r = work[position];
+						g = work[position + 1];
+						b = work[position + 2];
 
-						final int color = Gfx.getColorIndex(colorAlg, tilePalette, r, g, b);
-						final int cn[] = tilePalette[color];
+						final int color = Gfx.getColorIndex(colorAlg, tilePalette, Gfx.saturate(r), Gfx.saturate(g),
+								Gfx.saturate(b));
+						cn = tilePalette[color];
 
 						final int nr = cn[0];
 						final int ng = cn[1];
@@ -246,18 +342,19 @@ public class C64ExtraRenderer extends AbstractRenderer {
 						int v1 = 0, v2 = 0;
 						switch (color) {
 						case 0:
-							v1 = 0;
-							v2 = 0;
+							if (y0 % 2 == 0) {
+								v1 = 0;
+								v2 = 0;
+							} else {
+								v1 = 1;
+								v2 = 1;
+							}
 							break;
 						case 1:
 							v1 = 1;
-							v2 = 1;
-							break;
-						case 2:
-							v1 = 1;
 							v2 = 0;
 							break;
-						case 3:
+						case 2:
 							v1 = 0;
 							v2 = 1;
 							break;
@@ -275,75 +372,82 @@ public class C64ExtraRenderer extends AbstractRenderer {
 						}
 
 						bitcount += 1;
-						final int position = offset + y0 * 320 * 3 + x0;
 
 						pixels[position] = (byte) nr;
 						pixels[position + 1] = (byte) ng;
 						pixels[position + 2] = (byte) nb;
 
+						work[position] = nr;
+						work[position + 1] = ng;
+						work[position + 2] = nb;
+
 						if (config.dithering) {
-							final int r_error = r - nr;
-							final int g_error = g - ng;
-							final int b_error = b - nb;
+							final int maxError = (255 * ((C64ExtraConfig) config).error_threshold) / 20;
+
+							r_error = Gfx.saturate(r - nr, maxError);
+							g_error = Gfx.saturate(g - ng, maxError);
+							b_error = Gfx.saturate(b - nb, maxError);
+
+							final int position1 = position + 320 * 3;
+							final int position2 = position + 320 * 6;
 
 							switch (config.dither_alg) {
 							case STD_FS:
-								if (x0 < 21) {
-									work[pyx0 + 3] += (r_error * 7) / 16;
-									work[pyx0 + 3 + 1] += (g_error * 7) / 16;
-									work[pyx0 + 3 + 2] += (b_error * 7) / 16;
+								if (x + x0 < 316) {
+									work[position + 3] += (r_error * 7) / 16;
+									work[position + 3 + 1] += (g_error * 7) / 16;
+									work[position + 3 + 2] += (b_error * 7) / 16;
 								}
 
-								if (y0 < 7) {
-									work[py1x0 - 3] += (r_error * 3) / 16;
-									work[py1x0 - 3 + 1] += (g_error * 3) / 16;
-									work[py1x0 - 3 + 2] += (b_error * 3) / 16;
+								if (y + y0 < 199) {
+									work[position1 - 3] += (r_error * 3) / 16;
+									work[position1 - 3 + 1] += (g_error * 3) / 16;
+									work[position1 - 3 + 2] += (b_error * 3) / 16;
 
-									work[py1x0] += (r_error * 5) / 16;
-									work[py1x0 + 1] += (g_error * 5) / 16;
-									work[py1x0 + 2] += (b_error * 5) / 16;
+									work[position1] += (r_error * 5) / 16;
+									work[position1 + 1] += (g_error * 5) / 16;
+									work[position1 + 2] += (b_error * 5) / 16;
 
-									if (x0 < 21) {
-										work[py1x0 + 3] += r_error / 16;
-										work[py1x0 + 3 + 1] += g_error / 16;
-										work[py1x0 + 3 + 2] += b_error / 16;
+									if (x + x0 < 316) {
+										work[position1 + 3] += r_error / 16;
+										work[position1 + 3 + 1] += g_error / 16;
+										work[position1 + 3 + 2] += b_error / 16;
 									}
 								}
 								break;
 							case ATKINSON:
-								if (x0 < 21) {
-									work[pyx0 + 3] += r_error >> 3;
-									work[pyx0 + 3 + 1] += g_error >> 3;
-									work[pyx0 + 3 + 2] += b_error >> 3;
+								if (x + x0 < 316) {
+									work[position + 3] += r_error / 8;
+									work[position + 3 + 1] += g_error / 8;
+									work[position + 3 + 2] += b_error / 8;
 
-									if (x0 < 18) {
-										work[pyx0 + 6] += r_error >> 3;
-										work[pyx0 + 6 + 1] += g_error >> 3;
-										work[pyx0 + 6 + 2] += b_error >> 3;
+									if (x + x0 < 313) {
+										work[position + 6] += r_error / 8;
+										work[position + 6 + 1] += g_error / 8;
+										work[position + 6 + 2] += b_error / 8;
 									}
 								}
-								if (y0 < 7) {
-									work[py1x0 - 3] += r_error >> 3;
-									work[py1x0 - 3 + 1] += g_error >> 3;
-									work[py1x0 - 3 + 2] += b_error >> 3;
+								if (y + y0 < 199) {
+									work[position1 - 3] += r_error / 8;
+									work[position1 - 3 + 1] += g_error / 8;
+									work[position1 - 3 + 2] += b_error / 8;
 
-									work[py1x0] += r_error >> 3;
-									work[py1x0 + 1] += g_error >> 3;
-									work[py1x0 + 2] += b_error >> 3;
+									work[position1] += r_error / 8;
+									work[position1 + 1] += g_error / 8;
+									work[position1 + 2] += b_error / 8;
 
-									if (x0 < 21) {
-										work[py1x0 + 3] += r_error >> 3;
-										work[py1x0 + 3 + 1] += g_error >> 3;
-										work[py1x0 + 3 + 2] += b_error >> 3;
+									if (x + x0 < 316) {
+										work[position1 + 3] += r_error / 8;
+										work[position1 + 3 + 1] += g_error / 8;
+										work[position1 + 3 + 2] += b_error / 8;
 									}
 
-									if (y0 < 6) {
-										work[py2x0] += r_error >> 3;
-										work[py2x0 + 1] += g_error >> 3;
-										work[py2x0 + 2] += b_error >> 3;
+									if (y + y0 < 198) {
+										work[position2] += r_error / 8;
+										work[position2 + 1] += g_error / 8;
+										work[position2 + 2] += b_error / 8;
 									}
 								}
-
 								break;
 							}
 						}
@@ -351,6 +455,11 @@ public class C64ExtraRenderer extends AbstractRenderer {
 				}
 			}
 		}
+	}
+
+	private static final void safeAdd(final int[] work, final int i, final int value) {
+		if (i < maxPosition)
+			work[i] += value;
 	}
 
 	protected void verifyMCI() {
@@ -366,10 +475,9 @@ public class C64ExtraRenderer extends AbstractRenderer {
 			for (int x = 0; x < 320; x += 8) {
 				final int offset = p + x * 3;
 				final int address = (y >> 3) * 40 + (x >> 3);
-				
-				final int tileColors[] = new int[] {
-					backgroundColor, screen1[address] >> 4, screen1[address] & 0xf, nibbles[address] & 0xf  
-				};
+
+				final int tileColors[] = new int[] { backgroundColor, screen1[address] >> 4, screen1[address] & 0xf,
+						nibbles[address] & 0xf };
 
 				int even = 0;
 
@@ -392,21 +500,16 @@ public class C64ExtraRenderer extends AbstractRenderer {
 						r = machinePalette[tileColors[colorIndex]][0];
 						g = machinePalette[tileColors[colorIndex]][1];
 						b = machinePalette[tileColors[colorIndex]][2];
-						
-						final float l1 = alphas[tileColors[colorIndex]];
-						
+
 						if (prevColorIndex[y0] != -1) {
-						
+
 							r1 = machinePalette[prevColorIndex[y0]][0];
 							g1 = machinePalette[prevColorIndex[y0]][1];
 							b1 = machinePalette[prevColorIndex[y0]][2];
-							
-							final float l2 = alphas[prevColorIndex[y0]];
-							final float sum = l1 + l2;
-							
-							r = (int) ((r * l1 + r1 * l2) / sum);
-							g = (int) ((g * l1 + g1 * l2) / sum);
-							b = (int) ((b * l1 + b1 * l2) / sum);
+
+							r = (int) ((r + r1) / 2);
+							g = (int) ((g + g1) / 2);
+							b = (int) ((b + b1) / 2);
 						}
 
 						prevColorIndex[y0] = tileColors[colorIndex];
@@ -424,33 +527,37 @@ public class C64ExtraRenderer extends AbstractRenderer {
 	}
 
 	protected void multiColorInterlaced() {
-		int r = 0, g = 0, b = 0;
-		final int work[] = new int[64 * 3];
-
 		int bitmapIndex = 0;
+		final int work[] = Gfx.copy2Int(pixels);
+
+		int r = 0, g = 0, b = 0;
+		int r_error, g_error, b_error;
 
 		// calculate occurrence of colors
 		for (int y = 0; y < 200; y++) {
-			final int p = y * 320 * 3;
+			final int k = y * 320 * 3;
 
 			for (int x = 0; x < 320; x++) {
-				final int position = p + x * 3;
+				final int position = k + x * 3;
 
-				r += pixels[position] & 0xff;
-				g += pixels[position + 1] & 0xff;
-				b += pixels[position + 2] & 0xff;
+				r += work[position];
+				g += work[position + 1];
+				b += work[position + 2];
 			}
 		}
 
 		r /= 320 * 200;
 		g /= 320 * 200;
 		b /= 320 * 200;
-		
+
 		backgroundColor = Gfx.getColorIndex(colorAlg, machinePalette, r, g, b);
 
 		final int br = machinePalette[backgroundColor][0];
 		final int bg = machinePalette[backgroundColor][1];
 		final int bb = machinePalette[backgroundColor][2];
+
+		final byte trainData1[] = new byte[64 * 3];
+		final byte trainData2[] = new byte[32 * 3];
 
 		for (int y = 0; y < 200; y += 8) {
 			final int p = y * 320 * 3;
@@ -458,56 +565,49 @@ public class C64ExtraRenderer extends AbstractRenderer {
 			final int prevColorIndex[] = new int[8];
 			Arrays.fill(prevColorIndex, -1);
 
-			for (int x = 0; x < 320; x += 8) {	
+			for (int x = 0; x < 320; x += 8) {
 				final int offset = p + x * 3;
+				int index = 0, colorIndex;
 
-				int index = 0;
-				int colorIndex;
-
-				// 8x8 tile work copy
+				// get most fitted tile colors
 				for (int y0 = 0; y0 < 8; y0++) {
-					for (int x0 = 0; x0 < 24; x0 += 3) {
-						final int position = offset + y0 * 320 * 3 + x0;
+					final int k = offset + y0 * 320 * 3;
 
-						work[index++] = pixels[position] & 0xff;
-						work[index++] = pixels[position + 1] & 0xff;
-						work[index++] = pixels[position + 2] & 0xff;
+					for (int x0 = 0; x0 < 24; x0 += 3) {
+						final int position = k + x0;
+
+						trainData1[index++] = pixels[position];
+						trainData1[index++] = pixels[position + 1];
+						trainData1[index++] = pixels[position + 2];
 					}
 				}
 
-				// get most fitted tile colors
-				byte trainData[] = new byte[64 * 3];
-
-				for (int i = 0; i < 64 * 3; i++)
-					trainData[i] = (byte) work[i];
-
 				// map all 4 colors to extra palette
 				SOMPalette som = new SOMPalette(4, 4, 0.8f, 1f, 100);
-				int tilePalette[][] = som.train(trainData);
+				int tilePalette[][] = som.train(trainData1);
 
 				// get blend colors
-				trainData = new byte[32 * 3];
 				for (int i = 0; i < 16; i++) {
 					final int c[] = tilePalette[i];
 					colorIndex = getColorIndex(c[0], c[1], c[2]);
 
 					int q[] = machinePalette[blend[colorIndex][0]];
 
-					trainData[6 * i] = (byte) q[0];
-					trainData[6 * i + 1] = (byte) q[1];
-					trainData[6 * i + 2] = (byte) q[2];
+					trainData2[6 * i] = (byte) q[0];
+					trainData2[6 * i + 1] = (byte) q[1];
+					trainData2[6 * i + 2] = (byte) q[2];
 
 					q = machinePalette[blend[colorIndex][1]];
 
-					trainData[6 * i + 3] = (byte) q[0];
-					trainData[6 * i + 4] = (byte) q[1];
-					trainData[6 * i + 5] = (byte) q[2];
+					trainData2[6 * i + 3] = (byte) q[0];
+					trainData2[6 * i + 4] = (byte) q[1];
+					trainData2[6 * i + 5] = (byte) q[2];
 				}
 
 				// get machine colors
 				som = new SOMPalette(2, 2, 0.8f, 1f, 100);
-				tilePalette = som.train(trainData);
-				
+				tilePalette = som.train(trainData2);
+
 				final int tileColors[] = new int[4];
 
 				for (int i = 0; i < 4; i++) {
@@ -549,36 +649,35 @@ public class C64ExtraRenderer extends AbstractRenderer {
 				int even = 0, value1 = 0, value2 = 0, bitcount = 0;
 
 				for (int y0 = 0; y0 < 8; y0++) {
-					final int k = y0 + 1;
+					final int k = offset + y0 * 320 * 3;
 
 					for (int x0 = 0; x0 < 24; x0 += 3) {
-						final int pyx0 = y0 * 24 + x0;
-						final int py1x0 = k * 24 + x0;
+						final int position = k + x0;
 
-						// get current picture color
-						r = Gfx.saturate(work[pyx0]);
-						g = Gfx.saturate(work[pyx0 + 1]);
-						b = Gfx.saturate(work[pyx0 + 2]);
+						// get current picture color + noise
+						r = work[position]     + (int) (Math.random() * 80 - 40);
+						g = work[position + 1] + (int) (Math.random() * 80 - 40);
+						b = work[position + 2] + (int) (Math.random() * 80 - 40);
 
 						int nr, ng, nb;
 
 						if (prevColorIndex[y0] != -1) { // prevColorIndex is absolute, not local tilePalette index
-							final float a0 = alphas[prevColorIndex[y0]];
 							colorIndex = getBlendedColorIndex(tilePalette, tileColors, r, g, b, prevColorIndex[y0]);
 
-							final float a1 = alphas[tileColors[colorIndex]];
-							final float sum = a0 + a1;
-
 							// new color as old and new combined
-							nr = (int) ((tilePalette[colorIndex][0] * a1 + machinePalette[prevColorIndex[y0]][0] * a0) / sum);
-							ng = (int) ((tilePalette[colorIndex][1] * a1 + machinePalette[prevColorIndex[y0]][1] * a0) / sum);
-							nb = (int) ((tilePalette[colorIndex][2] * a1 + machinePalette[prevColorIndex[y0]][2] * a0) / sum);
+							final int p1[] = tilePalette[colorIndex];
+							final int p2[] = machinePalette[prevColorIndex[y0]];
+
+							nr = (p1[0] + p2[0]) / 2;
+							ng = (p1[1] + p2[1]) / 2;
+							nb = (p1[2] + p2[2]) / 2;
 						} else {
 							colorIndex = Gfx.getColorIndex(colorAlg, tilePalette, r, g, b);
+							final int p1[] = tilePalette[colorIndex];
 
-							nr = tilePalette[colorIndex][0];
-							ng = tilePalette[colorIndex][1];
-							nb = tilePalette[colorIndex][2];
+							nr = p1[0];
+							ng = p1[1];
+							nb = p1[2];
 						}
 
 						prevColorIndex[y0] = tileColors[colorIndex];
@@ -588,8 +687,8 @@ public class C64ExtraRenderer extends AbstractRenderer {
 						else
 							value2 = (value2 << 2) | (colorIndex & 0b11);
 
-						bitcount += 1;
 						even ^= 1;
+						bitcount += 1;
 
 						if (bitcount == 8) {
 							bitmap1[bitmapIndex] = value1;
@@ -601,38 +700,69 @@ public class C64ExtraRenderer extends AbstractRenderer {
 							bitmapIndex++;
 						}
 
-						final int position = offset + y0 * 320 * 3 + x0;
-
 						pixels[position] = (byte) nr;
 						pixels[position + 1] = (byte) ng;
 						pixels[position + 2] = (byte) nb;
 
+						work[position] = nr;
+						work[position + 1] = ng;
+						work[position + 2] = nb;
+
 						// calculate color error
-						final int dr = r - nr;
-						final int dg = g - ng;
-						final int db = b - nb;
+						final int maxError = (255 * ((C64ExtraConfig) config).error_threshold) / 20;
 
-						// distribute error
-						if (x0 < 21) {
-							work[pyx0 + 3] += (dr * 7) / 16;
-							work[pyx0 + 3 + 1] += (dg * 7) / 16;
-							work[pyx0 + 3 + 2] += (db * 7) / 16;
-						}
+						r_error = Gfx.saturate(r - nr, maxError);
+						g_error = Gfx.saturate(g - ng, maxError);
+						b_error = Gfx.saturate(b - nb, maxError);
 
-						if (y0 < 7) {
-							work[py1x0 - 3] += (dr * 3) / 16;
-							work[py1x0 - 3 + 1] += (dg * 3) / 16;
-							work[py1x0 - 3 + 2] += (db * 3) / 16;
+						final int position1 = position + 320 * 3;
+						final int position2 = position + 320 * 6;
 
-							work[py1x0] += (dr * 5) / 16;
-							work[py1x0 + 1] += (dg * 5) / 16;
-							work[py1x0 + 2] += (db * 5) / 16;
+						switch (config.dither_alg) {
+						case STD_FS:
+							safeAdd(work, position + 3, (r_error * 7) / 16);
+							safeAdd(work, position + 3 + 1, (g_error * 7) / 16);
+							safeAdd(work, position + 3 + 2, (b_error * 7) / 16);
 
-							if (x0 < 21) {
-								work[py1x0 + 3] += dr / 16;
-								work[py1x0 + 3 + 1] += dg / 16;
-								work[py1x0 + 3 + 2] += db / 16;
-							}
+							safeAdd(work, position1 - 3, (r_error * 3) / 16);
+							safeAdd(work, position1 - 3 + 1, (g_error * 3) / 16);
+							safeAdd(work, position1 - 3 + 2, (b_error * 3) / 16);
+
+							safeAdd(work, position1, (r_error * 5) / 16);
+							safeAdd(work, position1 + 1, (g_error * 5) / 16);
+							safeAdd(work, position1 + 2, (b_error * 5) / 16);
+
+							safeAdd(work, position1 + 3, r_error / 16);
+							safeAdd(work, position1 + 3 + 1, g_error / 16);
+							safeAdd(work, position1 + 3 + 2, b_error / 16);
+
+							break;
+						case ATKINSON:
+							safeAdd(work, position + 3, r_error / 8);
+							safeAdd(work, position + 3 + 1, g_error / 8);
+							safeAdd(work, position + 3 + 2, b_error / 8);
+
+							safeAdd(work, position + 6, r_error / 8);
+							safeAdd(work, position + 6 + 1, g_error / 8);
+							safeAdd(work, position + 6 + 2, b_error / 8);
+
+							safeAdd(work, position1 - 3, r_error / 8);
+							safeAdd(work, position1 - 3 + 1, g_error / 8);
+							safeAdd(work, position1 - 3 + 2, b_error / 8);
+
+							safeAdd(work, position1, r_error / 8);
+							safeAdd(work, position1 + 1, g_error / 8);
+							safeAdd(work, position1 + 2, b_error / 8);
+
+							safeAdd(work, position1 + 3, r_error / 8);
+							safeAdd(work, position1 + 3 + 1, g_error / 8);
+							safeAdd(work, position1 + 3 + 2, b_error / 8);
+
+							safeAdd(work, position2, r_error / 8);
+							safeAdd(work, position2 + 1, g_error / 8);
+							safeAdd(work, position2 + 2, b_error / 8);
+
+							break;
 						}
 					}
 				}

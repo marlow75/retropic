@@ -44,6 +44,10 @@ public class Gfx {
 		return i > Byte.MAX_VALUE ? Byte.MAX_VALUE : i < Byte.MIN_VALUE ? Byte.MIN_VALUE : i;
 	}
 
+	public static final int saturate(final int i, final int value) {
+		return i > value ? value : i < -value ? -value : i;
+	}
+
 	public static final int[] copy2Int(final byte[] pixels) {
 		final int len = pixels.length;
 		final int array[] = new int[len];
@@ -136,7 +140,7 @@ public class Gfx {
 		final BufferedImage scaled = new BufferedImage(maxX, maxY, image.getType());
 		final AffineTransform si = AffineTransform.getScaleInstance(sx, sy);
 
-		final AffineTransformOp transform = new AffineTransformOp(si, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+		final AffineTransformOp transform = new AffineTransformOp(si, AffineTransformOp.TYPE_BICUBIC);
 		transform.filter(image, scaled);
 
 		return scaled;
@@ -158,7 +162,7 @@ public class Gfx {
 		final BufferedImage scaled = new BufferedImage(maxX, maxY, image.getType());
 		final AffineTransform si = AffineTransform.getScaleInstance(ratio, ratio);
 
-		final AffineTransformOp scale = new AffineTransformOp(si, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+		final AffineTransformOp scale = new AffineTransformOp(si, AffineTransformOp.TYPE_BICUBIC);
 		scale.filter(image, scaled);
 
 		final int px = (int) ((maxX - x * ratio) / 2);
@@ -242,8 +246,8 @@ public class Gfx {
 	}
 
 	// SWAHE
-	public final static void SWAHE(final byte pixels[], final int window, int brightness,
-			final int width, final int height) {
+	public final static void SWAHE(final byte pixels[], final int window, int brightness, final int width,
+			final int height) {
 		// cdf & yuv
 		final int cdf[] = new int[256];
 		final int yuv[] = new int[6]; // work + center pixels
@@ -327,8 +331,8 @@ public class Gfx {
 	}
 
 	// CLAHE
-	public static final void CLAHE(final byte pixels[], final int window, int brightness,
-			final int width, final int height) {
+	public static final void CLAHE(final byte pixels[], final int window, int brightness, final int width,
+			final int height) {
 
 		final int yuv[] = new int[pixels.length];
 		final int lumas[] = new int[pixels.length];
@@ -543,31 +547,30 @@ public class Gfx {
 		final int ymax = pixels.length / 3 / window;
 		final byte out[] = new byte[pixels.length * 2];
 
-		final int yuv[] = new int[3];
+		for (int y = 0; y < ymax; y++) { // y -> 2*y orgin & scanline
+			final int ypos = y * window * 3; // origin y position
+			final int ydest = 2 * ypos; // destination 2*y position
 
-		for (int y = 0; y < ymax; y++) {
-			final int ywindow = y * window * 3;
-			final int ywindow2 = 2 * ywindow;
-			final int ywindow21 = (2 * y + 1) * window * 3;
+			final int ydest0 = (2 * y - 1) * window * 3; // destination 2*y+1 position
 
 			for (int x = 0; x < window * 3; x += 3) {
-				final int ys = ywindow + x;
-				final int y0 = ywindow2 + x;
-				final int y1 = ywindow21 + x;
+				final int xys = ypos + x; // origin pixel position
+				final int xyd = ydest + x; // destination pixel position
+				final int xyd0 = ydest0 + x; // destination next line pixel position
 
-				final byte r = pixels[ys];
-				final byte g = pixels[ys + 1];
-				final byte b = pixels[ys + 2];
+				final byte r = pixels[xys]; // read pixel
+				final byte g = pixels[xys + 1];
+				final byte b = pixels[xys + 2];
 
-				out[y0] = r;
-				out[y0 + 1] = g;
-				out[y0 + 2] = b;
-
-				if (y < ymax - 1) {
-					// scanline as dimmed previous line
-					rgb2YUV(r, g, b, yuv, 0);
-					yuv2RGB(Math.round(yuv[0] * 0.67f), yuv[1], yuv[2], out, y1);
+				if (y > 0) {
+					out[xyd0] = (byte) Math.round(r * 0.6f);
+					out[xyd0 + 1] = (byte) Math.round(g * 0.6f);
+					out[xyd0 + 2] = (byte) Math.round(b * 0.6f);
 				}
+
+				out[xyd] = r;
+				out[xyd + 1] = g;
+				out[xyd + 2] = b;
 			}
 		}
 
@@ -712,8 +715,8 @@ public class Gfx {
 		}
 	}
 
-	public static int getColorIndex(final NEAREST_COLOR color, final int palette[][], final int r0,
-			final int g0, final int b0) {
+	public static int getColorIndex(final NEAREST_COLOR color, final int palette[][], final int r0, final int g0,
+			final int b0) {
 		switch (color) {
 		case EUCLIDEAN:
 			return getEuclideanColorIndex(palette, r0, g0, b0);
@@ -726,11 +729,11 @@ public class Gfx {
 		}
 	}
 
-	protected int[] matchingEuclideanColor(final int palette[][], final int r, final int g, final int b) {
+	protected static final int[] matchingEuclideanColor(final int palette[][], final int r, final int g, final int b) {
 		return palette[getEuclideanColorIndex(palette, r, g, b)];
 	}
 
-	protected static int getEuclideanColorIndex(final int palette[][], final int r, final int g, final int b) {
+	protected static final int getEuclideanColorIndex(final int palette[][], final int r, final int g, final int b) {
 		int index = 0;
 		int color[] = palette[0];
 		float min = Gfx.euclideanDistance(r, g, b, color[0], color[1], color[2]);
@@ -748,8 +751,7 @@ public class Gfx {
 		return index;
 	}
 
-	protected static int getPerceptedColorIndex(final int palette[][], final int r, final int g,
-			final int b) {
+	protected static int getPerceptedColorIndex(final int palette[][], final int r, final int g, final int b) {
 		int index = 0;
 		int color[] = palette[0];
 		float min = perceptedDistance(r, g, b, color[0], color[1], color[2]);
@@ -767,13 +769,11 @@ public class Gfx {
 		return index;
 	}
 
-	protected int[] matchingLumaColor(final int palette[][], final int r, final int g,
-			final int b) {
+	protected int[] matchingLumaColor(final int palette[][], final int r, final int g, final int b) {
 		return palette[getLumaColorIndex(palette, r, g, b)];
 	}
 
-	protected static int getLumaColorIndex(final int palette[][], final int r, final int g,
-			final int b) {
+	protected static int getLumaColorIndex(final int palette[][], final int r, final int g, final int b) {
 		int index = 0, old_index = 0;
 		float y1 = 0, oy1 = 0;
 
@@ -803,6 +803,14 @@ public class Gfx {
 		return Math.abs(y1 - y) < Math.abs(oy1 - y) ? index : old_index;
 	}
 
+	public static final void colorScale(final float r, final float g, final float b, final int pixels[]) {
+		for (int i = 0; i < pixels.length; i += 3) {
+			pixels[i] = saturate((int) (pixels[i] + pixels[i] * r));
+			pixels[i + 1] = saturate((int) (pixels[i + 1] + pixels[i + 1] * g));
+			pixels[i + 2] = saturate((int) (pixels[i + 2] + pixels[i + 2] * b));
+		}
+	}
+
 	public static final BufferedImage grey2BGR(final BufferedImage image) {
 		final byte[] pixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
 		final byte[] data = new byte[pixels.length * 3];
@@ -817,7 +825,7 @@ public class Gfx {
 		return Gfx.byteArrayToBGRImage(data, image.getWidth(), image.getHeight());
 	}
 
-	public static BufferedImage rgb2BGR(final BufferedImage image) {
+	public static final BufferedImage rgb2BGR(final BufferedImage image) {
 		final int[] pixels = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
 		final byte[] data = new byte[pixels.length * 3];
 

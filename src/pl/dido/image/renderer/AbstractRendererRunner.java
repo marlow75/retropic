@@ -16,7 +16,7 @@ import pl.dido.image.utils.Gfx;
 import pl.dido.image.utils.Utils;
 
 public abstract class AbstractRendererRunner implements Runnable {
-	private AbstractRenderer renderer;
+	protected AbstractRenderer renderer;
 
 	protected int windowWidth;
 	protected int windowHeight;
@@ -32,6 +32,8 @@ public abstract class AbstractRendererRunner implements Runnable {
 	public AbstractRendererRunner(final AbstractRenderer renderer, final String fileName) {
 		this.renderer = renderer;
 		this.fileName = fileName;
+		
+		renderer.setRunner(this);
 	}
 
 	protected void initializeView() {

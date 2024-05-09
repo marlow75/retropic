@@ -23,17 +23,11 @@ public class STConfig extends Config {
 	
 	@Override
 	public int getWindowHeight() {
-		if (scanline)
-			return 400;
-		
-		return 300;
+		return 400;
 	}
 
 	@Override
 	public int getWindowWidth() {
-		if (scanline)
-			return 640;
-		
-		return 480;
+		return 640;
 	}
 }

@@ -84,17 +84,11 @@ public class C64Config extends Config {
 	
 	@Override
 	public int getWindowHeight() {
-		if (scanline)
-			return 400;
-		
-		return 260;
+		return 400;
 	}
 
 	@Override
 	public int getWindowWidth() {
-		if (scanline)
-			return 640;
-		
-		return 416;
+		return 640;
 	}
 }

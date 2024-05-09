@@ -7,13 +7,16 @@ public class C64ExtraConfig extends C64Config {
 	}
 	
 	public int luma_threshold;
+	public int error_threshold;
+	
 	public EXTRA_MODE extra_mode;
 	
 	public C64ExtraConfig() {
 		super();
 		
-		extra_mode = EXTRA_MODE.MULTI_COLOR_INTERLACED;
-		luma_threshold = 6;
+		extra_mode = EXTRA_MODE.HIRES_INTERLACED;
+		luma_threshold = 32;
+		error_threshold = 2;
 	}
 	
 	@Override

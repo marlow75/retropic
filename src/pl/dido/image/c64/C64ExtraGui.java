@@ -62,13 +62,13 @@ public class C64ExtraGui {
 		c64Logo.setBounds(381, 7, 100, 96);
 		panelC64Extra.add(c64Logo);
 		
-		final JLabel sizeLabel = new JLabel("luma threshold");
-		sizeLabel.setFont(GuiUtils.bold);
-		sizeLabel.setBounds(46, 120, 120, 20);
-		panelC64Extra.add(sizeLabel);
+		final JLabel thresholdLabel = new JLabel("luma threshold");
+		thresholdLabel.setFont(GuiUtils.bold);
+		thresholdLabel.setBounds(46, 120, 120, 20);
+		panelC64Extra.add(thresholdLabel);
 
 		final JSlider sldLuma = new JSlider(JSlider.HORIZONTAL, 1, 32, config.luma_threshold);
-		sldLuma.setBounds(41, 140, 220, 35);
+		sldLuma.setBounds(41, 140, 150, 35);
 		sldLuma.setFont(GuiUtils.std);
 		sldLuma.addChangeListener(new ChangeListener() {
 			public void stateChanged(final ChangeEvent e) {
@@ -78,10 +78,31 @@ public class C64ExtraGui {
 					config.luma_threshold = source.getValue();
 			}
 		});
-
+		
 		sldLuma.setMajorTickSpacing(5);
 		sldLuma.setPaintLabels(true);
 		panelC64Extra.add(sldLuma);
+		
+		final JLabel errorLabel = new JLabel("error threshold");
+		errorLabel.setFont(GuiUtils.bold);
+		errorLabel.setBounds(205, 120, 120, 20);
+		panelC64Extra.add(errorLabel);
+
+		final JSlider sldError = new JSlider(JSlider.HORIZONTAL, 1, 10, config.error_threshold);
+		sldError.setBounds(200, 140, 100, 35);
+		sldError.setFont(GuiUtils.std);
+		sldError.addChangeListener(new ChangeListener() {
+			public void stateChanged(final ChangeEvent e) {
+				final JSlider source = (JSlider) e.getSource();
+
+				if (!source.getValueIsAdjusting())
+					config.error_threshold = source.getValue();
+			}
+		});
+
+		sldError.setMajorTickSpacing(2);
+		sldError.setPaintLabels(true);
+		panelC64Extra.add(sldError);
 				
 		GuiUtils.addContrastControls(panelC64Extra, config);
 		GuiUtils.addColorControls(panelC64Extra, config);
