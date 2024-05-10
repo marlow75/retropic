@@ -145,7 +145,9 @@ public class CPCRunner extends AbstractRendererRunner {
 
 					final int result = JOptionPane.showConfirmDialog(null, "Export " + fileName + "?", "Confirm",
 							JOptionPane.YES_NO_OPTION);
-					if (result == 0)
+					if (result == 0) {
+						cpc.savePreview(path + "\\" + fileName);
+						
 						switch (((CPCConfig) cpc.config).screen_mode) {
 						case MODE1:
 							exportArtStudio(path, fileName, 1);
@@ -154,6 +156,7 @@ public class CPCRunner extends AbstractRendererRunner {
 							exportArtStudio(path, fileName, 0);
 							break;
 						}
+					}
 				} catch (final IOException ex) {
 					JOptionPane.showMessageDialog(null, "Error", ex.getMessage(), JOptionPane.ERROR_MESSAGE);
 				}

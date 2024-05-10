@@ -191,10 +191,11 @@ public class C64Runner extends AbstractRendererRunner {
 						break;
 					}
 					
-					c64.savePreview(exportFileName);
 					final int result = JOptionPane.showConfirmDialog(null, "Export " + exportFileName + "?", "Confirm",
 							JOptionPane.YES_NO_OPTION);
-					if (result == 0)
+					if (result == 0) {
+						c64.savePreview(exportFileName);
+						
 						switch (((C64Config) c64.config).screen_mode) {
 						case HIRES:
 							hiresExport(exportFileName);
@@ -203,6 +204,7 @@ public class C64Runner extends AbstractRendererRunner {
 							lowresExport(exportFileName);
 							break;
 						}
+					}
 				} catch (final IOException ex) {
 					JOptionPane.showMessageDialog(null, "Error", ex.getMessage(), JOptionPane.ERROR_MESSAGE);
 				}

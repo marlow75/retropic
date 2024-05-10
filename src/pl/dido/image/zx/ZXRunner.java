@@ -65,8 +65,10 @@ public class ZXRunner extends AbstractRendererRunner {
 
 					final int result = JOptionPane.showConfirmDialog(null, "Export " + exportFileName + "?", "Confirm",
 							JOptionPane.YES_NO_OPTION);
-					if (result == 0)
+					if (result == 0) {
+						zx.savePreview(exportFileName);
 						hiresExport(exportFileName);
+					}
 				} catch (final IOException ex) {
 					JOptionPane.showMessageDialog(null, "Error", ex.getMessage(), JOptionPane.ERROR_MESSAGE);
 				}

@@ -49,7 +49,6 @@ public abstract class AbstractRenderer {
 
 	public void setImage(final BufferedImage image) {
 		this.image = Gfx.scaleImage(image, screenWidth, screenHeight, config.preserveAspect);
-		
 		pixels = ((DataBufferByte) this.image.getRaster().getDataBuffer()).getData();
 	}
 
@@ -64,7 +63,7 @@ public abstract class AbstractRenderer {
 		if (config.dithering)
 			imageDithering();
 		
-		runner.showImage();
+		//runner.showImage();
 		
 		imagePostproces();
 		if (config.scanline)
@@ -88,8 +87,8 @@ public abstract class AbstractRenderer {
 		}
 	}
 	
-	private void makeScanlines() {
-		this.image = Gfx.byteArrayToBGRImage(Gfx.makeScanlines(pixels, image.getWidth()), screenWidth, 2 * screenHeight);
+	protected void makeScanlines() {
+		image = Gfx.byteArrayToBGRImage(Gfx.makeScanlines(pixels, image.getWidth()), screenWidth, 2 * screenHeight);
 	}
 
 	protected abstract void imagePostproces();
@@ -106,7 +105,14 @@ public abstract class AbstractRenderer {
 	
 	public void savePreview(final String exportFileName) {
 		try {
-			ImageIO.write(image, "jpg", new File(exportFileName + ".jpg"));
+			final BufferedImage img;
+			
+			if (config.scanline)
+				img = Gfx.scaleImage(image, screenWidth, screenHeight, config.preserveAspect);
+			else
+				img = image;
+			
+			ImageIO.write(img, "jpg", new File(exportFileName + ".jpg"));
 		} catch (final IOException e) {
 			e.printStackTrace();
 		}
