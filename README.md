@@ -10,7 +10,7 @@ Requirements: JRE16 installed.
 
 ## Versions
 
-* 1.5 - New hires interlace and noisy MCI for C64
+* 1.5 - New hires interlace and noisy MCI for C64, screenshots for 8 bit machines
 * 1.4 - Refactoring, new pixel formats
 * 1.3 - Scanline view for C64, ZX, CPC, ST, bug fixes
 * 1.2 - Improved palette & color handling for C64, CPC, Amiga 500, experimental C64 extra 
@@ -20,7 +20,7 @@ Requirements: JRE16 installed.
 
 ## Supported machines
 
-* C64, hires 320x200, multicolor 160x200, standard text mode 40x25, interlaced hires and MCI (noisy)
+* C64, hires 320x200, multicolor 160x200, standard text mode 40x25, interlaced hires and MCI (noisy).
 * ZX Spectrum 48/+ 256x192 in 16 colors.
 * Amstrad CPC series mode0 160x200 16 colors, mode1 320x200 in 4 colors.
 * Atari ST, 320x200 in 16 on screen from 512 palette colors.
