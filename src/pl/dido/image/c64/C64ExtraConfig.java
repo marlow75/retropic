@@ -6,9 +6,14 @@ public class C64ExtraConfig extends C64Config {
 		HIRES_INTERLACED, MULTI_COLOR_INTERLACED;
 	}
 	
+	public enum RGB_APPROXIMATION {
+		LINEAR, CUBE;
+	}
+	
 	public int luma_threshold;
 	public int error_threshold;
 	
+	public RGB_APPROXIMATION rgb_approximation;
 	public EXTRA_MODE extra_mode;
 	
 	public C64ExtraConfig() {
@@ -16,6 +21,8 @@ public class C64ExtraConfig extends C64Config {
 		
 		extra_mode = EXTRA_MODE.HIRES_INTERLACED;
 		luma_threshold = 32;
+		
+		rgb_approximation = RGB_APPROXIMATION.LINEAR;
 		error_threshold = 2;
 	}
 	
@@ -25,10 +32,10 @@ public class C64ExtraConfig extends C64Config {
 		
 		switch (extra_mode) {
 		case HIRES_INTERLACED:
-			configString += "x4 ";
+			configString += "x3 ";
 			break;
 		case MULTI_COLOR_INTERLACED:
-			configString += "x16 ";
+			configString += "x10 ";
 		default:
 			break;
 		}

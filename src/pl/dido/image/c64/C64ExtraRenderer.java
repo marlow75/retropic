@@ -122,16 +122,6 @@ public class C64ExtraRenderer extends AbstractRenderer {
 		int f = 0, n = 0;
 		int r_error, g_error, b_error;
 
-		int f1 = 0, n1 = 0;
-		int f2 = 0, n2 = 0;
-		int f3 = 0, n3 = 0;
-		int f4 = 0, n4 = 0;
-
-		int f5 = 0, n5 = 0;
-		int f6 = 0, n6 = 0;
-		int f7 = 0, n7 = 0;
-		int f8 = 0, n8 = 0;
-
 		// get average color
 		final int tilePalette[][] = new int[3][3];
 
@@ -141,18 +131,9 @@ public class C64ExtraRenderer extends AbstractRenderer {
 			for (int x = 0; x < 320; x += 8) {
 				final int offset = p + x * 3;
 				
-				float max1 = Float.MIN_VALUE, min1 = Float.MAX_VALUE;
-				float max2 = Float.MIN_VALUE, min2 = Float.MAX_VALUE;
-
-				float max3 = Float.MIN_VALUE, min3 = Float.MAX_VALUE;
-				float max4 = Float.MIN_VALUE, min4 = Float.MAX_VALUE;
-
-				float max5 = Float.MIN_VALUE, min5 = Float.MAX_VALUE;
-				float max6 = Float.MIN_VALUE, min6 = Float.MAX_VALUE;
-
-				float max7 = Float.MIN_VALUE, min7 = Float.MAX_VALUE;
-				float max8 = Float.MIN_VALUE, min8 = Float.MAX_VALUE;
-
+				int data[] = new int[64 * 3];
+				int index = 0;
+				
 				// 8x8 tile data
 				for (int y0 = 0; y0 < 8; y0++) {
 					final int k = offset + y0 * 320 * 3;
@@ -160,149 +141,26 @@ public class C64ExtraRenderer extends AbstractRenderer {
 					for (int x0 = 0; x0 < 24; x0 += 3) {
 						final int position = k + x0;
 
-						final int color = Gfx.getColorIndex(colorAlg, machinePalette, work[position],
-								work[position + 1], work[position + 2]);
-
-						r = machinePalette[color][0];
-						g = machinePalette[color][1];
-						b = machinePalette[color][2];
-
-						// get minimum/maximum color distance
-						final float dist1 = Gfx.getDistance(colorAlg, 0, 0,   0, r, g, b);
-						final float dist2 = Gfx.getDistance(colorAlg, 0, 0, 255, r, g, b);
-
-						final float dist3 = Gfx.getDistance(colorAlg, 0, 255, 0, r, g, b);
-						final float dist4 = Gfx.getDistance(colorAlg, 255, 0, 0, r, g, b);
-
-						final float dist5 = Gfx.getDistance(colorAlg, 255, 255, 255, r, g, b);
-						final float dist6 = Gfx.getDistance(colorAlg,   0, 255, 255, r, g, b);
-
-						final float dist7 = Gfx.getDistance(colorAlg, 255, 255, 0, r, g, b);
-						final float dist8 = Gfx.getDistance(colorAlg, 255, 0, 255, r, g, b);
-
-						if (dist1 > max1) {
-							max1 = dist1;
-							f1 = color;
-						}
-
-						if (dist1 < min1) {
-							min1 = dist1;
-							n1 = color;
-						}
-
-						if (dist2 > max2) {
-							max2 = dist2;
-							f2 = color;
-						}
-
-						if (dist2 < min2) {
-							min2 = dist2;
-							n2 = color;
-						}
-
-						if (dist3 > max3) {
-							max3 = dist3;
-							f3 = color;
-						}
-
-						if (dist3 < min3) {
-							min3 = dist3;
-							n3 = color;
-						}
-
-						if (dist4 > max4) {
-							max4 = dist4;
-							f4 = color;
-						}
-
-						if (dist4 < min4) {
-							min4 = dist4;
-							n4 = color;
-						}
-
-						if (dist5 > max5) {
-							max5 = dist5;
-							f5 = color;
-						}
-
-						if (dist5 < min5) {
-							min5 = dist5;
-							n5 = color;
-						}
-
-						if (dist6 > max6) {
-							max6 = dist6;
-							f6 = color;
-						}
-
-						if (dist2 < min6) {
-							min6 = dist6;
-							n6 = color;
-						}
-
-						if (dist7 > max7) {
-							max7 = dist7;
-							f7 = color;
-						}
-
-						if (dist7 < min7) {
-							min7 = dist7;
-							n7 = color;
-						}
-
-						if (dist8 > max8) {
-							max8 = dist8;
-							f8 = color;
-						}
-
-						if (dist8 < min8) {
-							min8 = dist8;
-							n8 = color;
-						}
+						data[index++] = work[position];
+						data[index++] = work[position + 1];
+						data[index++] = work[position + 2];
 					}
-				}
-
-				final float d1 = (float) (Math.sqrt(max1) - Math.sqrt(min1));
-				final float d2 = (float) (Math.sqrt(max2) - Math.sqrt(min2));
-
-				final float d3 = (float) (Math.sqrt(max3) - Math.sqrt(min3));
-				final float d4 = (float) (Math.sqrt(max4) - Math.sqrt(min4));
-
-				final float d5 = (float) (Math.sqrt(max5) - Math.sqrt(min5));
-				final float d6 = (float) (Math.sqrt(max6) - Math.sqrt(min6));
-
-				final float d7 = (float) (Math.sqrt(max7) - Math.sqrt(min7));
-				final float d8 = (float) (Math.sqrt(max8) - Math.sqrt(min8));
-
-				final float d = Math.max(Math.max(Math.max(d1, d2), Math.max(d3, d4)),
-						Math.max(Math.max(d5, d6), Math.max(d7, d8)));
+				}				
 				
-				if (d == d1) {
-					f = f1;
-					n = n1;
-				} else if (d == d2) {
-					f = f2;
-					n = n2;
-				} else if (d == d3) {
-					f = f3;
-					n = n3;
-				} else if (d == d4) {
-					f = f4;
-					n = n4;
-				} else if (d == d5) {
-					f = f5;
-					n = n5;
-				} else if (d == d6) {
-					f = f6;
-					n = n6;
-				} else if (d == d7) {
-					f = f7;
-					n = n7;
-				} else if (d == d8) {
-					f = f8;
-					n = n8;
+				final int colors[];
+				
+				switch (((C64ExtraConfig)config).rgb_approximation) {
+				case CUBE:
+					colors = Gfx.getRGBCubeColor(colorAlg, data, machinePalette);
+					break;
+				default:
+					colors = Gfx.getRGBLinearColor(colorAlg, data, machinePalette);
+					break;
 				}
-
+				
+				f = colors[0];
+				n = colors[1];
+				
 				final int cf[] = machinePalette[f];
 				int cn[] = machinePalette[n];
 

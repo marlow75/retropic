@@ -130,10 +130,11 @@ Export to Delux Paint IFF file format.
 Experimental interlace modes - 136 colors. You can select max luma difference in blending colors together. Adjusted for C64C (9 luma levels), best experience with PEPTO [calculated](https://www.pepto.de/projects/colorvic/) palette.
 
 * Hires - uses max 3 colors in 8x8 screen cell.
-* MCI 320x200 - uses max 16 colors in 8x8 screen cell with noise to supress flickering.
+* MCI 320x200 - uses max 10 colors in 8x8 screen cell with noise to supress flickering.
 
 * luma threshold - interlace is about blending, only colors with the same luminance can produce non flickering new one. White has luma set to 32 black is 0, choose luminance difference which is not annoying for you.
 * error threshold - max color error you can accept.
+* color approximation - linear or cubic.
 
 Exports to executable PRG. In the future release one of the standard format will be supported (for editing).
 
