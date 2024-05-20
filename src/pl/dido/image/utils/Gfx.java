@@ -866,7 +866,7 @@ public class Gfx {
 
 		int r0 = 0, g0 = 0, b0 = 0;
 		int r1 = 0, g1 = 0, b1 = 0;
-		
+
 		int len = work.length;
 
 		for (int i = 0; i < len; i += 3) {
@@ -882,14 +882,14 @@ public class Gfx {
 		sg /= len;
 		sb /= len;
 
-		float max = Float.MIN_VALUE;
-		
+		float max = -Float.MAX_VALUE;
+
 		for (int i = 0; i < len; i += 3) {
 			r = work[i];
 			g = work[i + 1];
 			b = work[i + 2];
 
-			final float l = euclideanDistance(r, g, b, sr, sg, sb);
+			final float l = getDistance(colorAlg, r, g, b, sr, sg, sb);
 			if (l > max) {
 				max = l;
 
@@ -898,172 +898,74 @@ public class Gfx {
 				b0 = b;
 			}
 		}
-		
+
 		r1 = 2 * sr - r0;
 		g1 = 2 * sg - g0;
 		b1 = 2 * sb - b0;
-		
+
 		return new int[] { getColorIndex(colorAlg, palette, r0, g0, b0), getColorIndex(colorAlg, palette, r1, g1, b1) };
 	}
 
-	public static final int[] getRGBLinearColor(final NEAREST_COLOR colorAlg, final int work[], final int palette[][]) {
-		int f1 = 0, n1 = 0;
-		int f2 = 0, n2 = 0;
-		int f3 = 0, n3 = 0;
-		int f4 = 0, n4 = 0;
-
-		int f5 = 0, n5 = 0;
-		int f6 = 0, n6 = 0;
-		int f7 = 0, n7 = 0;
-		int f8 = 0, n8 = 0;
-
-		float max1 = Float.MIN_VALUE, min1 = Float.MAX_VALUE;
-		float max2 = Float.MIN_VALUE, min2 = Float.MAX_VALUE;
-
-		float max3 = Float.MIN_VALUE, min3 = Float.MAX_VALUE;
-		float max4 = Float.MIN_VALUE, min4 = Float.MAX_VALUE;
-
-		float max5 = Float.MIN_VALUE, min5 = Float.MAX_VALUE;
-		float max6 = Float.MIN_VALUE, min6 = Float.MAX_VALUE;
-
-		float max7 = Float.MIN_VALUE, min7 = Float.MAX_VALUE;
-		float max8 = Float.MIN_VALUE, min8 = Float.MAX_VALUE;
-
-		int r = 0, g = 0, b = 0;
-		int len = work.length;
-
-		// 8x8 tile data
-		for (int i = 0; i < len; i += 3) {
-			final int color = getColorIndex(colorAlg, palette, work[i], work[i + 1], work[i + 2]);
-
-			r = palette[color][0];
-			g = palette[color][1];
-			b = palette[color][2];
-
-			// get minimum/maximum color distance
-			final float dist1 = getDistance(colorAlg, 0, 0, 0, r, g, b);
-			final float dist2 = getDistance(colorAlg, 0, 0, 255, r, g, b);
-
-			final float dist3 = getDistance(colorAlg, 0, 255, 0, r, g, b);
-			final float dist4 = getDistance(colorAlg, 255, 0, 0, r, g, b);
-
-			final float dist5 = getDistance(colorAlg, 255, 255, 255, r, g, b);
-			final float dist6 = getDistance(colorAlg, 0, 255, 255, r, g, b);
-
-			final float dist7 = getDistance(colorAlg, 255, 255, 0, r, g, b);
-			final float dist8 = getDistance(colorAlg, 255, 0, 255, r, g, b);
-
-			if (dist1 > max1) {
-				max1 = dist1;
-				f1 = color;
-			}
-
-			if (dist1 < min1) {
-				min1 = dist1;
-				n1 = color;
-			}
-
-			if (dist2 > max2) {
-				max2 = dist2;
-				f2 = color;
-			}
-
-			if (dist2 < min2) {
-				min2 = dist2;
-				n2 = color;
-			}
-
-			if (dist3 > max3) {
-				max3 = dist3;
-				f3 = color;
-			}
-
-			if (dist3 < min3) {
-				min3 = dist3;
-				n3 = color;
-			}
-
-			if (dist4 > max4) {
-				max4 = dist4;
-				f4 = color;
-			}
-
-			if (dist4 < min4) {
-				min4 = dist4;
-				n4 = color;
-			}
-
-			if (dist5 > max5) {
-				max5 = dist5;
-				f5 = color;
-			}
-
-			if (dist5 < min5) {
-				min5 = dist5;
-				n5 = color;
-			}
-
-			if (dist6 > max6) {
-				max6 = dist6;
-				f6 = color;
-			}
-
-			if (dist2 < min6) {
-				min6 = dist6;
-				n6 = color;
-			}
-
-			if (dist7 > max7) {
-				max7 = dist7;
-				f7 = color;
-			}
-
-			if (dist7 < min7) {
-				min7 = dist7;
-				n7 = color;
-			}
-
-			if (dist8 > max8) {
-				max8 = dist8;
-				f8 = color;
-			}
-
-			if (dist8 < min8) {
-				min8 = dist8;
-				n8 = color;
-			}
-		}
-
-		final float d1 = (float) (Math.sqrt(max1) - Math.sqrt(min1));
-		final float d2 = (float) (Math.sqrt(max2) - Math.sqrt(min2));
-
-		final float d3 = (float) (Math.sqrt(max3) - Math.sqrt(min3));
-		final float d4 = (float) (Math.sqrt(max4) - Math.sqrt(min4));
-
-		final float d5 = (float) (Math.sqrt(max5) - Math.sqrt(min5));
-		final float d6 = (float) (Math.sqrt(max6) - Math.sqrt(min6));
-
-		final float d7 = (float) (Math.sqrt(max7) - Math.sqrt(min7));
-		final float d8 = (float) (Math.sqrt(max8) - Math.sqrt(min8));
-
-		final float d = Math.max(Math.max(Math.max(d1, d2), Math.max(d3, d4)),
-				Math.max(Math.max(d5, d6), Math.max(d7, d8)));
-
-		if (d == d1)
-			return new int[] { f1, n1 };
-		if (d == d2) 
-			return new int[] { f2, n2 };
-		if (d == d3) 
-			return new int[] { f3, n3 };
-		if (d == d4) 
-			return new int[] { f4, n4 };
-		if (d == d5) 
-			return new int[] { f5, n5 };
-		if (d == d6) 
-			return new int[] { f6, n6 };
-		if (d == d7) 
-			return new int[] { f7, n7 };
+	public static int[] getRGBLinearColor(final NEAREST_COLOR colorAlg, final int work[], final int palette[][]) {
+		int r1, g1, b1;
 		
-		return new int[] { f8, n8 };
+		final int value[] = new int[] { 0, 64, 128, 192, 255 };
+		final int len = value.length;
+
+		final float max[][][] = new float[len][len][len];
+		final float min[][][] = new float[len][len][len];
+		
+		final int f[][][] = new int[len][len][len];
+		final int n[][][] = new int[len][len][len];
+
+		for (int r = 0; r < value.length; r++)
+			for (int g = 0; g < value.length; g++)
+				for (int b = 0; b < value.length; b++) {
+					max[r][g][b] = -Float.MAX_VALUE;
+					min[r][g][b] = Float.MAX_VALUE;
+					
+					for (int i = 0; i < work.length; i += 3) {
+						r1 = work[i];
+						g1 = work[i + 1];
+						b1 = work[i + 2];
+
+						final int color = getColorIndex(colorAlg, palette, work[i], work[i + 1], work[i + 2]);
+
+						r1 = palette[color][0];
+						g1 = palette[color][1];
+						b1 = palette[color][2];
+
+						// get minimum/maximum color distance
+						final float dist = getDistance(colorAlg, r1, g1, b1, r, g, b);
+
+						if (max[r][g][b] < dist) {
+							max[r][g][b] = dist;
+							f[r][g][b] = color;
+						}
+						
+						if (min[r][g][b] > dist) {
+							min[r][g][b] = dist;
+							n[r][g][b] = color;
+						}
+					}
+				}
+
+		float maxDistance = -Float.MAX_VALUE;
+		int f0 = 1, n0 = 1;
+		
+		for (int r = 0; r < value.length; r++)
+			for (int g = 0; g < value.length; g++)
+				for (int b = 0; b < value.length; b++) {
+
+					final float d = (float) (Math.sqrt(max[r][g][b]) - Math.sqrt(min[r][g][b]));
+					if (d > maxDistance) {
+						maxDistance = d;
+						
+						f0 = f[r][g][b];
+						n0 = n[r][g][b];
+					}
+				}
+
+		return new int[] { f0, n0 };
 	}
 }

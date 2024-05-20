@@ -131,7 +131,7 @@ public class C64ExtraRenderer extends AbstractRenderer {
 			for (int x = 0; x < 320; x += 8) {
 				final int offset = p + x * 3;
 				
-				int data[] = new int[64 * 3];
+				final int data[] = new int[64 * 3];
 				int index = 0;
 				
 				// 8x8 tile data
@@ -151,7 +151,7 @@ public class C64ExtraRenderer extends AbstractRenderer {
 				
 				switch (((C64ExtraConfig)config).rgb_approximation) {
 				case CUBE:
-					colors = Gfx.getRGBCubeColor(colorAlg, data, machinePalette);
+					colors = Gfx.getRGBLinearColor(colorAlg, data, machinePalette);
 					break;
 				default:
 					colors = Gfx.getRGBLinearColor(colorAlg, data, machinePalette);
