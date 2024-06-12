@@ -1,8 +1,10 @@
 package pl.dido.image.cpc;
 
 import java.awt.image.BufferedImage;
+import java.util.HashSet;
 
 import pl.dido.image.renderer.AbstractRenderer;
+import pl.dido.image.utils.Config.DITHERING;
 import pl.dido.image.utils.Gfx;
 import pl.dido.image.utils.neural.SOMFixedPalette;
 import pl.dido.image.utils.neural.SOMWinnerFixedPalette;
@@ -45,10 +47,16 @@ public class CPCRenderer extends AbstractRenderer {
 
 		switch (((CPCConfig) config).screen_mode) {
 		case MODE1:
-			mode1();
+			if (config.dither_alg == DITHERING.BAYER)
+				mode1Bayer();
+			else
+				mode1();
 			break;
 		case MODE0:
-			mode0();
+			if (config.dither_alg == DITHERING.BAYER)
+				mode0Bayer();
+			else
+				mode0();
 			break;
 		}
 	}
@@ -66,22 +74,28 @@ public class CPCRenderer extends AbstractRenderer {
 		default:
 			som = new SOMWinnerFixedPalette(2, 2, 2);
 			p = som.train(pixels);
-
+			
 			break;
 		}
 
 		final int size = p.length;
 		firmwareIndexes = new int[size];
 
+		// map calculated colors to machine palette
+		final HashSet<Integer> colors = new HashSet<Integer>();
 		for (int i = 0; i < size; i++) {
 			final int pixel[] = p[i];
-			final int index = getColorIndex(pixel[0], pixel[1], pixel[2]); // color
+			
+			int index = getColorIndex(pixel[0], pixel[1], pixel[2]); // color
+			while (colors.contains(index))
+				index = (index + 1) % 27;
 
 			pixel[0] = palette[index][0];
 			pixel[1] = palette[index][1];
 			pixel[2] = palette[index][2];
 
 			firmwareIndexes[i] = index;
+			colors.add(index);
 		}
 
 		if (((CPCConfig) config).replace_white) {
@@ -106,7 +120,7 @@ public class CPCRenderer extends AbstractRenderer {
 			}
 
 			int c[] = p[ix];
-			// dimmed white - yellow
+			// white
 			c[0] = 255;
 			c[1] = 255;
 			c[2] = 255;
@@ -125,7 +139,6 @@ public class CPCRenderer extends AbstractRenderer {
 
 	protected void mode1() {
 		final int[] work = Gfx.copy2Int(pixels);
-
 		int r0, g0, b0;
 
 		final int width3 = screenWidth * 3;
@@ -176,7 +189,7 @@ public class CPCRenderer extends AbstractRenderer {
 					bit1 >>= 1;
 				}
 
-				if (config.dithering) {
+				if (config.dither_alg != DITHERING.NONE) {
 					final int r_error = Gfx.saturate(r0 - r);
 					final int g_error = Gfx.saturate(g0 - g);
 					final int b_error = Gfx.saturate(b0 - b);
@@ -219,24 +232,23 @@ public class CPCRenderer extends AbstractRenderer {
 	}
 
 	protected void mode0() {
-		final int[] newPixels = new int[160 * 200 * 3]; // 160x200
 		int bit0 = 128, bit1 = 8, bit2 = 0, bit3 = 0;
 
 		// shrinking 320x200 -> 160x200
 		for (int y = 0; y < 200; y++) {
 			final int p1 = y * 320 * 3;
-			final int p2 = y * 160 * 3;
 
 			final int i = y >> 3;
 			final int j = y - (i << 3);
 
 			int index = 0;
+
+			int r, g, b;
 			final int offset = i * 80 + j * 2048;
 
 			for (int x = 0; x < 160; x++) {
 				final int ph = p1 + x * 3 * 2;
-				final int pl = p2 + x * 3;
-
+		
 				final int r1 = pixels[ph] & 0xff;
 				final int g1 = pixels[ph + 1] & 0xff;
 				final int b1 = pixels[ph + 2] & 0xff;
@@ -244,8 +256,6 @@ public class CPCRenderer extends AbstractRenderer {
 				final int r2 = pixels[ph + 3] & 0xff;
 				final int g2 = pixels[ph + 4] & 0xff;
 				final int b2 = pixels[ph + 5] & 0xff;
-
-				final int r, g, b;
 
 				switch (((CPCConfig) config).pixel_merge) {
 				case AVERAGE:
@@ -288,27 +298,170 @@ public class CPCRenderer extends AbstractRenderer {
 				}
 
 				final int c[] = pictureColors[color];
+				r = c[0];
+				g = c[1];
+				b = c[2];
+				
+				pixels[ph]     = (byte) r;
+				pixels[ph + 3] = (byte) r;
 
-				newPixels[pl] = c[0];
-				newPixels[pl + 1] = c[1];
-				newPixels[pl + 2] = c[2];
+				pixels[ph + 1] = (byte) g;
+				pixels[ph + 4] = (byte) g;
+
+				pixels[ph + 2] = (byte) b;
+				pixels[ph + 5] = (byte) b;
 			}
 		}
+	}
 
-		// show results
-		for (int y0 = 0; y0 < 200; y0++)
-			for (int x0 = 0; x0 < 160; x0++) {
-				final int pl = y0 * 160 * 3 + x0 * 3;
-				final int ph = y0 * 320 * 3 + x0 * 2 * 3;
+	protected void mode1Bayer() {
+		Gfx.bayer8x8(pixels, pictureColors, config.color_alg, 320, 200, 3);
+		
+		int r0, g0, b0;
+		int bit0 = 128, bit1 = 8;
 
-				pixels[ph] = (byte) newPixels[pl];
-				pixels[ph + 3] = (byte) newPixels[pl];
+		for (int y = 0; y < screenHeight; y++) {
+			int index = 0;
+			final int width3 = screenWidth * 3;
 
-				pixels[ph + 1] = (byte) newPixels[pl + 1];
-				pixels[ph + 4] = (byte) newPixels[pl + 1];
+			final int i = y >> 3;
+			final int j = y - (i << 3);
 
-				pixels[ph + 2] = (byte) newPixels[pl + 2];
-				pixels[ph + 5] = (byte) newPixels[pl + 2];
+			final int offset = i * 80 + j * 2048;
+
+			for (int x = 0; x < screenWidth; x++) {
+				final int pyx = y * width3 + x * 3;
+
+				r0 = pixels[pyx] & 0xff;
+				g0 = pixels[pyx + 1] & 0xff;
+				b0 = pixels[pyx + 2] & 0xff;
+
+				final int color = Gfx.getColorIndex(colorAlg, pictureColors, r0, g0, b0);
+
+				final int r = pictureColors[color][0];
+				final int g = pictureColors[color][1];
+				final int b = pictureColors[color][2];
+
+				pixels[pyx] = (byte) r;
+				pixels[pyx + 1] = (byte) g;
+				pixels[pyx + 2] = (byte) b;
+
+				final int data = ((color & 1) != 0 ? bit0 : 0) | ((color & 2) != 0 ? bit1 : 0);
+				bitmap[offset + index] |= data;
+
+				if (bit0 == 16) {
+					bit0 = 128;
+					bit1 = 8;
+
+					index += 1;
+				} else {
+					bit0 >>= 1;
+					bit1 >>= 1;
+				}
 			}
+		}
+	}
+	
+	protected void mode0Bayer() {
+		Gfx.bayer8x8(pixels, pictureColors, config.color_alg, 320, 200, 3);
+		
+		final int[] newPixels = new int[160 * 200 * 3]; // 160x200
+		int bit0 = 128, bit1 = 8, bit2 = 0, bit3 = 0;
+
+		// shrinking 320x200 -> 160x200
+		for (int y = 0; y < 200; y++) {
+			final int p1 = y * 320 * 3;
+			final int p2 = y * 160 * 3;
+
+			for (int x = 0; x < 160; x++) {
+				final int ph = p1 + x * 3 * 2;
+				final int pl = p2 + x * 3;
+
+				final int r1 = pixels[ph] & 0xff;
+				final int g1 = pixels[ph + 1] & 0xff;
+				final int b1 = pixels[ph + 2] & 0xff;
+
+				final int r2 = pixels[ph + 3] & 0xff;
+				final int g2 = pixels[ph + 4] & 0xff;
+				final int b2 = pixels[ph + 5] & 0xff;
+
+				final int r, g, b;
+
+				switch (((CPCConfig) config).pixel_merge) {
+				case AVERAGE:
+					// average color
+					r = (r1 + r2) >> 1;
+					g = (g1 + g2) >> 1;
+					b = (b1 + b2) >> 1;
+					break;
+				default:
+					final float l1 = Gfx.getLuma(r1, g1, b1) / 255;
+					final float l2 = Gfx.getLuma(r2, g2, b2) / 255;
+
+					final float sum = (l1 + l2);
+
+					r = (int) ((r1 * l1 + r2 * l2) / sum);
+					g = (int) ((g1 * l1 + g2 * l2) / sum);
+					b = (int) ((b1 * l1 + b2 * l2) / sum);
+
+					break;
+				}
+				
+				newPixels[pl] = r;
+				newPixels[pl + 1] = g;
+				newPixels[pl + 2] = b;
+			}
+		}
+		
+		// show results
+		for (int y = 0; y < 200; y++) {
+			final int i = y >> 3;
+			final int j = y - (i << 3);
+
+			int index = 0;
+			final int offset = i * 80 + j * 2048;
+			
+			for (int x = 0; x < 160; x++) {
+				final int pl = y * 160 * 3 + x * 3;
+				final int ph = y * 320 * 3 + x * 2 * 3;
+				
+				int r = newPixels[pl];
+				int g = newPixels[pl + 1];
+				int b = newPixels[pl + 2];
+				
+				final int color = Gfx.getColorIndex(colorAlg, pictureColors, r, g, b);
+				r = pictureColors[color][0];
+				g = pictureColors[color][1];
+				b = pictureColors[color][2];
+				
+				final int data = ((color & 1) != 0 ? bit0 : 0) | ((color & 2) != 0 ? bit1 : 0)
+						| ((color & 4) != 0 ? bit2 : 0) | ((color & 8) != 0 ? bit3 : 0);
+
+				bitmap[offset + index] |= data;
+
+				if (bit0 == 64) {
+					bit0 = 128;
+					bit1 = 8;
+					bit2 = 32;
+					bit3 = 2;
+
+					index += 1;
+				} else {
+					bit0 >>= 1;
+					bit1 >>= 1;
+					bit2 >>= 1;
+					bit3 >>= 1;
+				}
+				
+				pixels[ph]     = (byte) r;
+				pixels[ph + 3] = (byte) r;
+
+				pixels[ph + 1] = (byte) g;
+				pixels[ph + 4] = (byte) g;
+
+				pixels[ph + 2] = (byte) b;
+				pixels[ph + 5] = (byte) b;
+			}
+		}
 	}
 }

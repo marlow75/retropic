@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 
 import pl.dido.image.renderer.AbstractRenderer;
 import pl.dido.image.utils.Gfx;
+import pl.dido.image.utils.Config.DITHERING;
 
 public class ZXSpectrumRenderer extends AbstractRenderer {
 
@@ -33,7 +34,10 @@ public class ZXSpectrumRenderer extends AbstractRenderer {
 
 	@Override
 	protected void imagePostproces() {
-		hiresLumaDithered();
+		if (config.dither_alg == DITHERING.BAYER)
+			hiresLumaBayer();
+		else
+			hiresLumaDithered();
 	}
 
 	protected void hiresLumaDithered() {
@@ -100,6 +104,14 @@ public class ZXSpectrumRenderer extends AbstractRenderer {
 				f = getColorIndex(rf, gf, bf);
 				n = getColorIndex(rb, gb, bb);
 
+				final int fr = palette[f][0];
+				final int fg = palette[f][1];
+				final int fb = palette[f][2];
+
+				final int nr = palette[n][0];
+				final int ng = palette[n][1];
+				final int nb = palette[n][2];
+
 				final int address = (y >> 3) * 32 + (x >> 3);
 
 				int ink = f >> 1;
@@ -107,7 +119,6 @@ public class ZXSpectrumRenderer extends AbstractRenderer {
 				int bright = (f % 1 | n % 1) << 6;
 
 				attribs[address] = ((paper & 0xf) << 3) | (ink & 0x7) | bright;
-
 				int value = 0, bitcount = 0;
 
 				for (int y0 = 0; y0 < 8; y0++) {
@@ -126,21 +137,14 @@ public class ZXSpectrumRenderer extends AbstractRenderer {
 						final int g = Gfx.saturate(work[pyx0 + 1]);
 						final int b = Gfx.saturate(work[pyx0 + 2]);
 
-						final int fr = palette[f][0];
-						final int fg = palette[f][1];
-						final int fb = palette[f][2];
-
-						int nr = palette[n][0];
-						int ng = palette[n][1];
-						int nb = palette[n][2];
-
 						final float d1 = Gfx.getDistance(colorAlg, r, g, b, fr, fg, fb);
 						final float d2 = Gfx.getDistance(colorAlg, r, g, b, nr, ng, nb);
 
+						int cr = nr, cg = ng, cb = nb;
 						if (d1 < d2) {
-							nr = fr;
-							ng = fg;
-							nb = fb;
+							cr = fr;
+							cg = fg;
+							cb = fb;
 
 							value = (value << 1) | 1;
 						} else
@@ -153,14 +157,14 @@ public class ZXSpectrumRenderer extends AbstractRenderer {
 
 						bitcount += 1;
 
-						pixels[pyx0] = (byte) nr;
-						pixels[pyx0 + 1] = (byte) ng;
-						pixels[pyx0 + 2] = (byte) nb;
+						pixels[pyx0] = (byte) cr;
+						pixels[pyx0 + 1] = (byte) cg;
+						pixels[pyx0 + 2] = (byte) cb;
 
-						if (config.dithering) {
-							final int r_error = r - nr;
-							final int g_error = g - ng;
-							final int b_error = b - nb;
+						if (config.dither_alg != DITHERING.NONE) {
+							final int r_error = r - cr;
+							final int g_error = g - cg;
+							final int b_error = b - cb;
 
 							if (x0 < 9) {
 								work[pyx0 + 3] += r_error >> 3;
@@ -195,6 +199,89 @@ public class ZXSpectrumRenderer extends AbstractRenderer {
 								}
 							}
 						}
+					}
+				}
+			}
+		}
+	}
+
+	protected void hiresLumaBayer() {
+		int bitmapIndex = 0;
+		work = new int[8 * 8 * 3];
+
+		for (int y = 0; y < 192; y += 8) { // every 8 line
+			final int p = y * 256 * 3;
+
+			for (int x = 0; x < 256; x += 8) { // every 8 pixel
+				final int offset = p + x * 3;
+
+				int index = 0;
+				int f = 0, n = 0;
+
+				// get 8x8 tile palette
+				for (int y0 = 0; y0 < 8; y0 += 1) {
+					for (int x0 = 0; x0 < 24; x0 += 3) {
+						final int position = offset + y0 * 256 * 3 + x0;
+
+						final int r = pixels[position] & 0xff;
+						final int g = pixels[position + 1] & 0xff;
+						final int b = pixels[position + 2] & 0xff;
+
+						work[index++] = r;
+						work[index++] = g;
+						work[index++] = b;
+					}
+				}
+				
+				final int colors[] = Gfx.getRGBLinearColor(colorAlg, work, palette);
+				f = colors[0];
+				n = colors[1];
+
+				final int fr = palette[f][0];
+				final int fg = palette[f][1];
+				final int fb = palette[f][2];
+
+				final int nr = palette[n][0];
+				final int ng = palette[n][1];
+				final int nb = palette[n][2];
+
+				final int localPalette[][] = new int[][] { { fr, fg, fb }, { nr, ng, nb } };
+				final int address = (y >> 3) * 32 + (x >> 3);
+
+				int ink = f >> 1;
+				int paper = n >> 1;
+				int bright = (f % 1 | n % 1) << 6;
+
+				attribs[address] = ((paper & 0xf) << 3) | (ink & 0x7) | bright;
+				int value = 0, bitcount = 0;
+
+				for (int y0 = 0; y0 < 8; y0++) {
+					final int k0 = offset + y0 * 256 * 3;
+
+					for (int x0 = 0; x0 < 8; x0++) {
+						final int pyx0 = k0 + x0 * 3;
+
+						final int r = pixels[pyx0] & 0xff;
+						final int g = pixels[pyx0 + 1] & 0xff;
+						final int b = pixels[pyx0 + 2] & 0xff;
+						
+						final int cr = Gfx.bayer2x2(x0 % 2, y0 % 2, r, fr, nr);
+						final int cg = Gfx.bayer2x2(x0 % 2, y0 % 2, g, fg, ng);
+						final int cb = Gfx.bayer2x2(x0 % 2, y0 % 2, b, fb, nb);							
+
+						final int color = Gfx.getColorIndex(colorAlg, localPalette, cr, cg, cb);
+						value = (color == 0) ? (value << 1) | 1 : value << 1;
+
+						if (bitcount % 8 == 7) {
+							bitmap[translate(bitmapIndex++)] = value;
+							value = 0;
+						}
+
+						bitcount += 1;
+
+						pixels[pyx0] = (byte) localPalette[color][0];
+						pixels[pyx0 + 1] = (byte) localPalette[color][1];
+						pixels[pyx0 + 2] = (byte) localPalette[color][2];
 					}
 				}
 			}

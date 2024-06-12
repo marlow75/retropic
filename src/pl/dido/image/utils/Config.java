@@ -1,66 +1,70 @@
 package pl.dido.image.utils;
 
 abstract public class Config implements Cloneable {
-	
+
 	public enum HIGH_CONTRAST {
 		HE, SWAHE, NONE, CLAHE;
 	}
 
 	public enum DITHERING {
-		STD_FS, ATKINSON
+		NONE, FLOYDS, ATKINSON, BAYER
 	};
 
 	public enum NEAREST_COLOR {
 		EUCLIDEAN, PERCEPTED, LUMA_WEIGHTED
 	};
 
-	public boolean dithering;
-	public boolean preserveAspect; 
+	public boolean preserveAspect;
 	public boolean scanline;
-	
-	public HIGH_CONTRAST highContrast;	
+
+	public HIGH_CONTRAST highContrast;
 	public int windowSize;
 	public int details;
-	
+
 	public static String export_path;
 
 	public DITHERING dither_alg;
 	public NEAREST_COLOR color_alg;
 
 	public Config() {
-		dither_alg = DITHERING.STD_FS;
+		dither_alg = DITHERING.ATKINSON;
 		color_alg = NEAREST_COLOR.PERCEPTED;
 
-		dithering = false;
 		preserveAspect = false;
-		
-		highContrast = HIGH_CONTRAST.NONE;		
+
+		highContrast = HIGH_CONTRAST.NONE;
 		windowSize = 40;
-		
+
 		details = 3;
 		export_path = "export";
-		
+
 		scanline = false;
-	}	
-	
+	}
+
 	public abstract int getScreenWidth();
+
 	public abstract int getScreenHeight();
-	
+
 	public abstract int getWindowWidth();
+
 	public abstract int getWindowHeight();
-	
+
 	public String getConfigString() {
 		String configString = "";
-		
-		if (dithering)
-			switch (dither_alg) {
-			case ATKINSON:
-				configString += "apple ";
-				break;
-			case STD_FS:
-				configString += "floyds ";
-				break;
-			}
+
+		switch (dither_alg) {
+		case ATKINSON:
+			configString += "apple ";
+			break;
+		case FLOYDS:
+			configString += "floyds ";
+			break;
+		case BAYER:
+			configString += "bayer ";
+			break;
+		default:
+			break;
+		}
 
 		switch (color_alg) {
 		case EUCLIDEAN:
@@ -73,7 +77,7 @@ abstract public class Config implements Cloneable {
 			configString += "percepted";
 			break;
 		}
-		
+
 		switch (highContrast) {
 		case HE:
 			configString += " HE ";
@@ -86,7 +90,7 @@ abstract public class Config implements Cloneable {
 		default:
 			break;
 		}
-		
+
 		return configString;
 	}
 

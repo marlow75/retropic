@@ -24,9 +24,7 @@ public class C64Config extends Config {
 		screen_mode = SCREEN_MODE.HIRES;
 		color_alg = NEAREST_COLOR.PERCEPTED;		
 		
-		dithering = true;
 		highContrast = HIGH_CONTRAST.SWAHE;
-		
 		dither_alg = DITHERING.ATKINSON;
 		
 		luma_pixels = LUMA_PIXELS.OUTER;		
@@ -84,7 +82,7 @@ public class C64Config extends Config {
 	
 	@Override
 	public int getWindowHeight() {
-		return 400;
+		return 480;
 	}
 
 	@Override

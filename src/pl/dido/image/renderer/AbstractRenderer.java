@@ -60,9 +60,7 @@ public abstract class AbstractRenderer {
 		processContrast();
 		setupPalette();
 		
-		if (config.dithering)
-			imageDithering();
-		
+		imageDithering();
 		//runner.showImage();
 		
 		imagePostproces();
@@ -70,7 +68,7 @@ public abstract class AbstractRenderer {
 			makeScanlines();
 	}
 	
-	private void processContrast() {
+	protected void processContrast() {
 		// contrast correction
 		switch (config.highContrast) {
 		case HE:
@@ -96,7 +94,13 @@ public abstract class AbstractRenderer {
 	protected abstract void setupPalette();
 
 	protected void imageDithering() {
-		Gfx.dithering(pixels, palette, config);
+		switch (config.dither_alg) {
+		case ATKINSON, FLOYDS:
+			Gfx.dithering(pixels, palette, config);
+			break;
+		case BAYER, NONE:
+			break;
+		}	
 	}
 
 	protected final int getColorIndex(final int r, final int g, final int b) {

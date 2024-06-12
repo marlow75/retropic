@@ -13,12 +13,11 @@ public class CPCConfig extends Config {
 	
 	public SCREEN_MODE screen_mode;
 	public PIXEL_MERGE pixel_merge;
+	
 	public boolean replace_white;
 	
 	public CPCConfig() {	
-		dither_alg = DITHERING.ATKINSON;
-		
-		dithering = true;
+		dither_alg = DITHERING.BAYER;
 		highContrast = HIGH_CONTRAST.SWAHE;
 		
 		screen_mode = SCREEN_MODE.MODE1;

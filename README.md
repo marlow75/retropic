@@ -10,6 +10,7 @@ Requirements: JRE16 installed.
 
 ## Versions
 
+* 1.6 - Bayer dithering for all machines
 * 1.5 - New hires interlace and noisy MCI for C64, screenshots for 8 bit machines
 * 1.4 - Refactoring, new pixel formats
 * 1.3 - Scanline view for C64, ZX, CPC, ST, bug fixes
@@ -39,7 +40,7 @@ Requirements: JRE16 installed.
 
 Try all options available.
 
-* Dithering - pictures are dithered using Floyds-Steinberg or Atkinson algorythms.
+* Dithering - pictures are dithered using Bayer, Floyds-Steinberg or Atkinson algorythms.
 * Color distance – how color distance in the RGB cube is measured: euclidean, redmean simple approximation (close to human perception), picking highest luminance color.
 * Contrast processing - experimental luma histogram equalizer designed for 8 bit machines primarly, now enabled for every available machine. HE - standard global equalization, CLAHE & SWAHE - clipped local equalization, first fast method for local contrast enhancer, second slow but for more demanding.
 * Aspect & scanline - keeps aspect ratio of original picture, renders scanlines for 8 bit machines. 
@@ -70,7 +71,7 @@ Exports to executable PRG.
 
 16 colors total, 1 screen mode.
 
-* try apple dithering - produces more tinty picture insted of hue explosion.
+* bayer or apple dithering - produces more tinty picture insted of hue explosion.
 * 256x192 - uses 2 colors in 8x8 screen cell.
 
 Exports to native SCR snapshoot.
@@ -81,8 +82,8 @@ Exports to native SCR snapshoot.
 
 27 colors total, 3 modes, 2 useful.
 
-* dithering – Atkinson dithering, colors of the original picture are replaced by retro machine palette
-* replace brightest - replaces brightest color with dimmed yellow
+* dithering – Bayer or Atkinson dithering, colors of the original picture are replaced by retro machine palette
+* high contrast - replaces brightest/dimmest color with white and black
 
 * 320x200 - uses 4 colors on whole screen.
 * 160x200 - uses 16 colors on whole screen, average or brightest color are choosen when shrinking 320->160.

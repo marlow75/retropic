@@ -5,6 +5,7 @@ import java.awt.image.BufferedImage;
 import pl.dido.image.renderer.AbstractPictureColorsRenderer;
 import pl.dido.image.utils.Config;
 import pl.dido.image.utils.Gfx;
+import pl.dido.image.utils.Config.DITHERING;
 import pl.dido.image.utils.neural.HAMFixedPalette;
 import pl.dido.image.utils.neural.SOMFixedPalette;
 
@@ -57,7 +58,10 @@ public class Amiga500Renderer extends AbstractPictureColorsRenderer {
 			training = new SOMFixedPalette(8, 4, 5); // 8x4 = 32 colors (5 bits)
 			pictureColors = normalizePalette(training.train(pixels));
 
-			standard32();
+			if (config.dither_alg == DITHERING.BAYER)
+				bayer32();
+			else
+				standard32();
 			break;
 		}
 	}
@@ -74,7 +78,7 @@ public class Amiga500Renderer extends AbstractPictureColorsRenderer {
 		for (int y = 0; y < screenHeight; y++) {
 			final int k = y * width3;
 			final int k1 = (y + 1) * width3;
-			final int k2 = ((y + 2) * width3);
+			final int k2 = (y + 2) * width3;
 
 			for (int x = 0; x < width3; x += 3) {
 				final int pyx = k + x;
@@ -110,13 +114,13 @@ public class Amiga500Renderer extends AbstractPictureColorsRenderer {
 				} else
 					shift--;
 
-				if (config.dithering) {
+				if (config.dither_alg != DITHERING.NONE) {
 					final int r_error = r0 - r;
 					final int g_error = g0 - g;
 					final int b_error = b0 - b;
 
 					switch (config.dither_alg) {
-					case STD_FS:
+					case FLOYDS:
 						if (x < (screenWidth - 1) * 3) {
 							work[pyx + 3] += (r_error * 7) / 16;
 							work[pyx + 3 + 1] += (g_error * 7) / 16;
@@ -173,13 +177,69 @@ public class Amiga500Renderer extends AbstractPictureColorsRenderer {
 						}
 
 						break;
+					default:
+						break;
 					}
 				}
 			}
 		}
 	}
+	
+	protected void bayer32() {
+		final int[] work = Gfx.copy2Int(pixels);
+		bitplanes = new int[(screenWidth >> 4) * screenHeight][5]; // 5 planes
+
+		int r0, g0, b0;
+
+		final int width3 = screenWidth * 3;
+		int index = 0, shift = 15; // 16
+
+		for (int y = 0; y < screenHeight; y++) {
+			final int k = y * width3;
+
+			for (int x = 0; x < screenWidth; x++) {
+				final int pyx = k + x * 3;
+
+				r0 = work[pyx];
+				g0 = work[pyx + 1];
+				b0 = work[pyx + 2];
+				
+				r0 = Gfx.bayer8x8(x, y, r0, 3);
+				g0 = Gfx.bayer8x8(x, y, g0, 3);
+				b0 = Gfx.bayer8x8(x, y, b0, 3);
+
+				final int color = Gfx.getColorIndex(colorAlg, pictureColors, r0, g0, b0);
+				final int c[] = pictureColors[color];
+
+				final int r = c[0];
+				final int g = c[1];
+				final int b = c[2];
+
+				pixels[pyx] = (byte) r;
+				pixels[pyx + 1] = (byte) g;
+				pixels[pyx + 2] = (byte) b;
+
+				final int value = color & 0xff;
+
+				bitplanes[index][4] |= ((value & 16) >> 4) << shift;
+				bitplanes[index][3] |= ((value & 8) >> 3) << shift;
+				bitplanes[index][2] |= ((value & 4) >> 2) << shift;
+				bitplanes[index][1] |= ((value & 2) >> 1) << shift;
+				bitplanes[index][0] |= (value & 1) << shift;
+
+				if (shift == 0) {
+					shift = 15;
+					index += 1; // 5 planes
+				} else
+					shift--;
+			}
+		}
+	}
 
 	protected void ham6Encoded() {
+		if (config.dither_alg == DITHERING.BAYER)
+			Gfx.bayer16x16(pixels, palette, colorAlg, screenWidth, screenHeight, 15);
+		
 		final float[] work = Gfx.copy2float(pixels);
 		bitplanes = new int[(screenWidth >> 4) * screenHeight][6]; // 6 planes
 
@@ -310,13 +370,13 @@ public class Amiga500Renderer extends AbstractPictureColorsRenderer {
 				pixels[pyx + 1] = (byte) g;
 				pixels[pyx + 2] = (byte) b;
 
-				if (config.dithering) {
+				if (config.dither_alg != DITHERING.NONE) {
 					final float r_error = r0 - r;
 					final float g_error = g0 - g;
 					final float b_error = b0 - b;
 
 					switch (config.dither_alg) {
-					case STD_FS:
+					case FLOYDS:
 						if (x < (screenWidth - 1) * 3) {
 							work[pyx + 3] += r_error * 7 / 16;
 							work[pyx + 3 + 1] += g_error * 7 / 16;
@@ -371,6 +431,8 @@ public class Amiga500Renderer extends AbstractPictureColorsRenderer {
 								work[py2x + 2] += b_error / 8;
 							}
 						}
+						break;
+					default:
 						break;
 					}
 				}

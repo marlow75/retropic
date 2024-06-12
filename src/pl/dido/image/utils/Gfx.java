@@ -16,6 +16,35 @@ import pl.dido.image.utils.Config.NEAREST_COLOR;
 
 public class Gfx {
 
+	public static final int M8x8[][] = new int[][] { // 65 colors
+			{ 0, 32, 8, 40, 2, 34, 10, 42 }, { 48, 16, 56, 24, 50, 18, 58, 26 }, { 12, 44, 4, 36, 14, 46, 6, 38 },
+			{ 60, 28, 52, 20, 62, 30, 54, 22 }, { 3, 35, 11, 43, 1, 33, 9, 41 }, { 51, 19, 59, 27, 49, 17, 57, 25 },
+			{ 15, 47, 7, 39, 13, 45, 5, 37 }, { 63, 31, 55, 23, 61, 29, 53, 21 } };
+
+	public static final int M4x4[][] = new int[][] { // 17 colors
+			{ 15, 195, 60, 240 }, { 135, 75, 180, 120 }, { 45, 225, 30, 210 }, { 165, 105, 150, 90 } };
+
+	public static final int M2x2[][] = new int[][] { // 5 colors
+			{ 51, 206 }, { 153, 102 } };
+
+	public static final int M16x16[][] = new int[][] { // 256 colors
+			{ 0, 191, 48, 239, 12, 203, 60, 251, 3, 194, 51, 242, 15, 206, 63, 254 },
+			{ 127, 64, 175, 112, 139, 76, 187, 124, 130, 67, 178, 115, 142, 79, 190, 127 },
+			{ 32, 223, 16, 207, 44, 235, 28, 219, 35, 226, 19, 210, 47, 238, 31, 222 },
+			{ 159, 96, 143, 80, 171, 108, 155, 92, 162, 99, 146, 83, 174, 111, 158, 95 },
+			{ 8, 199, 56, 247, 4, 195, 52, 243, 11, 202, 59, 250, 7, 198, 55, 246 },
+			{ 135, 72, 183, 120, 131, 68, 179, 116, 138, 75, 186, 123, 134, 71, 182, 119 },
+			{ 40, 231, 24, 215, 36, 227, 20, 211, 43, 234, 27, 218, 39, 230, 23, 214 },
+			{ 167, 104, 151, 88, 163, 100, 147, 84, 170, 107, 154, 91, 166, 103, 150, 87 },
+			{ 2, 193, 50, 241, 14, 205, 62, 253, 1, 192, 49, 240, 13, 204, 61, 252 },
+			{ 129, 66, 177, 114, 141, 78, 189, 126, 128, 65, 176, 113, 140, 77, 188, 125 },
+			{ 34, 225, 18, 209, 46, 237, 30, 221, 33, 224, 17, 208, 45, 236, 29, 220 },
+			{ 161, 98, 145, 82, 173, 110, 157, 94, 160, 97, 144, 81, 172, 109, 156, 93 },
+			{ 10, 201, 58, 249, 6, 197, 54, 245, 9, 200, 57, 248, 5, 196, 53, 244 },
+			{ 137, 74, 185, 122, 133, 70, 181, 118, 136, 73, 184, 121, 132, 69, 180, 117 },
+			{ 42, 233, 26, 217, 38, 229, 22, 213, 41, 232, 25, 216, 37, 228, 21, 212 },
+			{ 169, 106, 153, 90, 165, 102, 149, 86, 168, 105, 152, 89, 164, 101, 148, 85 } };
+
 	public static final void rgb2YUV(final int b, final int g, final int r, final int yuv[], final int i) {
 		yuv[i] = Math.round(r * .299000f + g * .587000f + b * .114000f);
 		yuv[i + 1] = Math.round(r * -.168736f + g * -.331264f + b * .500000f + 128f);
@@ -583,7 +612,7 @@ public class Gfx {
 		final int width = config.getScreenWidth();
 		final int height = config.getScreenHeight();
 
-		final DITHERING dither = config.dither_alg;
+		final DITHERING dithering = config.dither_alg;
 		final NEAREST_COLOR colorAlg = config.color_alg;
 
 		final int width3 = width * 3;
@@ -620,8 +649,8 @@ public class Gfx {
 				g_error = g0 - g;
 				b_error = b0 - b;
 
-				switch (dither) {
-				case STD_FS:
+				switch (dithering) {
+				case FLOYDS:
 					if (x < (width - 1) * 3) {
 						work[pyx + 3] += (r_error * 7) / 16;
 						work[pyx + 3 + 1] += (g_error * 7) / 16;
@@ -677,9 +706,125 @@ public class Gfx {
 						}
 					}
 					break;
+				default:
+					// no dithering
+					break;
 				}
 			}
 		}
+	}
+
+	public static void bayer16x16(final byte pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
+			final int width, final int height, final int bpp) {
+		bayer(M16x16, pixels, palette, colorAlg, width, height, bpp);
+	}
+
+	public static void bayer8x8(final byte pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
+			final int width, final int height, final int bpp) {
+		bayer(M8x8, pixels, palette, colorAlg, width, height, bpp);
+	}
+	
+	public static void bayer4x4(final int pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
+			final int width, final int height, final int bpp) {
+		bayer(M4x4, pixels, palette, colorAlg, width, height, bpp);
+	}
+	
+	public static void bayer4x4(final byte pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
+			final int width, final int height, final int bpp) {
+		bayer(M8x8, pixels, palette, colorAlg, width, height, bpp);
+	}
+
+	public static void bayer(final int matrix[][], final int pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
+			final int width, final int height, final int bpp) {
+		
+		for (int y = 0; y < height; y++) {
+			final int width3 = width * 3;
+
+			for (int x = 0; x < width; x++) {
+				final int pyx = y * width3 + x * 3;
+
+				int r = pixels[pyx];
+				int g = pixels[pyx + 1];
+				int b = pixels[pyx + 2];
+
+				r = Gfx.bayer(matrix, x, y, r, bpp);
+				g = Gfx.bayer(matrix, x, y, g, bpp);
+				b = Gfx.bayer(matrix, x, y, b, bpp);
+
+				final int color = Gfx.getColorIndex(colorAlg, palette, r, g, b);
+
+				pixels[pyx] = (byte) palette[color][0];
+				pixels[pyx + 1] = (byte) palette[color][1];
+				pixels[pyx + 2] = (byte) palette[color][2];
+			}
+		}
+	}
+	
+	public static void bayer(final int matrix[][], final byte pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
+			final int width, final int height, final int bpp) {
+		
+		for (int y = 0; y < height; y++) {
+			final int width3 = width * 3;
+
+			for (int x = 0; x < width; x++) {
+				final int pyx = y * width3 + x * 3;
+
+				int r = pixels[pyx] & 0xff;
+				int g = pixels[pyx + 1] & 0xff;
+				int b = pixels[pyx + 2] & 0xff;
+
+				r = Gfx.bayer(matrix, x, y, r, bpp);
+				g = Gfx.bayer(matrix, x, y, g, bpp);
+				b = Gfx.bayer(matrix, x, y, b, bpp);
+
+				final int color = Gfx.getColorIndex(colorAlg, palette, r, g, b);
+
+				pixels[pyx]     = (byte) palette[color][0];
+				pixels[pyx + 1] = (byte) palette[color][1];
+				pixels[pyx + 2] = (byte) palette[color][2];
+			}
+		}
+	}
+	
+	public final static int bayer2x2(final int x0, final int y0, final int c, final int f, final int b) {
+		return c < M2x2[x0 % 2][y0 % 2] ? b : f;
+	}
+	
+	public final static int bayer2x2RGB(final int x0, final int y0, final int r, final int g, final int b) {
+		return getLuma(r, g, b) < M2x2[x0 % 2][y0 % 2] ? 0 : 1;
+	}
+
+	public static final int bayer(final int matrix[][], final int x0, final int y0, final int c, final float bpp) {
+		final int mod = matrix.length;
+		
+		final float divider = 255 / bpp;
+		final float e = matrix[y0 % mod][x0 % mod] / bpp;
+
+		float i = (c + e) / divider;
+		if (i == 0)
+			return 0;
+
+		if (i > bpp)
+			i = bpp;
+		i *= divider;
+
+		return (int) (i > 255f ? 255 : i);
+	}
+
+	public static final int bayer2x2(final int x0, final int y0, final int c, final float bpp) {
+		return bayer(M2x2, x0, y0, c, bpp);
+	}
+
+	public static final int bayer4x4(final int x0, final int y0, final int c, final float bpp) {
+		return bayer(M4x4, x0, y0, c, bpp);
+	}
+
+	public static final int bayer8x8(final int x0, final int y0, final int c, final float bpp) {
+		return bayer(M8x8, x0, y0, c, bpp);
+	}
+	
+	public static final int bayer16x16(final int x0, final int y0, final int c, final float bpp) {
+		return bayer(M16x16, x0, y0, c, bpp);
 	}
 
 	public static BufferedImage byteArrayToBGRImage(final byte[] data, final int width, final int height) {
@@ -715,7 +860,7 @@ public class Gfx {
 		}
 	}
 
-	public static int getColorIndex(final NEAREST_COLOR color, final int palette[][], final int r0, final int g0,
+	public final static int getColorIndex(final NEAREST_COLOR color, final int palette[][], final int r0, final int g0,
 			final int b0) {
 		switch (color) {
 		case EUCLIDEAN:
@@ -908,13 +1053,13 @@ public class Gfx {
 
 	public static int[] getRGBLinearColor(final NEAREST_COLOR colorAlg, final int work[], final int palette[][]) {
 		int r1, g1, b1;
-		
+
 		final int value[] = new int[] { 0, 64, 128, 192, 255 };
 		final int len = value.length;
 
 		final float max[][][] = new float[len][len][len];
 		final float min[][][] = new float[len][len][len];
-		
+
 		final int f[][][] = new int[len][len][len];
 		final int n[][][] = new int[len][len][len];
 
@@ -923,7 +1068,7 @@ public class Gfx {
 				for (int b = 0; b < value.length; b++) {
 					max[r][g][b] = -Float.MAX_VALUE;
 					min[r][g][b] = Float.MAX_VALUE;
-					
+
 					for (int i = 0; i < work.length; i += 3) {
 						r1 = work[i];
 						g1 = work[i + 1];
@@ -942,7 +1087,7 @@ public class Gfx {
 							max[r][g][b] = dist;
 							f[r][g][b] = color;
 						}
-						
+
 						if (min[r][g][b] > dist) {
 							min[r][g][b] = dist;
 							n[r][g][b] = color;
@@ -952,7 +1097,7 @@ public class Gfx {
 
 		float maxDistance = -Float.MAX_VALUE;
 		int f0 = 1, n0 = 1;
-		
+
 		for (int r = 0; r < value.length; r++)
 			for (int g = 0; g < value.length; g++)
 				for (int b = 0; b < value.length; b++) {
@@ -960,7 +1105,7 @@ public class Gfx {
 					final float d = (float) (Math.sqrt(max[r][g][b]) - Math.sqrt(min[r][g][b]));
 					if (d > maxDistance) {
 						maxDistance = d;
-						
+
 						f0 = f[r][g][b];
 						n0 = n[r][g][b];
 					}

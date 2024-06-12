@@ -3,15 +3,14 @@ package pl.dido.image.zx;
 import pl.dido.image.utils.Config;
 
 public class ZXConfig extends Config {
+
 	
 	public ZXConfig() {
 		super();
 		color_alg = NEAREST_COLOR.PERCEPTED;
-		dither_alg = DITHERING.ATKINSON;
+		dither_alg = DITHERING.BAYER;
 		
-		dithering = true;
 		highContrast = HIGH_CONTRAST.SWAHE;
-		
 		windowSize = 20;
 	}
 

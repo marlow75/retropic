@@ -11,7 +11,6 @@ public class Amiga500Config extends AmigaConfig {
 	public Amiga500Config() {
 		super();
 		video_mode = VIDEO_MODE.STD_320x256;
-		dithering = true;
 	}
 
 	@Override

@@ -5,6 +5,7 @@ import java.util.Arrays;
 
 import pl.dido.image.renderer.AbstractRenderer;
 import pl.dido.image.utils.C64PaletteCalculator;
+import pl.dido.image.utils.Config.DITHERING;
 import pl.dido.image.utils.Gfx;
 import pl.dido.image.utils.neural.SOMPalette;
 
@@ -86,6 +87,15 @@ public class C64ExtraRenderer extends AbstractRenderer {
 		}
 	}
 
+	@Override
+	protected void imageDithering() {
+		if (config.dither_alg == DITHERING.BAYER)
+			Gfx.bayer8x8(pixels, palette, colorAlg, screenWidth, screenHeight,
+					((C64ExtraConfig) config).error_threshold);
+		else
+			super.imageDithering();
+	}
+
 	protected int getBlendedColorIndex(final int tilePalette[][], final int tileColors[], final int r, final int g,
 			final int b, final int prevColorIndex) {
 
@@ -130,10 +140,10 @@ public class C64ExtraRenderer extends AbstractRenderer {
 
 			for (int x = 0; x < 320; x += 8) {
 				final int offset = p + x * 3;
-				
+
 				final int data[] = new int[64 * 3];
 				int index = 0;
-				
+
 				// 8x8 tile data
 				for (int y0 = 0; y0 < 8; y0++) {
 					final int k = offset + y0 * 320 * 3;
@@ -145,11 +155,11 @@ public class C64ExtraRenderer extends AbstractRenderer {
 						data[index++] = work[position + 1];
 						data[index++] = work[position + 2];
 					}
-				}				
-				
+				}
+
 				final int colors[];
-				
-				switch (((C64ExtraConfig)config).rgb_approximation) {
+
+				switch (((C64ExtraConfig) config).rgb_approximation) {
 				case CUBE:
 					colors = Gfx.getRGBLinearColor(colorAlg, data, machinePalette);
 					break;
@@ -157,10 +167,10 @@ public class C64ExtraRenderer extends AbstractRenderer {
 					colors = Gfx.getRGBLinearColor(colorAlg, data, machinePalette);
 					break;
 				}
-				
+
 				f = colors[0];
 				n = colors[1];
-				
+
 				final int cf[] = machinePalette[f];
 				int cn[] = machinePalette[n];
 
@@ -239,7 +249,7 @@ public class C64ExtraRenderer extends AbstractRenderer {
 						work[position + 1] = ng;
 						work[position + 2] = nb;
 
-						if (config.dithering) {
+						if (config.dither_alg == DITHERING.ATKINSON || config.dither_alg == DITHERING.FLOYDS) {
 							final int maxError = (255 * ((C64ExtraConfig) config).error_threshold) / 20;
 
 							r_error = Gfx.saturate(r - nr, maxError);
@@ -250,7 +260,7 @@ public class C64ExtraRenderer extends AbstractRenderer {
 							final int position2 = position + 320 * 6;
 
 							switch (config.dither_alg) {
-							case STD_FS:
+							case FLOYDS:
 								if (x + x0 < 316) {
 									work[position + 3] += (r_error * 7) / 16;
 									work[position + 3 + 1] += (g_error * 7) / 16;
@@ -306,6 +316,8 @@ public class C64ExtraRenderer extends AbstractRenderer {
 										work[position2 + 2] += b_error / 8;
 									}
 								}
+								break;
+							default:
 								break;
 							}
 						}
@@ -513,9 +525,9 @@ public class C64ExtraRenderer extends AbstractRenderer {
 						final int position = k + x0;
 
 						// get current picture color + noise
-						r = work[position]     + (int) (Math.random() * 80 - 40);
-						g = work[position + 1] + (int) (Math.random() * 80 - 40);
-						b = work[position + 2] + (int) (Math.random() * 80 - 40);
+						r = work[position] + (int) (Math.random() * 100 - 50);
+						g = work[position + 1] + (int) (Math.random() * 100 - 50);
+						b = work[position + 2] + (int) (Math.random() * 100 - 50);
 
 						int nr, ng, nb;
 
@@ -566,61 +578,65 @@ public class C64ExtraRenderer extends AbstractRenderer {
 						work[position + 1] = ng;
 						work[position + 2] = nb;
 
-						// calculate color error
-						final int maxError = (255 * ((C64ExtraConfig) config).error_threshold) / 20;
+						if (config.dither_alg == DITHERING.ATKINSON || config.dither_alg == DITHERING.FLOYDS) {
+							// calculate color error
+							final int maxError = (255 * ((C64ExtraConfig) config).error_threshold) / 20;
 
-						r_error = Gfx.saturate(r - nr, maxError);
-						g_error = Gfx.saturate(g - ng, maxError);
-						b_error = Gfx.saturate(b - nb, maxError);
+							r_error = Gfx.saturate(r - nr, maxError);
+							g_error = Gfx.saturate(g - ng, maxError);
+							b_error = Gfx.saturate(b - nb, maxError);
 
-						final int position1 = position + 320 * 3;
-						final int position2 = position + 320 * 6;
+							final int position1 = position + 320 * 3;
+							final int position2 = position + 320 * 6;
 
-						switch (config.dither_alg) {
-						case STD_FS:
-							safeAdd(work, position + 3, (r_error * 7) / 16);
-							safeAdd(work, position + 3 + 1, (g_error * 7) / 16);
-							safeAdd(work, position + 3 + 2, (b_error * 7) / 16);
+							switch (config.dither_alg) {
+							case FLOYDS:
+								safeAdd(work, position + 3, (r_error * 7) / 16);
+								safeAdd(work, position + 3 + 1, (g_error * 7) / 16);
+								safeAdd(work, position + 3 + 2, (b_error * 7) / 16);
 
-							safeAdd(work, position1 - 3, (r_error * 3) / 16);
-							safeAdd(work, position1 - 3 + 1, (g_error * 3) / 16);
-							safeAdd(work, position1 - 3 + 2, (b_error * 3) / 16);
+								safeAdd(work, position1 - 3, (r_error * 3) / 16);
+								safeAdd(work, position1 - 3 + 1, (g_error * 3) / 16);
+								safeAdd(work, position1 - 3 + 2, (b_error * 3) / 16);
 
-							safeAdd(work, position1, (r_error * 5) / 16);
-							safeAdd(work, position1 + 1, (g_error * 5) / 16);
-							safeAdd(work, position1 + 2, (b_error * 5) / 16);
+								safeAdd(work, position1, (r_error * 5) / 16);
+								safeAdd(work, position1 + 1, (g_error * 5) / 16);
+								safeAdd(work, position1 + 2, (b_error * 5) / 16);
 
-							safeAdd(work, position1 + 3, r_error / 16);
-							safeAdd(work, position1 + 3 + 1, g_error / 16);
-							safeAdd(work, position1 + 3 + 2, b_error / 16);
+								safeAdd(work, position1 + 3, r_error / 16);
+								safeAdd(work, position1 + 3 + 1, g_error / 16);
+								safeAdd(work, position1 + 3 + 2, b_error / 16);
 
-							break;
-						case ATKINSON:
-							safeAdd(work, position + 3, r_error / 8);
-							safeAdd(work, position + 3 + 1, g_error / 8);
-							safeAdd(work, position + 3 + 2, b_error / 8);
+								break;
+							case ATKINSON:
+								safeAdd(work, position + 3, r_error / 8);
+								safeAdd(work, position + 3 + 1, g_error / 8);
+								safeAdd(work, position + 3 + 2, b_error / 8);
 
-							safeAdd(work, position + 6, r_error / 8);
-							safeAdd(work, position + 6 + 1, g_error / 8);
-							safeAdd(work, position + 6 + 2, b_error / 8);
+								safeAdd(work, position + 6, r_error / 8);
+								safeAdd(work, position + 6 + 1, g_error / 8);
+								safeAdd(work, position + 6 + 2, b_error / 8);
 
-							safeAdd(work, position1 - 3, r_error / 8);
-							safeAdd(work, position1 - 3 + 1, g_error / 8);
-							safeAdd(work, position1 - 3 + 2, b_error / 8);
+								safeAdd(work, position1 - 3, r_error / 8);
+								safeAdd(work, position1 - 3 + 1, g_error / 8);
+								safeAdd(work, position1 - 3 + 2, b_error / 8);
 
-							safeAdd(work, position1, r_error / 8);
-							safeAdd(work, position1 + 1, g_error / 8);
-							safeAdd(work, position1 + 2, b_error / 8);
+								safeAdd(work, position1, r_error / 8);
+								safeAdd(work, position1 + 1, g_error / 8);
+								safeAdd(work, position1 + 2, b_error / 8);
 
-							safeAdd(work, position1 + 3, r_error / 8);
-							safeAdd(work, position1 + 3 + 1, g_error / 8);
-							safeAdd(work, position1 + 3 + 2, b_error / 8);
+								safeAdd(work, position1 + 3, r_error / 8);
+								safeAdd(work, position1 + 3 + 1, g_error / 8);
+								safeAdd(work, position1 + 3 + 2, b_error / 8);
 
-							safeAdd(work, position2, r_error / 8);
-							safeAdd(work, position2 + 1, g_error / 8);
-							safeAdd(work, position2 + 2, b_error / 8);
+								safeAdd(work, position2, r_error / 8);
+								safeAdd(work, position2 + 1, g_error / 8);
+								safeAdd(work, position2 + 2, b_error / 8);
 
-							break;
+								break;
+							default:
+								break;
+							}
 						}
 					}
 				}

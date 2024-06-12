@@ -12,7 +12,6 @@ public class Amiga1200Config extends AmigaConfig {
 		super();
 
 		video_mode = VIDEO_MODE.STD_320x256;
-		dithering = true;
 	}
 
 	@Override

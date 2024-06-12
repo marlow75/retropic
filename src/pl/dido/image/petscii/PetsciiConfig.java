@@ -15,9 +15,7 @@ public class PetsciiConfig extends Config {
 		
 		network = NETWORK.L1;
 		color_alg = NEAREST_COLOR.PERCEPTED;		
-		
-		dithering = false;
-		dither_alg = DITHERING.ATKINSON;
+		dither_alg = DITHERING.NONE;
 		
 		highContrast = HIGH_CONTRAST.NONE;
 	}

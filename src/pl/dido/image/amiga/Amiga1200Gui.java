@@ -35,13 +35,13 @@ public class Amiga1200Gui {
 		
 		final JLabel lblConvertLabel = new JLabel("Converter mode:");
 		lblConvertLabel.setFont(GuiUtils.bold);
-		lblConvertLabel.setBounds(20, 50, 250, 20);
+		lblConvertLabel.setBounds(20, 90, 250, 20);
 		panelAmiga.add(lblConvertLabel);
 
 		final JComboBox<String> modesList = new JComboBox<String>(modesStrings);
 		modesList.setToolTipText("Choose available video mode");
 		modesList.setFont(GuiUtils.std);
-		modesList.setBounds(46, 80, 250, 20);
+		modesList.setBounds(46, 130, 250, 20);
 		modesList.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				

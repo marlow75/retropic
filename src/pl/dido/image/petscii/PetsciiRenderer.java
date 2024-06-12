@@ -6,6 +6,7 @@ import java.io.IOException;
 import pl.dido.image.renderer.AbstractRenderer;
 import pl.dido.image.utils.Gfx;
 import pl.dido.image.utils.Utils;
+import pl.dido.image.utils.Config.DITHERING;
 import pl.dido.image.utils.neural.Dataset;
 import pl.dido.image.utils.neural.HL1Network;
 import pl.dido.image.utils.neural.HL2Network;
@@ -100,6 +101,14 @@ public class PetsciiRenderer extends AbstractRenderer {
 	@Override
 	protected void imagePostproces() {
 		petscii();
+	}
+	
+	@Override
+	protected void imageDithering() {
+		if (config.dither_alg == DITHERING.BAYER)
+			Gfx.bayer8x8(pixels, palette, colorAlg, screenWidth, screenHeight, 3);
+		else
+			super.imageDithering();
 	}
 
 	protected void petscii() {
