@@ -161,7 +161,7 @@ Below interlace hires played on VICE...
 
 ... and following MCI picture. More working examples in MCI project folder. It contains a few pictures of my city dated back 1990s.
 
-![Naive hires](cC64ExtraMCI.png)
+![Naive hires](c64ExtraMCI.png)
 
 ### Commodore Plus4 extra
 
