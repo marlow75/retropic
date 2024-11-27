@@ -81,7 +81,7 @@ Exports to executable PRG.
 
 Exports to executable PRG.
 
-![Hires](plus4.png)
+![Hires](venusPlus4.png)
 
 ### ZX Spectrum 48/+
 
