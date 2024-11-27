@@ -10,7 +10,6 @@ public class Amiga1200Config extends AmigaConfig {
 	
 	public Amiga1200Config() {
 		super();
-
 		video_mode = VIDEO_MODE.STD_320x256;
 	}
 

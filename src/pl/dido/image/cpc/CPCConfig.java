@@ -17,7 +17,7 @@ public class CPCConfig extends Config {
 	public boolean replace_white;
 	
 	public CPCConfig() {	
-		dither_alg = DITHERING.BAYER;
+		dither_alg = DITHERING.BAYER4x4;
 		highContrast = HIGH_CONTRAST.SWAHE;
 		
 		screen_mode = SCREEN_MODE.MODE1;
@@ -25,6 +25,8 @@ public class CPCConfig extends Config {
 		
 		replace_white = false;
 		color_alg = NEAREST_COLOR.PERCEPTED;
+		
+		error_threshold = 3;
 	}
 	
 	@Override
@@ -58,14 +60,5 @@ public class CPCConfig extends Config {
 	@Override
 	public int getScreenWidth() {
 		return 320;
-	}
-	@Override
-	public int getWindowHeight() {
-		return 400;
-	}
-
-	@Override
-	public int getWindowWidth() {		
-		return 640;
-	}
+	}	
 }

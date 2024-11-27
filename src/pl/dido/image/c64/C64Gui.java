@@ -24,14 +24,14 @@ public class C64Gui {
 
 		final JLabel lblConvertLabel = new JLabel("Converter mode:");
 		lblConvertLabel.setFont(GuiUtils.bold);
-		lblConvertLabel.setBounds(20, 66, 169, 14);
+		lblConvertLabel.setBounds(20, 70, 169, 14);
 		panelC64.add(lblConvertLabel);
 
 		final JRadioButton rdbtnHiresButton = new JRadioButton("320x200 hires - highest/lowest luminance");
 		rdbtnHiresButton.setToolTipText(
 				"High resolution mode. Two colors, first with most luminance and second with lowest");
 		rdbtnHiresButton.setFont(GuiUtils.std);
-		rdbtnHiresButton.setBounds(46, 82, 331, 23);
+		rdbtnHiresButton.setBounds(46, 85, 331, 23);
 		rdbtnHiresButton.setSelected(config.screen_mode == SCREEN_MODE.HIRES);
 		rdbtnHiresButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {

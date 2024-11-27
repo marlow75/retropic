@@ -18,6 +18,7 @@ public class PetsciiConfig extends Config {
 		dither_alg = DITHERING.NONE;
 		
 		highContrast = HIGH_CONTRAST.NONE;
+		error_threshold = 3;
 	}
 	
 	@Override
@@ -44,15 +45,5 @@ public class PetsciiConfig extends Config {
 	@Override
 	public int getScreenHeight() {
 		return 200;
-	}
-	
-	@Override
-	public int getWindowHeight() {
-		return 400;
-	}
-
-	@Override
-	public int getWindowWidth() {
-		return 640;
 	}
 }

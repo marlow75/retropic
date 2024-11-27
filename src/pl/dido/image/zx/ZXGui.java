@@ -25,15 +25,15 @@ public class ZXGui {
 		lblAspectLabel.setBounds(20, 16, 200, 20);
 		panelZX.add(lblAspectLabel);
 		
-		final JCheckBox chckbxRasterCheckBox = new JCheckBox("scan");
-		chckbxRasterCheckBox.setToolTipText("Scan line simulation");
+		final JCheckBox chckbxRasterCheckBox = new JCheckBox("pal");
+		chckbxRasterCheckBox.setToolTipText("Simple PAL emulation");
 		chckbxRasterCheckBox.setFont(GuiUtils.std);
 		chckbxRasterCheckBox.setBounds(20, 43, 50, 20);
-		chckbxRasterCheckBox.setSelected(config.scanline);
+		chckbxRasterCheckBox.setSelected(config.emuPAL);
 		
 		chckbxRasterCheckBox.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				config.scanline = !config.scanline;
+				config.emuPAL = !config.emuPAL;
 			}});
 		
 		panelZX.add(chckbxRasterCheckBox);
@@ -73,11 +73,11 @@ public class ZXGui {
 		rdbtnBayerButton.setToolTipText("Enables bayer ordered dithering");
 		rdbtnBayerButton.setFont(GuiUtils.std);
 		rdbtnBayerButton.setBounds(90, 100, 70, 20);
-		rdbtnBayerButton.setSelected(config.dither_alg == DITHERING.BAYER);
+		rdbtnBayerButton.setSelected(config.dither_alg == DITHERING.BAYER2x2);
 		
 		rdbtnBayerButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				config.dither_alg = DITHERING.BAYER;
+				config.dither_alg = DITHERING.BAYER2x2;
 			}});
 		
 		panelZX.add(rdbtnBayerButton);

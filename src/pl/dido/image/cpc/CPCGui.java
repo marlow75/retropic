@@ -43,11 +43,11 @@ public class CPCGui {
 		rdbtnBayerButton.setToolTipText("Bayer ordered dithering");
 		rdbtnBayerButton.setFont(GuiUtils.std);
 		rdbtnBayerButton.setBounds(90, 33, 60, 20);
-		rdbtnBayerButton.setSelected(config.dither_alg == DITHERING.BAYER);
+		rdbtnBayerButton.setSelected(config.dither_alg == DITHERING.BAYER4x4);
 
 		rdbtnBayerButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				config.dither_alg = DITHERING.BAYER;
+				config.dither_alg = DITHERING.BAYER4x4;
 			}
 		});
 
@@ -85,15 +85,15 @@ public class CPCGui {
 
 		cpcPanel.add(chkReplaceBox);
 
-		final JCheckBox chckbxRasterCheckBox = new JCheckBox("scan");
-		chckbxRasterCheckBox.setToolTipText("Scan line simulation");
+		final JCheckBox chckbxRasterCheckBox = new JCheckBox("pal");
+		chckbxRasterCheckBox.setToolTipText("Simple PAL emulation");
 		chckbxRasterCheckBox.setFont(GuiUtils.std);
 		chckbxRasterCheckBox.setBounds(100, 60, 50, 20);
-		chckbxRasterCheckBox.setSelected(config.scanline);
+		chckbxRasterCheckBox.setSelected(config.emuPAL);
 
 		chckbxRasterCheckBox.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				config.scanline = !config.scanline;
+				config.emuPAL = !config.emuPAL;
 			}
 		});
 

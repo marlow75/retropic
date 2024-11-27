@@ -47,16 +47,30 @@ public class CPCRenderer extends AbstractRenderer {
 
 		switch (((CPCConfig) config).screen_mode) {
 		case MODE1:
-			if (config.dither_alg == DITHERING.BAYER)
+			switch (config.dither_alg) {
+			case BAYER2x2:
+			case BAYER4x4:
+			case BAYER8x8:
+			case BAYER16x16:
 				mode1Bayer();
-			else
+				break;
+			default:
 				mode1();
+				break;
+			}
 			break;
 		case MODE0:
-			if (config.dither_alg == DITHERING.BAYER)
+			switch (config.dither_alg) {
+			case BAYER2x2:
+			case BAYER4x4:
+			case BAYER8x8:
+			case BAYER16x16:
 				mode0Bayer();
-			else
+				break;
+			default:
 				mode0();
+				break;
+			}
 			break;
 		}
 	}
@@ -74,7 +88,7 @@ public class CPCRenderer extends AbstractRenderer {
 		default:
 			som = new SOMWinnerFixedPalette(2, 2, 2);
 			p = som.train(pixels);
-			
+
 			break;
 		}
 
@@ -85,7 +99,7 @@ public class CPCRenderer extends AbstractRenderer {
 		final HashSet<Integer> colors = new HashSet<Integer>();
 		for (int i = 0; i < size; i++) {
 			final int pixel[] = p[i];
-			
+
 			int index = getColorIndex(pixel[0], pixel[1], pixel[2]); // color
 			while (colors.contains(index))
 				index = (index + 1) % 27;
@@ -248,7 +262,7 @@ public class CPCRenderer extends AbstractRenderer {
 
 			for (int x = 0; x < 160; x++) {
 				final int ph = p1 + x * 3 * 2;
-		
+
 				final int r1 = pixels[ph] & 0xff;
 				final int g1 = pixels[ph + 1] & 0xff;
 				final int b1 = pixels[ph + 2] & 0xff;
@@ -301,8 +315,8 @@ public class CPCRenderer extends AbstractRenderer {
 				r = c[0];
 				g = c[1];
 				b = c[2];
-				
-				pixels[ph]     = (byte) r;
+
+				pixels[ph] = (byte) r;
 				pixels[ph + 3] = (byte) r;
 
 				pixels[ph + 1] = (byte) g;
@@ -315,8 +329,6 @@ public class CPCRenderer extends AbstractRenderer {
 	}
 
 	protected void mode1Bayer() {
-		Gfx.bayer8x8(pixels, pictureColors, config.color_alg, 320, 200, 3);
-		
 		int r0, g0, b0;
 		int bit0 = 128, bit1 = 8;
 
@@ -361,10 +373,8 @@ public class CPCRenderer extends AbstractRenderer {
 			}
 		}
 	}
-	
+
 	protected void mode0Bayer() {
-		Gfx.bayer8x8(pixels, pictureColors, config.color_alg, 320, 200, 3);
-		
 		final int[] newPixels = new int[160 * 200 * 3]; // 160x200
 		int bit0 = 128, bit1 = 8, bit2 = 0, bit3 = 0;
 
@@ -406,13 +416,13 @@ public class CPCRenderer extends AbstractRenderer {
 
 					break;
 				}
-				
+
 				newPixels[pl] = r;
 				newPixels[pl + 1] = g;
 				newPixels[pl + 2] = b;
 			}
 		}
-		
+
 		// show results
 		for (int y = 0; y < 200; y++) {
 			final int i = y >> 3;
@@ -420,20 +430,20 @@ public class CPCRenderer extends AbstractRenderer {
 
 			int index = 0;
 			final int offset = i * 80 + j * 2048;
-			
+
 			for (int x = 0; x < 160; x++) {
 				final int pl = y * 160 * 3 + x * 3;
 				final int ph = y * 320 * 3 + x * 2 * 3;
-				
+
 				int r = newPixels[pl];
 				int g = newPixels[pl + 1];
 				int b = newPixels[pl + 2];
-				
+
 				final int color = Gfx.getColorIndex(colorAlg, pictureColors, r, g, b);
 				r = pictureColors[color][0];
 				g = pictureColors[color][1];
 				b = pictureColors[color][2];
-				
+
 				final int data = ((color & 1) != 0 ? bit0 : 0) | ((color & 2) != 0 ? bit1 : 0)
 						| ((color & 4) != 0 ? bit2 : 0) | ((color & 8) != 0 ? bit3 : 0);
 
@@ -452,8 +462,8 @@ public class CPCRenderer extends AbstractRenderer {
 					bit2 >>= 1;
 					bit3 >>= 1;
 				}
-				
-				pixels[ph]     = (byte) r;
+
+				pixels[ph] = (byte) r;
 				pixels[ph + 3] = (byte) r;
 
 				pixels[ph + 1] = (byte) g;

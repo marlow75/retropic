@@ -22,11 +22,11 @@ import pl.dido.image.utils.Utils;
 
 public class ZXRunner extends AbstractRendererRunner {
 	
-	protected ZXSpectrumRenderer zx;
+	protected ZXRenderer zx;
 
 	public ZXRunner(final AbstractRenderer renderer, final String fileName) {
 		super(renderer, fileName);
-		zx = (ZXSpectrumRenderer) renderer;
+		zx = (ZXRenderer) renderer;
 	}
 
 	private void hiresExport(final String fileName) {

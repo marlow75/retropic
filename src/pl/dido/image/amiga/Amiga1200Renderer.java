@@ -47,11 +47,17 @@ public class Amiga1200Renderer extends AbstractPictureColorsRenderer {
 			training = new SOMFixedPalette(16, 16, 8, 4); // 16x16 = 256 colors (8 bits)
 			pictureColors = training.train(pixels);
 
-			if (config.dither_alg == DITHERING.BAYER)
+			switch (config.dither_alg) {
+			case BAYER2x2:
+			case BAYER4x4:
+			case BAYER8x8:
+			case BAYER16x16:
 				bayer256();
-			else
+				break;
+			default:
 				standard256();
-			break;
+				break;
+			}
 		}
 	}
 
@@ -192,10 +198,31 @@ public class Amiga1200Renderer extends AbstractPictureColorsRenderer {
 				r0 = work[pyx];
 				g0 = work[pyx + 1];
 				b0 = work[pyx + 2];
-
-				r0 = Gfx.bayer8x8(x % 8, y % 8, r0, 63);
-				g0 = Gfx.bayer8x8(x % 8, y % 8, g0, 63);
-				b0 = Gfx.bayer8x8(x % 8, y % 8, b0, 63);
+				
+				switch (config.dither_alg) {
+				case BAYER2x2:
+					r0 = Gfx.bayer2x2(x, y, r0, config.error_threshold);
+					g0 = Gfx.bayer2x2(x, y, g0, config.error_threshold);
+					b0 = Gfx.bayer2x2(x, y, b0, config.error_threshold);
+					break;
+				case BAYER4x4:
+					r0 = Gfx.bayer4x4(x, y, r0, config.error_threshold);
+					g0 = Gfx.bayer4x4(x, y, g0, config.error_threshold);
+					b0 = Gfx.bayer4x4(x, y, b0, config.error_threshold);
+					break;
+				case BAYER8x8:
+					r0 = Gfx.bayer8x8(x, y, r0, config.error_threshold);
+					g0 = Gfx.bayer8x8(x, y, g0, config.error_threshold);
+					b0 = Gfx.bayer8x8(x, y, b0, config.error_threshold);
+					break;
+				case BAYER16x16:
+					r0 = Gfx.bayer16x16(x, y, r0, config.error_threshold);
+					g0 = Gfx.bayer16x16(x, y, g0, config.error_threshold);
+					b0 = Gfx.bayer16x16(x, y, b0, config.error_threshold);
+					break;
+				default:
+					break;
+				}
 
 				final int color = Gfx.getColorIndex(colorAlg, pictureColors, r0, g0, b0); // 256 colors
 				final int c[] = pictureColors[color];

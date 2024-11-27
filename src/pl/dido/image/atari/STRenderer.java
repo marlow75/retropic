@@ -70,15 +70,7 @@ public class STRenderer extends AbstractPictureColorsRenderer {
 				g0 = Gfx.saturate(work[pyx + 1]);
 				b0 = Gfx.saturate(work[pyx + 2]);
 				
-				final int color;
-				
-				if (config.dither_alg == DITHERING.BAYER) {
-					r0 = Gfx.bayer4x4(x % 4, y % 4, r0, 7);
-					g0 = Gfx.bayer4x4(x % 4, y % 4, g0, 7);
-					b0 = Gfx.bayer4x4(x % 4, y % 4, b0, 7);
-				}
-				
-				color = Gfx.getColorIndex(colorAlg, pictureColors, r0, g0, b0);
+				final int color = Gfx.getColorIndex(colorAlg, pictureColors, r0, g0, b0);
 				
 				final int c[] = pictureColors[color];
 				final int r = c[0];

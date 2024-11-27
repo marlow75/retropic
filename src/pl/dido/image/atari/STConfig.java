@@ -6,8 +6,8 @@ public class STConfig extends Config {
 	
 	public STConfig() {
 		super();
-		
-		dither_alg = DITHERING.BAYER;
+		dither_alg = DITHERING.BAYER4x4;
+		error_threshold = 3;
 	}
 
 	@Override
@@ -18,15 +18,5 @@ public class STConfig extends Config {
 	@Override
 	public int getScreenWidth() {
 		return 320;
-	}
-	
-	@Override
-	public int getWindowHeight() {
-		return 400;
-	}
-
-	@Override
-	public int getWindowWidth() {
-		return 640;
 	}
 }

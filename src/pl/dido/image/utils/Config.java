@@ -7,7 +7,7 @@ abstract public class Config implements Cloneable {
 	}
 
 	public enum DITHERING {
-		NONE, FLOYDS, ATKINSON, BAYER
+		NONE, FLOYDS, ATKINSON, BAYER2x2, BAYER4x4, BAYER8x8, BAYER16x16
 	};
 
 	public enum NEAREST_COLOR {
@@ -15,12 +15,14 @@ abstract public class Config implements Cloneable {
 	};
 
 	public boolean preserveAspect;
-	public boolean scanline;
+	public boolean emuPAL;
 
 	public HIGH_CONTRAST highContrast;
 	public int windowSize;
+	
 	public int details;
-
+	public int error_threshold;
+	
 	public static String export_path;
 
 	public DITHERING dither_alg;
@@ -38,16 +40,21 @@ abstract public class Config implements Cloneable {
 		details = 3;
 		export_path = "export";
 
-		scanline = false;
+		emuPAL = true;
+		error_threshold = 4;
 	}
 
 	public abstract int getScreenWidth();
 
 	public abstract int getScreenHeight();
 
-	public abstract int getWindowWidth();
+	public int getWindowHeight() {
+		return 457;
+	}
 
-	public abstract int getWindowHeight();
+	public int getWindowWidth() {
+		return 540;
+	}
 
 	public String getConfigString() {
 		String configString = "";
@@ -59,7 +66,10 @@ abstract public class Config implements Cloneable {
 		case FLOYDS:
 			configString += "floyds ";
 			break;
-		case BAYER:
+		case BAYER2x2: 
+		case BAYER4x4:
+		case BAYER8x8:
+		case BAYER16x16:
 			configString += "bayer ";
 			break;
 		default:

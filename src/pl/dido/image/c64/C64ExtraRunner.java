@@ -16,6 +16,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 
+import pl.dido.image.c64.C64ExtraConfig.EXTRA_MODE;
 import pl.dido.image.renderer.AbstractRenderer;
 import pl.dido.image.renderer.AbstractRendererRunner;
 import pl.dido.image.utils.Config;
@@ -54,12 +55,12 @@ public class C64ExtraRunner extends AbstractRendererRunner {
 			final int spare = 1021 - prg_len;
 			for (int i = 0; i < spare; i++)
 				out.write(0xff);
-			
+
 			// background1
-			out.write(c64Extra.backgroundColor);
-			
+			out.write(c64Extra.backgroundColor1);
+
 			// background2
-			out.write(c64Extra.backgroundColor);
+			out.write(c64Extra.backgroundColor1);
 
 			// attributes 1
 			for (int i = 0; i < 1000; i++)
@@ -68,15 +69,15 @@ public class C64ExtraRunner extends AbstractRendererRunner {
 			// trim to kb
 			for (int i = 0; i < 24 + 4096; i++)
 				out.write(0xff);
-			
+
 			// bitmap 1
 			for (int i = 0; i < 8000; i++)
 				out.write(c64Extra.bitmap1[i] & 0xff);
-			
+
 			// trim to kb
 			for (int i = 0; i < 192; i++)
 				out.write(0xff);
-			
+
 			// bitmap 2
 			for (int i = 0; i < 8000; i++)
 				out.write(c64Extra.bitmap2[i] & 0xff);
@@ -84,7 +85,7 @@ public class C64ExtraRunner extends AbstractRendererRunner {
 			// trim to kb
 			for (int i = 0; i < 192; i++)
 				out.write(0xff);
-			
+
 			// attributes 2
 			for (int i = 0; i < 1000; i++)
 				out.write(c64Extra.screen2[i] & 0xff);
@@ -102,13 +103,14 @@ public class C64ExtraRunner extends AbstractRendererRunner {
 			final BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(new File(fileName)), 8192);
 
 			// MCI File Format
-			// $0801 - loader and player 
-			// $0BFF - background color		- 1 byte
-			// $0C00 - attributes 1			- 1000 bytes
-			// $2000 - bitmap 1     		- 8000 bytes
-			// $4000 - bitmap 2				- 8000 bytes
-			// $6000 - nibbles				- 1000 bytes
-			
+			// $0801 - loader and player
+			// $0BFF - background color - 1 byte
+			// $0C00 - attributes 1 - 1000 bytes
+			// $1000 - attributes 2 - 1000 bytes
+			// $2000 - bitmap 1 - 8000 bytes
+			// $4000 - bitmap 2 - 8000 bytes
+			// $6000 - nibbles - 1000 bytes
+
 			// loading address BASIC
 			out.write(0x01);
 			out.write(0x08);
@@ -123,31 +125,42 @@ public class C64ExtraRunner extends AbstractRendererRunner {
 			}
 
 			in.close();
-			
+
 			// spare bytes
-			final int spare = 1022 - prg_len;
+			final int spare = 1021 - prg_len;
 			for (int i = 0; i < spare; i++)
 				out.write(0xff);
-			
-			// background1
-			out.write(c64Extra.backgroundColor);
-			
+
+			// background 1
+			out.write(c64Extra.backgroundColor1);
+
+			// background 2
+			out.write(c64Extra.backgroundColor2);
+
 			// attributes 1
 			for (int i = 0; i < 1000; i++)
 				out.write(c64Extra.screen1[i] & 0xff);
 
 			// fill the gap
-			for (int i = 0; i < 24 + 4096; i++)
+			for (int i = 0; i < 24; i++)
 				out.write(0xff);
-			
+
+			// attributes 2
+			for (int i = 0; i < 1000; i++)
+				out.write(c64Extra.screen2[i] & 0xff);
+
+			// fill the gap
+			for (int i = 0; i < 24 + 3072; i++)
+				out.write(0xff);
+
 			// bitmap 1
 			for (int i = 0; i < 8000; i++)
 				out.write(c64Extra.bitmap1[i] & 0xff);
-			
+
 			// trim to kb
 			for (int i = 0; i < 192; i++)
 				out.write(0xff);
-			
+
 			// bitmap 2
 			for (int i = 0; i < 8000; i++)
 				out.write(c64Extra.bitmap2[i] & 0xff);
@@ -155,7 +168,7 @@ public class C64ExtraRunner extends AbstractRendererRunner {
 			// trim to kb
 			for (int i = 0; i < 192; i++)
 				out.write(0xff);
-			
+
 			// nibbles
 			for (int i = 0; i < 1000; i++)
 				out.write(c64Extra.nibbles[i] & 0xff);
@@ -166,7 +179,68 @@ public class C64ExtraRunner extends AbstractRendererRunner {
 			e.printStackTrace();
 		}
 	}
-	
+
+	private void mciExportTruePaint(final String fileName) {
+		try {
+			final BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(new File(fileName)), 8192);
+
+			// True Paint File Format
+			// $9C00 - $9FE7 Screen RAM 1
+			// $9FE8 Background
+			// $A000 - $BF3F Bitmap 1
+			// $C000 - $DF3F Bitmap 2
+			// $E000 - $E3E7 Screen RAM 2
+			// $E400 - $E7E7 Color RAM
+
+			// loading address
+			out.write(0x00);
+			out.write(0x9c);
+
+			// attributes 1
+			for (int i = 0; i < 1000; i++)
+				out.write(c64Extra.screen1[i] & 0xff);
+
+			out.write(c64Extra.backgroundColor1 & 0xff);
+
+			// fill the gap
+			for (int i = 0; i < 23; i++)
+				out.write(0xff);
+
+			// bitmap 1
+			for (int i = 0; i < 8000; i++)
+				out.write(c64Extra.bitmap1[i] & 0xff);
+
+			// trim to kb
+			for (int i = 0; i < 192; i++)
+				out.write(0xff);
+
+			// bitmap 2
+			for (int i = 0; i < 8000; i++)
+				out.write(c64Extra.bitmap2[i] & 0xff);
+
+			// trim to kb
+			for (int i = 0; i < 192; i++)
+				out.write(0xff);
+
+			// attributes 2
+			for (int i = 0; i < 1000; i++)
+				out.write(c64Extra.screen2[i] & 0xff);
+
+			// fill the gap
+			for (int i = 0; i < 24 + 3072; i++)
+				out.write(0xff);
+
+			// nibbles
+			for (int i = 0; i < 1000; i++)
+				out.write(c64Extra.nibbles[i] & 0xff);
+
+			out.close();
+			frame.setTitle(frame.getTitle() + " SAVED");
+		} catch (final IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 	@Override
 	protected JMenuBar getMenuBar() {
 		final JMenu menuFile = new JMenu("File");
@@ -182,7 +256,7 @@ public class C64ExtraRunner extends AbstractRendererRunner {
 					final String exportFileName = Utils.createDirectory(Config.export_path) + "/" + fileName + ".prg";
 					final int result = JOptionPane.showConfirmDialog(null, "Export " + exportFileName + "?", "Confirm",
 							JOptionPane.YES_NO_OPTION);
-					
+
 					if (result == 0) {
 						switch (((C64ExtraConfig) c64Extra.config).extra_mode) {
 						case HIRES_INTERLACED:
@@ -198,7 +272,32 @@ public class C64ExtraRunner extends AbstractRendererRunner {
 				}
 			}
 		});
+
 		menuFile.add(miExecutable);
+
+		if (((C64ExtraConfig) c64Extra.config).extra_mode == EXTRA_MODE.MULTI_COLOR_INTERLACED) {
+			final JMenuItem miTruePaint = new JMenuItem("Export as True Paint MCI ... ");
+			miTruePaint.setMnemonic(KeyEvent.VK_T);
+			miTruePaint.setAccelerator(
+					KeyStroke.getKeyStroke(KeyEvent.VK_T, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
+			miTruePaint.addActionListener(new ActionListener() {
+				public void actionPerformed(final ActionEvent e) {
+					try {
+						final String exportFileName = Utils.createDirectory(Config.export_path) + "/" + fileName
+								+ ".prg";
+						final int result = JOptionPane.showConfirmDialog(null, "Export " + exportFileName + "?",
+								"Confirm", JOptionPane.YES_NO_OPTION);
+
+						if (result == 0)
+							mciExportTruePaint(exportFileName);
+
+					} catch (final IOException ex) {
+						JOptionPane.showMessageDialog(null, "Error", ex.getMessage(), JOptionPane.ERROR_MESSAGE);
+					}
+				}
+			});
+			menuFile.add(miTruePaint);
+		}
 
 		final JMenuBar menuBar = new JMenuBar();
 		menuBar.add(menuFile);

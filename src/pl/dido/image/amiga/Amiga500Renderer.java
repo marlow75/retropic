@@ -42,6 +42,17 @@ public class Amiga500Renderer extends AbstractPictureColorsRenderer {
 	}
 
 	@Override
+	protected void imageDithering() {
+		switch (config.dither_alg) {
+		case ATKINSON, FLOYDS:
+			Gfx.dithering(pixels, palette, config);
+			break;
+		default:
+			break;
+		}	
+	}
+
+	@Override
 	protected void imagePostproces() {
 		final SOMFixedPalette training;
 
@@ -50,7 +61,7 @@ public class Amiga500Renderer extends AbstractPictureColorsRenderer {
 		case HAM6_320x512:
 			training = new HAMFixedPalette(4, 4, 4); // 4x4 = 16 colors (4 bits)
 			pictureColors = normalizePalette(training.train(pixels));
-			
+
 			ham6Encoded();
 			break;
 		case STD_320x256:
@@ -58,11 +69,14 @@ public class Amiga500Renderer extends AbstractPictureColorsRenderer {
 			training = new SOMFixedPalette(8, 4, 5); // 8x4 = 32 colors (5 bits)
 			pictureColors = normalizePalette(training.train(pixels));
 
-			if (config.dither_alg == DITHERING.BAYER)
-				bayer32();
-			else
+			switch (config.dither_alg) {
+			case NONE, ATKINSON, FLOYDS:
 				standard32();
-			break;
+				break;
+			default:
+				bayer32();
+				break;
+			}
 		}
 	}
 
@@ -184,7 +198,7 @@ public class Amiga500Renderer extends AbstractPictureColorsRenderer {
 			}
 		}
 	}
-	
+
 	protected void bayer32() {
 		final int[] work = Gfx.copy2Int(pixels);
 		bitplanes = new int[(screenWidth >> 4) * screenHeight][5]; // 5 planes
@@ -204,9 +218,30 @@ public class Amiga500Renderer extends AbstractPictureColorsRenderer {
 				g0 = work[pyx + 1];
 				b0 = work[pyx + 2];
 				
-				r0 = Gfx.bayer8x8(x, y, r0, 3);
-				g0 = Gfx.bayer8x8(x, y, g0, 3);
-				b0 = Gfx.bayer8x8(x, y, b0, 3);
+				switch (config.dither_alg) {
+				case BAYER2x2:
+					r0 = Gfx.bayer2x2(x, y, r0, config.error_threshold);
+					g0 = Gfx.bayer2x2(x, y, g0, config.error_threshold);
+					b0 = Gfx.bayer2x2(x, y, b0, config.error_threshold);
+					break;
+				case BAYER4x4:
+					r0 = Gfx.bayer4x4(x, y, r0, config.error_threshold);
+					g0 = Gfx.bayer4x4(x, y, g0, config.error_threshold);
+					b0 = Gfx.bayer4x4(x, y, b0, config.error_threshold);
+					break;
+				case BAYER8x8:
+					r0 = Gfx.bayer8x8(x, y, r0, config.error_threshold);
+					g0 = Gfx.bayer8x8(x, y, g0, config.error_threshold);
+					b0 = Gfx.bayer8x8(x, y, b0, config.error_threshold);
+					break;
+				case BAYER16x16:
+					r0 = Gfx.bayer16x16(x, y, r0, config.error_threshold);
+					g0 = Gfx.bayer16x16(x, y, g0, config.error_threshold);
+					b0 = Gfx.bayer16x16(x, y, b0, config.error_threshold);
+					break;
+				default:
+					break;
+				}
 
 				final int color = Gfx.getColorIndex(colorAlg, pictureColors, r0, g0, b0);
 				final int c[] = pictureColors[color];
@@ -237,8 +272,7 @@ public class Amiga500Renderer extends AbstractPictureColorsRenderer {
 	}
 
 	protected void ham6Encoded() {
-		if (config.dither_alg == DITHERING.BAYER)
-			Gfx.bayer16x16(pixels, palette, colorAlg, screenWidth, screenHeight, 15);
+		bayerDithering();
 		
 		final float[] work = Gfx.copy2float(pixels);
 		bitplanes = new int[(screenWidth >> 4) * screenHeight][6]; // 6 planes

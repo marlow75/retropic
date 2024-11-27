@@ -28,7 +28,7 @@ public class C64Config extends Config {
 		dither_alg = DITHERING.ATKINSON;
 		
 		luma_pixels = LUMA_PIXELS.OUTER;		
-		pixel_merge = PIXEL_MERGE.AVERAGE;		
+		pixel_merge = PIXEL_MERGE.AVERAGE;
 	}
 	
 	public String getColorsNumber() {
@@ -78,15 +78,5 @@ public class C64Config extends Config {
 	@Override
 	public int getScreenHeight() {
 		return 200;
-	}
-	
-	@Override
-	public int getWindowHeight() {
-		return 480;
-	}
-
-	@Override
-	public int getWindowWidth() {
-		return 640;
 	}
 }

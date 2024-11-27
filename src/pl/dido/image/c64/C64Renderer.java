@@ -2,11 +2,10 @@ package pl.dido.image.c64;
 
 import java.awt.image.BufferedImage;
 
-import pl.dido.image.c64.C64Config.SCREEN_MODE;
 import pl.dido.image.renderer.AbstractRenderer;
 import pl.dido.image.utils.C64PaletteCalculator;
-import pl.dido.image.utils.Gfx;
 import pl.dido.image.utils.Config.DITHERING;
+import pl.dido.image.utils.Gfx;
 
 public class C64Renderer extends AbstractRenderer {
 
@@ -31,30 +30,37 @@ public class C64Renderer extends AbstractRenderer {
 	protected void imagePostproces() {
 		switch (((C64Config) config).screen_mode) {
 		case HIRES:
-			if (config.dither_alg == DITHERING.BAYER)
-				hiresLumaBayer();
-			else
-				hiresLumaDithered();
+			switch (config.dither_alg) {
+			case BAYER2x2:
+			case BAYER4x4:
+			case BAYER8x8:
+			case BAYER16x16:
+				hiresBayer();
+				break;
+			default:
+				hires();
+				break;
+			}
+
 			break;
 		case MULTICOLOR:
-			if (config.dither_alg == DITHERING.BAYER)
-				lowresOccurrenceBayer();
-			else
-				lowresOccurrenceDithered();
+			switch (config.dither_alg) {
+			case BAYER2x2:
+			case BAYER4x4:
+			case BAYER8x8:
+			case BAYER16x16:
+				lowresBayer();
+				break;
+			default:
+				lowres();
+				break;
+			}
+			
 			break;
 		}
 	}
 
-	@Override
-	protected void imageDithering() {
-		if (config.dither_alg == DITHERING.BAYER)
-			Gfx.bayer8x8(pixels, palette, colorAlg, screenWidth, screenHeight,
-					((C64Config) config).screen_mode == SCREEN_MODE.MULTICOLOR ? 2 : 1);
-		else
-			super.imageDithering();
-	}
-
-	protected void hiresLumaDithered() {
+	protected void hires() {
 		final int work[] = new int[64 * 3];
 		int bitmapIndex = 0;
 
@@ -148,7 +154,7 @@ public class C64Renderer extends AbstractRenderer {
 
 							value = (value << 1) | 1;
 						} else
-							value = value << 1;
+							value <<= 1;
 
 						if (bitcount % 8 == 7) {
 							bitmap[bitmapIndex++] = value;
@@ -236,7 +242,7 @@ public class C64Renderer extends AbstractRenderer {
 		}
 	}
 
-	protected void hiresLumaBayer() {
+	protected void hiresBayer() {
 		final int work[] = new int[64 * 3];
 		int bitmapIndex = 0;
 
@@ -331,7 +337,7 @@ public class C64Renderer extends AbstractRenderer {
 		}
 	}
 
-	protected void lowresOccurrenceDithered() {
+	protected void lowres() {
 		final int[] newPixels = new int[160 * 200 * 3]; // 160x200
 		int bitmapIndex = 0;
 		int sr = 0, sg = 0, sb = 0;
@@ -611,7 +617,7 @@ public class C64Renderer extends AbstractRenderer {
 		}
 	}
 
-	protected void lowresOccurrenceBayer() {
+	protected void lowresBayer() {
 		final int[] newPixels = new int[160 * 200 * 3]; // 160x200
 		int bitmapIndex = 0;
 		int sr = 0, sg = 0, sb = 0;

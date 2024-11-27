@@ -576,7 +576,7 @@ public class Gfx {
 		final int ymax = pixels.length / 3 / window;
 		final byte out[] = new byte[pixels.length * 2];
 
-		for (int y = 0; y < ymax; y++) { // y -> 2*y orgin & scanline
+		for (int y = 0; y < ymax; y++) { // y -> 2*y origin & scan line
 			final int ypos = y * window * 3; // origin y position
 			final int ydest = 2 * ypos; // destination 2*y position
 
@@ -723,20 +723,25 @@ public class Gfx {
 			final int width, final int height, final int bpp) {
 		bayer(M8x8, pixels, palette, colorAlg, width, height, bpp);
 	}
-	
+
 	public static void bayer4x4(final int pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
 			final int width, final int height, final int bpp) {
 		bayer(M4x4, pixels, palette, colorAlg, width, height, bpp);
 	}
-	
+
 	public static void bayer4x4(final byte pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
 			final int width, final int height, final int bpp) {
 		bayer(M8x8, pixels, palette, colorAlg, width, height, bpp);
 	}
-
-	public static void bayer(final int matrix[][], final int pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
+	
+	public static void bayer2x2(final byte pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
 			final int width, final int height, final int bpp) {
-		
+		bayer(M2x2, pixels, palette, colorAlg, width, height, bpp);
+	}
+
+	public static void bayer(final int matrix[][], final int pixels[], final int palette[][],
+			final NEAREST_COLOR colorAlg, final int width, final int height, final int bpp) {
+
 		for (int y = 0; y < height; y++) {
 			final int width3 = width * 3;
 
@@ -759,10 +764,10 @@ public class Gfx {
 			}
 		}
 	}
-	
-	public static void bayer(final int matrix[][], final byte pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
-			final int width, final int height, final int bpp) {
-		
+
+	public static void bayer(final int matrix[][], final byte pixels[], final int palette[][],
+			final NEAREST_COLOR colorAlg, final int width, final int height, final int bpp) {
+
 		for (int y = 0; y < height; y++) {
 			final int width3 = width * 3;
 
@@ -779,24 +784,24 @@ public class Gfx {
 
 				final int color = Gfx.getColorIndex(colorAlg, palette, r, g, b);
 
-				pixels[pyx]     = (byte) palette[color][0];
+				pixels[pyx] = (byte) palette[color][0];
 				pixels[pyx + 1] = (byte) palette[color][1];
 				pixels[pyx + 2] = (byte) palette[color][2];
 			}
 		}
 	}
-	
+
 	public final static int bayer2x2(final int x0, final int y0, final int c, final int f, final int b) {
 		return c < M2x2[x0 % 2][y0 % 2] ? b : f;
 	}
-	
+
 	public final static int bayer2x2RGB(final int x0, final int y0, final int r, final int g, final int b) {
 		return getLuma(r, g, b) < M2x2[x0 % 2][y0 % 2] ? 0 : 1;
 	}
 
 	public static final int bayer(final int matrix[][], final int x0, final int y0, final int c, final float bpp) {
 		final int mod = matrix.length;
-		
+
 		final float divider = 255 / bpp;
 		final float e = matrix[y0 % mod][x0 % mod] / bpp;
 
@@ -822,7 +827,7 @@ public class Gfx {
 	public static final int bayer8x8(final int x0, final int y0, final int c, final float bpp) {
 		return bayer(M8x8, x0, y0, c, bpp);
 	}
-	
+
 	public static final int bayer16x16(final int x0, final int y0, final int c, final float bpp) {
 		return bayer(M16x16, x0, y0, c, bpp);
 	}
@@ -1005,7 +1010,7 @@ public class Gfx {
 			return -1f;
 	}
 
-	public static int[] getRGBCubeColor(final NEAREST_COLOR colorAlg, final int work[], final int palette[][]) {
+	public static int[] get2RGBCubeColor(final NEAREST_COLOR colorAlg, final int work[], final int palette[][]) {
 		int sr = 0, sg = 0, sb = 0;
 		int r = 0, g = 0, b = 0;
 
@@ -1034,9 +1039,9 @@ public class Gfx {
 			g = work[i + 1];
 			b = work[i + 2];
 
-			final float l = getDistance(colorAlg, r, g, b, sr, sg, sb);
-			if (l > max) {
-				max = l;
+			final float dist = getDistance(colorAlg, r, g, b, sr, sg, sb);
+			if (dist > max) {
+				max = dist;
 
 				r0 = r;
 				g0 = g;
@@ -1051,7 +1056,7 @@ public class Gfx {
 		return new int[] { getColorIndex(colorAlg, palette, r0, g0, b0), getColorIndex(colorAlg, palette, r1, g1, b1) };
 	}
 
-	public static int[] getRGBLinearColor(final NEAREST_COLOR colorAlg, final int work[], final int palette[][]) {
+	public static int[] get2RGBLinearColor(final NEAREST_COLOR colorAlg, final int work[], final int palette[][]) {
 		int r1, g1, b1;
 
 		final int value[] = new int[] { 0, 64, 128, 192, 255 };
@@ -1063,9 +1068,9 @@ public class Gfx {
 		final int f[][][] = new int[len][len][len];
 		final int n[][][] = new int[len][len][len];
 
-		for (int r = 0; r < value.length; r++)
-			for (int g = 0; g < value.length; g++)
-				for (int b = 0; b < value.length; b++) {
+		for (int r = 0; r < len; r++)
+			for (int g = 0; g < len; g++)
+				for (int b = 0; b < len; b++) {
 					max[r][g][b] = -Float.MAX_VALUE;
 					min[r][g][b] = Float.MAX_VALUE;
 
@@ -1112,5 +1117,158 @@ public class Gfx {
 				}
 
 		return new int[] { f0, n0 };
+	}
+
+	public static float cosineSimilarity(final int[] vectorA, final int[] vectorB) {
+		int sum = 0;
+		int powA = 0;
+		int powB = 0;
+
+		for (int i = 0; i < vectorA.length; i++) {
+			sum += vectorA[i] * vectorB[i];
+			powA += vectorA[i] * vectorA[i];
+			powB += vectorB[i] * vectorB[i];
+		}
+
+		if (powA * powB > 0)
+			return sum / (float) (Math.sqrt(powA) * Math.sqrt(powB));
+		else
+			return -1f;
+	}
+
+	public static int[][] getTile4x4Palette(final byte data[]) {
+		final int len = data.length;
+		final int len3 = len / 3;
+
+		int sr = 0, sg = 0, sb = 0;
+		for (int i = 0; i < len; i += 3) {
+			sr += data[i] & 0xff;
+			sg += data[i + 1] & 0xff;
+			sb += data[i + 2] & 0xff;
+		}
+
+		sr /= len3;
+		sg /= len3;
+		sb /= len3;
+
+		float m = Integer.MIN_VALUE;
+		int i1 = 0;
+
+		for (int i = 0; i < len; i += 3) {
+			final int r = data[i] & 0xff;
+			final int g = data[i + 1] & 0xff;
+			final int b = data[i + 2] & 0xff;
+
+			// try to find most distant proportional vector (similarity = 1)
+			// vector with 0,0,0 base
+			final float d = Gfx.euclideanDistance(sr, sg, sb, r, g, b)
+					* cosineSimilarity(new int[] { sr, sg, sb }, new int[] { r, g, b });
+			if (d > m) {
+				i1 = i;
+				m = d;
+			}
+		}
+
+		int r1 = data[i1] & 0xff;
+		int g1 = data[i1 + 1] & 0xff;
+		int b1 = data[i1 + 2] & 0xff;
+		
+		final float l1 = Gfx.getLuma(r1, g1, b1);
+
+		r1 -= sr;
+		g1 -= sg;
+		b1 -= sb;
+		
+		m = Integer.MAX_VALUE;
+		int i2 = 0;
+
+		for (int i = 0; i < len; i += 3)
+			if (i != i1) {
+				int r = (data[i] & 0xff);
+				int g = (data[i + 1] & 0xff);
+				int b = (data[i + 2] & 0xff);
+
+				final float luma = 1 - Math.abs(Gfx.getLuma(r, g, b) - l1) / 255;
+				
+				// vector base sr, sg, sb
+				r -= sr;
+				g -= sg;
+				b -= sb;
+				
+				final float dist = Gfx.euclideanDistance(r1, g1, b1, r, g, b);
+				// try to find most distant opposite vector (similarity = -1)
+				final float sim = cosineSimilarity(new int[] { r1, g1, b1 }, new int[] { r, g, b });
+				
+				if (dist * sim * luma < m) {
+					i2 = i;
+					m = dist;
+				}
+			}
+
+		final int r2 = (data[i2] & 0xff) - sr;
+		final int g2 = (data[i2 + 1] & 0xff) - sg;
+		final int b2 = (data[i2 + 2] & 0xff) - sb;
+
+		m = Integer.MIN_VALUE;
+		int i3 = 0;
+
+		for (int i = 0; i < len; i += 3)
+			if (i != i1 && i != i2) {
+				int r = data[i] & 0xff;
+				int g = data[i + 1] & 0xff;
+				int b = data[i + 2] & 0xff;
+				
+				final float luma = 1 - Math.abs(Gfx.getLuma(r, g, b) - l1) / 255;
+				
+				// vector base sr, sg, sb
+				r -= sr;
+				g -= sg;
+				b -= sb;
+
+				final float sim = cosineSimilarity(new int[] { r2, g2, b2 }, new int[] { r, g, b });
+				// try to find most distant orthogonal vector (similarity = 0)
+				final float dist = Gfx.euclideanDistance(r2, g2, b2, r, g, b);;
+				
+				if (dist * luma * (1 - Math.abs(sim)) > m) {
+					i3 = i;
+					m = dist;
+				}
+			}
+
+		final int r3 = (data[i3] & 0xff) - sr;
+		final int g3 = (data[i3 + 1] & 0xff) - sg;
+		final int b3 = (data[i3 + 2] & 0xff) - sb;
+
+		m = Integer.MAX_VALUE;
+		int i4 = 0;
+
+		for (int i = 0; i < len; i += 3)
+			if (i != i1 && i != i2 && i != i3) {
+				int r = data[i] & 0xff;
+				int g = data[i + 1] & 0xff;
+				int b = data[i + 2] & 0xff;
+				
+				final float luma = 1 - Math.abs(Gfx.getLuma(r, g, b) - l1) / 255;
+				
+				// vector base sr, sg, sb
+				r -= sr;
+				g -= sg;
+				b -= sb;
+
+				final float dist = Gfx.euclideanDistance(r3, g3, b3, r, g, b);
+				// try to find most distant opposite vector (similarity = -1)
+				final float sim = cosineSimilarity(new int[] { r3, g3, b3 }, new int[] { r, g, b });
+				if (dist * sim * luma < m) {
+					i4 = i;
+					m = dist;
+				}
+			}
+
+		final int r4 = data[i4] & 0xff;
+		final int g4 = data[i4 + 1] & 0xff;
+		final int b4 = data[i4 + 2] & 0xff;
+
+		return new int[][] { { r1 + sr, g1 + sg, b1 + sb }, { r2 + sr, g2 + sg, b2 + sb },
+				{ r3 + sr, g3 + sg, b3 + sb }, { r4, g4, b4 } };
 	}
 }

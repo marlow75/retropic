@@ -10,6 +10,7 @@ Requirements: JRE16 installed.
 
 ## Versions
 
+* 1.7 - New simple PAL view for all machines, Commodore TED machines (Plus4, C16, C116)
 * 1.6 - Bayer dithering for all machines
 * 1.5 - New hires interlace and noisy MCI for C64, screenshots for 8 bit machines
 * 1.4 - Refactoring, new pixel formats
@@ -21,7 +22,8 @@ Requirements: JRE16 installed.
 
 ## Supported machines
 
-* C64, hires 320x200, multicolor 160x200, standard text mode 40x25, interlaced hires and MCI (noisy).
+* C64, hires 320x200, multicolor 160x200, standard text mode 40x25, interlaced hires and MCI (not usable).
+* C16, C116, Plus4 TED machines, hires 320x200, multicolor 160x200, interlaced hires.
 * ZX Spectrum 48/+ 256x192 in 16 colors.
 * Amstrad CPC series mode0 160x200 16 colors, mode1 320x200 in 4 colors.
 * Atari ST, 320x200 in 16 colors on screen from 512 palette colors.
@@ -35,15 +37,18 @@ Requirements: JRE16 installed.
 * ArtStudio for CPC machines
 * DEGAS for Atari
 * IFF format for Delux Paint – Amiga (RLE option)
+* True Paint for MCI (experimental)
 
 ## Conversion options
 
 Try all options available.
 
-* Dithering - pictures are dithered using Bayer, Floyds-Steinberg or Atkinson algorythms.
+* Dithering - pictures are dithered using Bayer, Floyds-Steinberg or Atkinson algorithms.
+* Error - error tolerance for Bayer algorithm.
 * Color distance – how color distance in the RGB cube is measured: euclidean, redmean simple approximation (close to human perception), picking highest luminance color.
 * Contrast processing - experimental luma histogram equalizer designed for 8 bit machines primarly, now enabled for every available machine. HE - standard global equalization, CLAHE & SWAHE - clipped local equalization, first fast method for local contrast enhancer, second slow but for more demanding.
-* Aspect & scanline - keeps aspect ratio of original picture, renders scanlines for 8 bit machines. 
+* Aspect - keeps aspect ratio of original picture
+* PAL - renders PAL encoded preview (simple). 
 
 ### Commodore C64
 
@@ -66,6 +71,17 @@ Exports to executable PRG or to Art Studio (hires) and Koala Paint (multicolor).
 Exports to executable PRG.
 
 ![Hires](petscii.png)
+
+### Commodore Plus4
+
+121 colors total, 2 modes, 2 useful for graphics
+
+* 320x200 - uses 2 colors in 8x8 screen cell.
+* 160x200 - uses 4 colors in 4x8 screen cell, average or brightest color are choosen when shrinking 320->160.
+
+Exports to executable PRG.
+
+![Hires](plus4.png)
 
 ### ZX Spectrum 48/+
 
@@ -131,19 +147,34 @@ Export to Delux Paint IFF file format.
 Experimental interlace modes - 136 colors. You can select max luma difference in blending colors together. Adjusted for C64C (9 luma levels), best experience with PEPTO [calculated](https://www.pepto.de/projects/colorvic/) palette.
 
 * Hires - uses max 3 colors in 8x8 screen cell.
-* MCI 320x200 - uses max 10 colors in 8x8 screen cell with noise to supress flickering.
+* MCI 320x200 - uses max 10 colors in 8x8 screen cell not usable for now.
 
 * luma threshold - interlace is about blending, only colors with the same luminance can produce non flickering new one. White has luma set to 32 black is 0, choose luminance difference which is not annoying for you.
-* error threshold - max color error you can accept.
+* error - max color error you can accept.
 * color approximation - linear or cubic.
 
-Exports to executable PRG. In the future release one of the standard format will be supported (for editing).
+Exports to executable PRG or True Paint file format.
 
 Below interlace hires played on VICE...
 
-![Naive hires](venusC64Extra.png)
+![Naive hires](c64Extra.png)
 
 ... and following MCI picture. More working examples in MCI project folder. It contains a few pictures of my city dated back 1990s.
 
-![Naive hires](venusC64ExtraMCI.png)
+![Naive hires](cC64ExtraMCI.png)
 
+### Commodore Plus4 extra
+
+Experimental interlace modes - 14k colors. You can select max luma difference in blending colors together. 
+
+* Hires - uses max 3 colors in 8x8 screen cell.
+
+* luma threshold - interlace is about blending, only colors with the same luminance can produce non flickering new one. White has luma set to 32 black is 0, choose luminance difference which is not annoying for you.
+* error - max color error you can accept.
+* color approximation - linear or cubic.
+
+Exports to executable PRG.
+
+Below interlace hires played on VICE...
+
+![Naive hires](plus4Extra.png)
