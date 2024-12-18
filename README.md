@@ -184,4 +184,4 @@ Below interlace hires played on VICE...
 
 ... and following MCI picture.
 
-![MCIPlus4](plus4MCI.png)
+![MCIPlus4](plus4ExtraMCI.png)
