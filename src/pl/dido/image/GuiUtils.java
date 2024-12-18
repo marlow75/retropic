@@ -30,7 +30,7 @@ public class GuiUtils {
 	}
 	
 	public static final JPanel addDASControls(final JPanel panel, final Config config, final boolean scan) {		
-		final JLabel lblDitherLabel = new JLabel("Dithering & aspect & scanline:");
+		final JLabel lblDitherLabel = new JLabel("Dithering & aspect & pal:");
 		lblDitherLabel.setFont(bold);
 		lblDitherLabel.setBounds(20, 8, 200, 20);
 		panel.add(lblDitherLabel);
@@ -69,7 +69,6 @@ public class GuiUtils {
 					config.dither_alg = DITHERING.BAYER16x16;
 					break;
 				}
-				
 			}});
 		
 		cmbDithering.setSelectedIndex(config.dither_alg.ordinal());
@@ -112,7 +111,7 @@ public class GuiUtils {
 			final JCheckBox chckbxRasterCheckBox = new JCheckBox("pal");
 			chckbxRasterCheckBox.setToolTipText("Simple PAL emulation");
 			chckbxRasterCheckBox.setFont(GuiUtils.std);
-			chckbxRasterCheckBox.setBounds(100, 50, 58, 20);
+			chckbxRasterCheckBox.setBounds(110, 50, 58, 20);
 			chckbxRasterCheckBox.setSelected(config.emuPAL);
 			
 			chckbxRasterCheckBox.addActionListener(new ActionListener() {

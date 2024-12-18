@@ -7,9 +7,10 @@ import pl.dido.image.renderer.AbstractRenderer;
 import pl.dido.image.utils.C64PaletteCalculator;
 import pl.dido.image.utils.Config.NEAREST_COLOR;
 import pl.dido.image.utils.Gfx;
+import pl.dido.image.utils.neural.SOMPalette;
 
 public class C64ExtraRenderer extends AbstractRenderer {
-
+	protected final static int[] colorRamp = new int[] { 0, 9, 11, 12, 15, 1 };
 	protected final static int maxPosition = 320 * 200 * 3;
 
 	protected final int bitmap1[] = new int[40 * 200];
@@ -24,9 +25,7 @@ public class C64ExtraRenderer extends AbstractRenderer {
 	protected int blend[][];
 	protected int machinePalette[][];
 
-	protected int backgroundColor1;
-	protected int backgroundColor2;
-
+	protected int backgroundColor;
 	protected int lumaThreshold;
 
 	public C64ExtraRenderer(final BufferedImage image, final C64ExtraConfig config) {
@@ -42,31 +41,60 @@ public class C64ExtraRenderer extends AbstractRenderer {
 		blend = new int[136][2];
 
 		machinePalette = C64PaletteCalculator.getCalculatedPalette();
-		final int len = machinePalette.length;
 		int index = 0;
 
-		// get mixed colors
-		for (int i = 0; i < len; i++) {
-			final float l1 = lumas[i];
+		if (!((C64ExtraConfig) config).color_ramp) {
+			final int len = machinePalette.length;
+			for (int i = 0; i < len; i++) {
+				final float l1 = lumas[i];
 
-			for (int j = i; j < len; j++) {
-				final float l2 = lumas[j];
+				for (int j = i; j < len; j++) {
+					final float l2 = lumas[j];
 
-				if (Math.abs(l2 - l1) <= lumaThreshold) {
-					final int color1[] = machinePalette[i];
-					final int color2[] = machinePalette[j];
+					if (Math.abs(l2 - l1) <= lumaThreshold) {
+						final int color1[] = machinePalette[i];
+						final int color2[] = machinePalette[j];
 
-					final int color[] = palette[index];
+						final int color[] = palette[index];
 
-					color[0] = (int) ((color1[0] + color2[0]) >> 1);
-					color[1] = (int) ((color1[1] + color2[1]) >> 1);
-					color[2] = (int) ((color1[2] + color2[2]) >> 1);
+						color[0] = (int) ((color1[0] + color2[0]) >> 1);
+						color[1] = (int) ((color1[1] + color2[1]) >> 1);
+						color[2] = (int) ((color1[2] + color2[2]) >> 1);
 
-					// save colors
-					blend[index][0] = i;
-					blend[index][1] = j;
+						// save colors
+						blend[index][0] = i;
+						blend[index][1] = j;
 
-					index++;
+						index++;
+					}
+				}
+			}
+		} else {
+			for (int i : colorRamp) {
+				final float l1 = lumas[i];
+
+				for (int j : colorRamp) {
+					if (i > j)
+						continue;
+
+					final float l2 = lumas[j];
+					if (Math.abs(l2 - l1) <= lumaThreshold) {
+
+						final int color1[] = machinePalette[i];
+						final int color2[] = machinePalette[j];
+
+						final int color[] = palette[index];
+
+						color[0] = (int) ((color1[0] + color2[0]) >> 1);
+						color[1] = (int) ((color1[1] + color2[1]) >> 1);
+						color[2] = (int) ((color1[2] + color2[2]) >> 1);
+
+						// save colors
+						blend[index][0] = i;
+						blend[index][1] = j;
+
+						index++;
+					}
 				}
 			}
 		}
@@ -88,7 +116,7 @@ public class C64ExtraRenderer extends AbstractRenderer {
 			break;
 		}
 	}
-	
+
 	protected int getBlendedColorIndex(final int tilePalette[][], final int tileColors[], final int r, final int g,
 			final int b, final int prevColorIndex) {
 		float min = Float.MAX_VALUE;
@@ -252,63 +280,60 @@ public class C64ExtraRenderer extends AbstractRenderer {
 	protected void verifyMCI() {
 		int r, g, b, r1, g1, b1;
 		int bitmapIndex = 0;
+		
+		final int prevColorIndex[] = new int[8];
+		final int tileColors[] = new int[4];
+		
+		tileColors[0] = backgroundColor;
 
 		for (int y = 0; y < 200; y += 8) {
 			final int p = y * 320 * 3;
-
-			final int prevColorIndex[] = new int[8];
 			Arrays.fill(prevColorIndex, -1);
 
 			for (int x = 0; x < 320; x += 8) {
 				final int offset = p + x * 3;
 				final int address = (y >> 3) * 40 + (x >> 3);
 
-				final int tileColors1[] = new int[] { backgroundColor1, screen1[address] >> 4, screen1[address] & 0xf,
-						nibbles[address] & 0xf };
-				final int tileColors2[] = new int[] { backgroundColor2, screen2[address] >> 4, screen2[address] & 0xf,
-						nibbles[address] & 0xf };
+				tileColors[1] = screen1[address] >> 4;
+				tileColors[2] = screen1[address] & 0xf;
+				tileColors[3] = nibbles[address] & 0xf;
 
-				int tileColors[];
 				int even = 0;
 
 				// 8x8 tile work copy
 				for (int y0 = 0; y0 < 8; y0++) {
 					int bitcount = 6;
+					final int p1 = y0 * 320 * 3;
 
 					for (int x0 = 0; x0 < 24; x0 += 3) {
 						final int colorIndex;
 
-						if (even == 0) {
-							colorIndex = (bitmap1[bitmapIndex] >> bitcount) & 0b11;
-							tileColors = tileColors1;
-						} else {
-							colorIndex = (bitmap2[bitmapIndex] >> bitcount) & 0b11;
+						if (even == 0)
+							colorIndex = (bitmap1[bitmapIndex] >> bitcount) & 0x3;
+						else {
+							colorIndex = (bitmap2[bitmapIndex] >> bitcount) & 0x3;
 							bitcount -= 2;
-							tileColors = tileColors2;
 						}
 
 						even ^= 1;
 
-						int mp[] = machinePalette[tileColors[colorIndex]];
-
-						r = mp[0];
-						g = mp[1];
-						b = mp[2];
+						r = machinePalette[tileColors[colorIndex]][0];
+						g = machinePalette[tileColors[colorIndex]][1];
+						b = machinePalette[tileColors[colorIndex]][2];
 
 						if (prevColorIndex[y0] != -1) {
-							mp = machinePalette[prevColorIndex[y0]];
 
-							r1 = mp[0];
-							g1 = mp[1];
-							b1 = mp[2];
+							r1 = machinePalette[prevColorIndex[y0]][0];
+							g1 = machinePalette[prevColorIndex[y0]][1];
+							b1 = machinePalette[prevColorIndex[y0]][2];
 
-							r = (r + r1) >> 1;
-							g = (g + g1) >> 1;
-							b = (b + b1) >> 1;
+							r = (int) ((r + r1) >> 1);
+							g = (int) ((g + g1) >> 1);
+							b = (int) ((b + b1) >> 1);
 						}
 
 						prevColorIndex[y0] = tileColors[colorIndex];
-						final int position = offset + y0 * 320 * 3 + x0;
+						final int position = offset + p1 + x0;
 
 						pixels[position] = (byte) r;
 						pixels[position + 1] = (byte) g;
@@ -327,7 +352,7 @@ public class C64ExtraRenderer extends AbstractRenderer {
 
 		int r = 0, g = 0, b = 0;
 
-		// calculate average of colors
+		// calculate average color
 		for (int y = 0; y < 200; y++) {
 			final int k = y * 320 * 3;
 
@@ -340,34 +365,25 @@ public class C64ExtraRenderer extends AbstractRenderer {
 			}
 		}
 
-		r /= 64000;
-		g /= 64000;
-		b /= 64000;
+		r /= 320 * 200;
+		g /= 320 * 200;
+		b /= 320 * 200;
 
-		// get background color
-		final int color = Gfx.getColorIndex(colorAlg, palette, r, g, b);
-		backgroundColor1 = blend[color][0];
-		backgroundColor2 = blend[color][1];
+		// average as background - common color
+		backgroundColor = Gfx.getColorIndex(colorAlg, machinePalette, r, g, b);
 
-		int mp[] = machinePalette[backgroundColor1];
+		final int br = machinePalette[backgroundColor][0];
+		final int bg = machinePalette[backgroundColor][1];
+		final int bb = machinePalette[backgroundColor][2];
 
-		final int br1 = mp[0];
-		final int bg1 = mp[1];
-		final int bb1 = mp[2];
-
-		mp = machinePalette[backgroundColor2];
-
-		final int br2 = mp[0];
-		final int bg2 = mp[1];
-		final int bb2 = mp[2];
-
-		final byte trainData[] = new byte[(64 + 8) * 3];
+		final byte trainData1[] = new byte[64 * 3];
+		final byte trainData2[] = new byte[32 * 3];
+		
+		final int prevColorIndex[] = new int[8];
+		final int tileColors[] = new int[4];
 
 		for (int y = 0; y < 200; y += 8) {
 			final int p = y * 320 * 3;
-
-			// reset previous colors
-			final int prevColorIndex[] = new int[8];
 			Arrays.fill(prevColorIndex, -1);
 
 			for (int x = 0; x < 320; x += 8) {
@@ -381,130 +397,74 @@ public class C64ExtraRenderer extends AbstractRenderer {
 					for (int x0 = 0; x0 < 24; x0 += 3) {
 						final int position = k + x0;
 
-						// colors from 136 color palette
-						trainData[index++] = pixels[position];
-						trainData[index++] = pixels[position + 1];
-						trainData[index++] = pixels[position + 2];
+						trainData1[index++] = pixels[position];
+						trainData1[index++] = pixels[position + 1];
+						trainData1[index++] = pixels[position + 2];
 					}
 				}
 
-				if (prevColorIndex[0] != -1)
-					for (int i = 0; i < 8; i++) {
-						r = machinePalette[prevColorIndex[i]][0];
-						g = machinePalette[prevColorIndex[i]][1];
-						b = machinePalette[prevColorIndex[i]][2];
-
-						trainData[index++] = (byte) r;
-						trainData[index++] = (byte) g;
-						trainData[index++] = (byte) b;
-					}
-				else
-					for (int i = 0; i < 8; i++) {
-						trainData[index++] = trainData[0];
-						trainData[index++] = trainData[1];
-						trainData[index++] = trainData[2];
-					}
-
-				// map all 4 colors
-				int tilePalette[][] = Gfx.getTile4x4Palette(trainData);
-
-				final int tilePalette1[][] = new int[4][3];
-				final int tilePalette2[][] = new int[4][3];
-
-				final int tileColors1[] = new int[4];
-				final int tileColors2[] = new int[4];
-
-				int tileColors[];
+				// map all 4 colors to extra palette
+				SOMPalette som = new SOMPalette(4, 4, 0.8f, 1f, 30);
+				int tilePalette[][] = som.train(trainData1);
 
 				// get blend colors
-				for (int i = 0; i < 4; i++) {
+				for (int i = 0; i < 16; i++) {
 					final int c[] = tilePalette[i];
 					colorIndex = getColorIndex(c[0], c[1], c[2]);
 
-					tileColors1[i] = blend[colorIndex][0];
-					tileColors2[i] = blend[colorIndex][1];
+					int q[] = machinePalette[blend[colorIndex][0]];
 
-					mp = machinePalette[tileColors1[i]];
+					trainData2[6 * i] = (byte) q[0];
+					trainData2[6 * i + 1] = (byte) q[1];
+					trainData2[6 * i + 2] = (byte) q[2];
 
-					tilePalette1[i][0] = mp[0];
-					tilePalette1[i][1] = mp[1];
-					tilePalette1[i][2] = mp[2];
+					q = machinePalette[blend[colorIndex][1]];
 
-					mp = machinePalette[tileColors2[i]];
+					trainData2[6 * i + 3] = (byte) q[0];
+					trainData2[6 * i + 4] = (byte) q[1];
+					trainData2[6 * i + 5] = (byte) q[2];
+				}
 
-					tilePalette2[i][0] = mp[0];
-					tilePalette2[i][1] = mp[1];
-					tilePalette2[i][2] = mp[2];
+				// get machine colors
+				som = new SOMPalette(2, 2, 0.8f, 1f, 30);
+				tilePalette = som.train(trainData2);
+
+				for (int i = 0; i < 4; i++) {
+					final int c[] = tilePalette[i];
+					colorIndex = Gfx.getColorIndex(colorAlg, machinePalette, c[0], c[1], c[2]);
+
+					c[0] = machinePalette[colorIndex][0];
+					c[1] = machinePalette[colorIndex][1];
+					c[2] = machinePalette[colorIndex][2];
+
+					tileColors[i] = colorIndex;
 				}
 
 				// map background color to the nearest color tile palette
-				colorIndex = Gfx.getColorIndex(colorAlg, tilePalette1, br1, bg1, bb1);
+				colorIndex = Gfx.getColorIndex(colorAlg, tilePalette, br, bg, bb);
 				if (colorIndex != 0) {
-					mp = tilePalette1[0];
+					tilePalette[colorIndex][0] = tilePalette[0][0]; // first entry = background color
+					tilePalette[colorIndex][1] = tilePalette[0][1];
+					tilePalette[colorIndex][2] = tilePalette[0][2];
 
-					tilePalette1[colorIndex][0] = mp[0]; // first entry = background color
-					tilePalette1[colorIndex][1] = mp[1];
-					tilePalette1[colorIndex][2] = mp[2];
+					tilePalette[0][0] = br; // background color
+					tilePalette[0][1] = bg;
+					tilePalette[0][2] = bb;
 
-					tilePalette1[0][0] = br1; // background color
-					tilePalette1[0][1] = bg1;
-					tilePalette1[0][2] = bb1;
-
-					tileColors1[colorIndex] = tileColors1[0];
-					tileColors1[0] = backgroundColor1;
+					tileColors[colorIndex] = tileColors[0];
 				}
-
-				// map background color to the nearest color tile palette
-				colorIndex = Gfx.getColorIndex(colorAlg, tilePalette2, br2, bg2, bb2);
-				if (colorIndex != 0) {
-					mp = tilePalette2[0];
-
-					tilePalette2[colorIndex][0] = mp[0]; // first entry = background color
-					tilePalette2[colorIndex][1] = mp[1];
-					tilePalette2[colorIndex][2] = mp[2];
-
-					tilePalette2[0][0] = br2; // background color
-					tilePalette2[0][1] = bg2;
-					tilePalette2[0][2] = bb2;
-
-					tileColors2[colorIndex] = tileColors2[0];
-					tileColors2[0] = backgroundColor2;
-				}
-
-				mp = tilePalette1[3];
-				// map 3 color to the nearest color tile palette nr2
-				colorIndex = Gfx.getColorIndex(colorAlg, tilePalette2, mp[0], mp[1], mp[2]);
-				if (colorIndex != 3) {
-					mp = tilePalette2[3];
-
-					tilePalette2[colorIndex][0] = mp[0]; // swap colors
-					tilePalette2[colorIndex][1] = mp[1];
-					tilePalette2[colorIndex][2] = mp[2];
-
-					mp = tilePalette1[3];
-
-					tilePalette2[3][0] = mp[0]; // background color
-					tilePalette2[3][1] = mp[1];
-					tilePalette2[3][2] = mp[2];
-
-					tileColors2[colorIndex] = tileColors2[3];
-					tileColors2[3] = tileColors1[3];
-				}
-
+				
+				tileColors[0] = backgroundColor;
+				
 				final int address = (y >> 3) * 40 + (x >> 3);
 
 				// map tile colors to screen palette
-				final int c01s1 = tileColors1[1] << 4;
-				final int c10s1 = tileColors1[2];
-				final int c11s1 = tileColors1[3];
+				final int c01 = tileColors[1] << 4;
+				final int c10 = tileColors[2];
+				final int c11 = tileColors[3];
 
-				// map tile colors to screen palette
-				final int c01s2 = tileColors2[1] << 4;
-				final int c10s2 = tileColors2[2];
-
-				screen1[address] = c01s1 | c10s1;
-				screen2[address] = c01s2 | c10s2;
-				nibbles[address] = c11s1;
+				screen1[address] = c01 | c10;
+				nibbles[address] = c11;
 
 				int even = 0, value1 = 0, value2 = 0, bitcount = 0;
 
@@ -514,38 +474,15 @@ public class C64ExtraRenderer extends AbstractRenderer {
 					for (int x0 = 0; x0 < 24; x0 += 3) {
 						final int position = k + x0;
 
-						r = work[position];
-						g = work[position + 1];
-						b = work[position + 2];
+						// get current picture color
+						r = Gfx.saturate(work[position]);
+						g = Gfx.saturate(work[position + 1]);
+						b = Gfx.saturate(work[position + 2]);
 
-						int nr, ng, nb;
-
-						if (even == 0) {
-							tilePalette = tilePalette1;
-							tileColors = tileColors1;
-						} else {
-							tilePalette = tilePalette2;
-							tileColors = tileColors2;
-						}
-
-						if (prevColorIndex[y0] != -1) { // prevColorIndex is absolute, not local tilePalette index
+						if (prevColorIndex[y0] != -1) // prevColorIndex is absolute, not local tilePalette index
 							colorIndex = getBlendedColorIndex(tilePalette, tileColors, r, g, b, prevColorIndex[y0]);
-
-							// new color as old and new combined
-							final int p1[] = tilePalette[colorIndex];
-							final int p2[] = machinePalette[prevColorIndex[y0]];
-
-							nr = (p1[0] + p2[0]) >> 1;
-							ng = (p1[1] + p2[1]) >> 1;
-							nb = (p1[2] + p2[2]) >> 1;
-						} else {
+						else
 							colorIndex = Gfx.getColorIndex(colorAlg, tilePalette, r, g, b);
-							final int p1[] = tilePalette[colorIndex];
-
-							nr = p1[0];
-							ng = p1[1];
-							nb = p1[2];
-						}
 
 						prevColorIndex[y0] = tileColors[colorIndex];
 
@@ -566,14 +503,6 @@ public class C64ExtraRenderer extends AbstractRenderer {
 
 							bitmapIndex++;
 						}
-
-						pixels[position] = (byte) nr;
-						pixels[position + 1] = (byte) ng;
-						pixels[position + 2] = (byte) nb;
-
-						work[position] = nr;
-						work[position + 1] = ng;
-						work[position + 2] = nb;
 					}
 				}
 			}

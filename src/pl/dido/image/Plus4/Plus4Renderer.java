@@ -473,15 +473,8 @@ public class Plus4Renderer extends AbstractRenderer {
 			}
 		}
 
-		int l0 = i1 / 16;
-		int p0 = i1 - l0 * 16;
-
-		backgroundColor1 = ((l0 & 0xf) << 4) | (p0 & 0xf);
-
-		l0 = i2 / 16;
-		p0 = i2 - l0 * 16;
-
-		backgroundColor2 = ((l0 & 0xf) << 4) | (p0 & 0xf);
+		backgroundColor1 = i1;
+		backgroundColor2 = i2;
 
 		// common colors
 		tilePalette[0] = Arrays.copyOf(palette[i1], 3);
@@ -758,14 +751,8 @@ public class Plus4Renderer extends AbstractRenderer {
 		// 4x8 tile palette
 		final int tilePalette[][] = new int[4][3];
 
-		int l0 = i1 / 16;
-		int p0 = i1 - l0 * 16;
-
-		backgroundColor1 = ((l0 & 0xf) << 4) | (p0 & 0xf);
-		l0 = i2 / 16;
-		p0 = i2 - l0 * 16;
-
-		backgroundColor2 = ((l0 & 0xf) << 4) | (p0 & 0xf);
+		backgroundColor1 = i1;
+		backgroundColor2 = i2;
 
 		// common colors
 		tilePalette[0] = Arrays.copyOf(palette[i1], 3);

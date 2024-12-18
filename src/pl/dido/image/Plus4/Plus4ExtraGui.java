@@ -32,23 +32,41 @@ public class Plus4ExtraGui {
 		lblConvertLabel.setBounds(20, 70, 169, 14);
 		panelPlus4Extra.add(lblConvertLabel);
 
-		final JRadioButton rdbtnHiresButton = new JRadioButton("Hires interlaced");
+		final JRadioButton rdbtnHiresButton = new JRadioButton("Hires Int");
 		rdbtnHiresButton.setToolTipText(
-				"High resolution mode. 3 colors in 8x8 block");
+				"High resolution interlaced. 3 colors in 8x8 block");
 		rdbtnHiresButton.setFont(GuiUtils.std);
-		rdbtnHiresButton.setBounds(46, 85, 150, 23);
+		rdbtnHiresButton.setBounds(46, 85, 80, 23);
 		rdbtnHiresButton.setSelected(config.extra_mode == EXTRA_MODE.HIRES_INTERLACED);
 		rdbtnHiresButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				config.extra_mode = EXTRA_MODE.HIRES_INTERLACED;
+				
 				rdbtnLinearButton.setEnabled(true);
 				rdbtnCubeButton.setEnabled(true);
 			}});
 
 		panelPlus4Extra.add(rdbtnHiresButton);
 		
+		final JRadioButton rdbtnMCIButton = new JRadioButton("MultiColor Int");
+		rdbtnMCIButton.setToolTipText(
+				"High resolution interlaced. 8 colors in 8x8 block");
+		rdbtnMCIButton.setFont(GuiUtils.std);
+		rdbtnMCIButton.setBounds(135, 85, 100, 23);
+		rdbtnMCIButton.setSelected(config.extra_mode == EXTRA_MODE.MULTI_COLOR_INTERLACED);
+		rdbtnMCIButton.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				config.extra_mode = EXTRA_MODE.MULTI_COLOR_INTERLACED;
+				
+				rdbtnLinearButton.setEnabled(false);
+				rdbtnCubeButton.setEnabled(false);
+			}});
+
+		panelPlus4Extra.add(rdbtnMCIButton);
+		
 		final ButtonGroup groupMode = new ButtonGroup();
 		groupMode.add(rdbtnHiresButton);
+		groupMode.add(rdbtnMCIButton);
 		
 		final Canvas plus4ExtraLogo = new ImageCanvas("plus4.png");
 		plus4ExtraLogo.setBounds(381, 7, 100, 96);

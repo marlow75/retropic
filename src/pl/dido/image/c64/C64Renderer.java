@@ -17,7 +17,6 @@ public class C64Renderer extends AbstractRenderer {
 
 	public C64Renderer(final BufferedImage image, final C64Config config) {
 		super(image, config);
-
 		palette = new int[16][3];
 	}
 

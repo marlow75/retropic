@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 import pl.dido.image.renderer.AbstractRenderer;
+import pl.dido.image.utils.C64PaletteCalculator;
 import pl.dido.image.utils.Gfx;
 import pl.dido.image.utils.Utils;
 import pl.dido.image.utils.neural.Dataset;
@@ -12,11 +13,6 @@ import pl.dido.image.utils.neural.HL2Network;
 import pl.dido.image.utils.neural.Network;
 
 public class PetsciiRenderer extends AbstractRenderer {
-
-//	// C64 palette
-	private final static int colors[] = new int[] { 0, 0xffffff, 0x813338, 0x75cec8, 0x8e3c97, 0x56ac4d, 0x2e2c9b,
-			0xedf171, 0x8e5029, 0x553800, 0xc46c71, 0x4a4a4a, 0x7b7b7b, 0xa9ff9f, 0x706deb, 0xb2b2b2 };
-
 	private final static int power2[] = new int[] { 128, 64, 32, 16, 8, 4, 2, 1 };
 
 	protected final static String PETSCII_NETWORK_L1 = "petscii.L1network";
@@ -90,11 +86,7 @@ public class PetsciiRenderer extends AbstractRenderer {
 
 	@Override
 	protected void setupPalette() {
-		for (int i = 0; i < colors.length; i++) {
-			palette[i][0] = colors[i] & 0x0000ff; // blue
-			palette[i][1] = (colors[i] & 0x00ff00) >> 8; // green
-			palette[i][2] = (colors[i] & 0xff0000) >> 16; // red
-		}
+		palette = C64PaletteCalculator.getCalculatedPalette();
 	}
 
 	@Override

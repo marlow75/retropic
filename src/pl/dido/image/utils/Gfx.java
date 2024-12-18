@@ -15,17 +15,20 @@ import pl.dido.image.utils.Config.DITHERING;
 import pl.dido.image.utils.Config.NEAREST_COLOR;
 
 public class Gfx {
+	public static final int M2x1[][] = new int[][] { { 77, 171 } }; // 3 colors
+
+	public static final int M1x2[][] = new int[][] { { 77 }, { 171 } }; // 3 colors
+	
+	public static final int M2x2[][] = new int[][] { // 5 colors
+		{ 51, 206 }, { 153, 102 } };
+
+	public static final int M4x4[][] = new int[][] { // 17 colors
+		{ 15, 195, 60, 240 }, { 135, 75, 180, 120 }, { 45, 225, 30, 210 }, { 165, 105, 150, 90 } };
 
 	public static final int M8x8[][] = new int[][] { // 65 colors
 			{ 0, 32, 8, 40, 2, 34, 10, 42 }, { 48, 16, 56, 24, 50, 18, 58, 26 }, { 12, 44, 4, 36, 14, 46, 6, 38 },
 			{ 60, 28, 52, 20, 62, 30, 54, 22 }, { 3, 35, 11, 43, 1, 33, 9, 41 }, { 51, 19, 59, 27, 49, 17, 57, 25 },
 			{ 15, 47, 7, 39, 13, 45, 5, 37 }, { 63, 31, 55, 23, 61, 29, 53, 21 } };
-
-	public static final int M4x4[][] = new int[][] { // 17 colors
-			{ 15, 195, 60, 240 }, { 135, 75, 180, 120 }, { 45, 225, 30, 210 }, { 165, 105, 150, 90 } };
-
-	public static final int M2x2[][] = new int[][] { // 5 colors
-			{ 51, 206 }, { 153, 102 } };
 
 	public static final int M16x16[][] = new int[][] { // 256 colors
 			{ 0, 191, 48, 239, 12, 203, 60, 251, 3, 194, 51, 242, 15, 206, 63, 254 },
@@ -572,40 +575,6 @@ public class Gfx {
 		}
 	}
 
-	public static byte[] makeScanlines(final byte pixels[], final int window) {
-		final int ymax = pixels.length / 3 / window;
-		final byte out[] = new byte[pixels.length * 2];
-
-		for (int y = 0; y < ymax; y++) { // y -> 2*y origin & scan line
-			final int ypos = y * window * 3; // origin y position
-			final int ydest = 2 * ypos; // destination 2*y position
-
-			final int ydest0 = (2 * y - 1) * window * 3; // destination 2*y+1 position
-
-			for (int x = 0; x < window * 3; x += 3) {
-				final int xys = ypos + x; // origin pixel position
-				final int xyd = ydest + x; // destination pixel position
-				final int xyd0 = ydest0 + x; // destination next line pixel position
-
-				final byte r = pixels[xys]; // read pixel
-				final byte g = pixels[xys + 1];
-				final byte b = pixels[xys + 2];
-
-				if (y > 0) {
-					out[xyd0] = (byte) Math.round(r * 0.6f);
-					out[xyd0 + 1] = (byte) Math.round(g * 0.6f);
-					out[xyd0 + 2] = (byte) Math.round(b * 0.6f);
-				}
-
-				out[xyd] = r;
-				out[xyd + 1] = g;
-				out[xyd + 2] = b;
-			}
-		}
-
-		return out;
-	}
-
 	public static void dithering(final byte pixels[], final int palette[][], final Config config) {
 		final int work[] = Gfx.copy2Int(pixels);
 
@@ -738,6 +707,16 @@ public class Gfx {
 			final int width, final int height, final int bpp) {
 		bayer(M2x2, pixels, palette, colorAlg, width, height, bpp);
 	}
+	
+	public static void bayer2x1(final byte pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
+			final int width, final int height, final int bpp) {
+		bayer(M2x1, pixels, palette, colorAlg, width, height, bpp);
+	}
+	
+	public static void bayer1x2(final byte pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
+			final int width, final int height, final int bpp) {
+		bayer(M1x2, pixels, palette, colorAlg, width, height, bpp);
+	}
 
 	public static void bayer(final int matrix[][], final int pixels[], final int palette[][],
 			final NEAREST_COLOR colorAlg, final int width, final int height, final int bpp) {
@@ -800,10 +779,11 @@ public class Gfx {
 	}
 
 	public static final int bayer(final int matrix[][], final int x0, final int y0, final int c, final float bpp) {
-		final int mod = matrix.length;
-
+		final int mody = matrix.length;
+		final int modx = matrix[0].length;
+		
 		final float divider = 255 / bpp;
-		final float e = matrix[y0 % mod][x0 % mod] / bpp;
+		final float e = matrix[y0 % mody][x0 % modx] / bpp;
 
 		float i = (c + e) / divider;
 		if (i == 0)
@@ -1147,6 +1127,7 @@ public class Gfx {
 			sb += data[i + 2] & 0xff;
 		}
 
+		// center of samples cube
 		sr /= len3;
 		sg /= len3;
 		sb /= len3;
@@ -1169,6 +1150,7 @@ public class Gfx {
 			}
 		}
 
+		// most distant proportional color
 		int r1 = data[i1] & 0xff;
 		int g1 = data[i1 + 1] & 0xff;
 		int b1 = data[i1 + 2] & 0xff;

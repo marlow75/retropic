@@ -57,10 +57,10 @@ public class C64ExtraRunner extends AbstractRendererRunner {
 				out.write(0xff);
 
 			// background1
-			out.write(c64Extra.backgroundColor1);
+			out.write(c64Extra.backgroundColor);
 
 			// background2
-			out.write(c64Extra.backgroundColor1);
+			out.write(c64Extra.backgroundColor);
 
 			// attributes 1
 			for (int i = 0; i < 1000; i++)
@@ -132,10 +132,10 @@ public class C64ExtraRunner extends AbstractRendererRunner {
 				out.write(0xff);
 
 			// background 1
-			out.write(c64Extra.backgroundColor1);
+			out.write(c64Extra.backgroundColor);
 
 			// background 2
-			out.write(c64Extra.backgroundColor2);
+			out.write(c64Extra.backgroundColor);
 
 			// attributes 1
 			for (int i = 0; i < 1000; i++)
@@ -147,7 +147,7 @@ public class C64ExtraRunner extends AbstractRendererRunner {
 
 			// attributes 2
 			for (int i = 0; i < 1000; i++)
-				out.write(c64Extra.screen2[i] & 0xff);
+				out.write(c64Extra.screen1[i] & 0xff);
 
 			// fill the gap
 			for (int i = 0; i < 24 + 3072; i++)
@@ -200,7 +200,7 @@ public class C64ExtraRunner extends AbstractRendererRunner {
 			for (int i = 0; i < 1000; i++)
 				out.write(c64Extra.screen1[i] & 0xff);
 
-			out.write(c64Extra.backgroundColor1 & 0xff);
+			out.write(c64Extra.backgroundColor & 0xff);
 
 			// fill the gap
 			for (int i = 0; i < 23; i++)

@@ -1,7 +1,6 @@
 package pl.dido.image.c64;
 
 public class C64ExtraConfig extends C64Config {
-
 	public enum EXTRA_MODE {
 		HIRES_INTERLACED, MULTI_COLOR_INTERLACED;
 	}
@@ -16,14 +15,20 @@ public class C64ExtraConfig extends C64Config {
 	public RGB_APPROXIMATION rgb_approximation;
 	public EXTRA_MODE extra_mode;
 	
+	public boolean color_ramp; 
+	
 	public C64ExtraConfig() {
 		super();
+		
+		dither_alg = DITHERING.BAYER8x8;
 		
 		extra_mode = EXTRA_MODE.HIRES_INTERLACED;
 		luma_threshold = 32;
 		
 		rgb_approximation = RGB_APPROXIMATION.LINEAR;
 		error_threshold = 2;
+		
+		color_ramp = false;
 	}
 	
 	@Override
@@ -35,7 +40,7 @@ public class C64ExtraConfig extends C64Config {
 			configString += "x3 ";
 			break;
 		case MULTI_COLOR_INTERLACED:
-			configString += "x10 ";
+			configString += "x8 ";
 		default:
 			break;
 		}

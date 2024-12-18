@@ -104,6 +104,83 @@ public class Plus4ExtraRunner extends AbstractRendererRunner {
 		}
 	}
 	
+	private void mciExportPRG(final String fileName) {
+		try {
+			final BufferedInputStream in = new BufferedInputStream(Utils.getResourceAsStream("mciplus4.prg"), 8192);
+			final BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(new File(fileName)), 8192);
+
+			// loading address BASIC
+			out.write(0x01);
+			out.write(0x10);
+
+			int data, prg_len = 0;
+			in.read(); // skip loading address
+			in.read();
+
+			while ((data = in.read()) != -1) {
+				out.write(data);
+				prg_len += 1;
+			}
+
+			in.close();
+
+			// spare bytes
+			final int spare = 0x7ff - prg_len - 2; // -2 as backgroundcolor
+			for (int i = 0; i < spare; i++)
+				out.write(0x80);
+			
+			out.write(plus4Extra.backgroundColor1 & 0xff);
+			out.write(plus4Extra.backgroundColor2 & 0xff);
+			
+			// luma $1800
+			for (int i = 0; i < plus4Extra.nibble1.length; i++)
+				out.write(plus4Extra.nibble1[i] & 0xff);
+			
+			for (int i = 0; i < 24; i++)
+				out.write(0x80);
+			
+			// color $1c00
+			for (int i = 0; i < plus4Extra.screen1.length; i++)
+				out.write(plus4Extra.screen1[i] & 0xff);
+
+			for (int i = 0; i < 24; i++)
+				out.write(0x80);
+			
+			// bitmap $2000
+			for (int i = 0; i < plus4Extra.bitmap1.length; i++)
+				out.write(plus4Extra.bitmap1[i] & 0xff);
+			
+			for (int i = 0; i < 192; i++)
+				out.write(0x80);
+			
+			// bitmap $4000
+			for (int i = 0; i < plus4Extra.bitmap2.length; i++)
+				out.write(plus4Extra.bitmap2[i] & 0xff);
+			
+			for (int i = 0; i < 192; i++)
+				out.write(0x80);
+			
+			// luma $6000
+			for (int i = 0; i < plus4Extra.nibble2.length; i++)
+				out.write(plus4Extra.nibble2[i] & 0xff);
+			
+			for (int i = 0; i < 24; i++)
+				out.write(0x80);
+			
+			// color $6400
+			for (int i = 0; i < plus4Extra.screen2.length; i++)
+				out.write(plus4Extra.screen2[i] & 0xff);
+
+			for (int i = 0; i < 24; i++)
+				out.write(0x80);
+
+			out.close();
+			frame.setTitle(frame.getTitle() + " SAVED");
+		} catch (final IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	@Override
 	protected JMenuBar getMenuBar() {
 		final JMenu menuFile = new JMenu("File");
@@ -124,6 +201,9 @@ public class Plus4ExtraRunner extends AbstractRendererRunner {
 						switch (((Plus4ExtraConfig) plus4Extra.config).extra_mode) {
 						case HIRES_INTERLACED:
 							hiresExportPRG(exportFileName);
+							break;
+						case MULTI_COLOR_INTERLACED:
+							mciExportPRG(exportFileName);
 							break;
 						default:
 							break;

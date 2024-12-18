@@ -62,8 +62,8 @@ public abstract class AbstractRenderer {
 		setupPalette();
 
 		imageDithering();
-
 		imagePostproces();
+		
 		if (config.emuPAL)
 			emuPAL();
 	}

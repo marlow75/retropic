@@ -10,7 +10,8 @@ Requirements: JRE16 installed.
 
 ## Versions
 
-* 1.7 - New simple PAL view for all machines, Commodore TED machines (Plus4, C16, C116)
+* 1.8 - Reworked MCI mode for C64, extra modes for TED machines (hires & MCI)
+* 1.7 - New simple PAL view for all machines, Commodore TED machines (Plus4, C16, C116), scanlines removed
 * 1.6 - Bayer dithering for all machines
 * 1.5 - New hires interlace and noisy MCI for C64, screenshots for 8 bit machines
 * 1.4 - Refactoring, new pixel formats
@@ -22,8 +23,8 @@ Requirements: JRE16 installed.
 
 ## Supported machines
 
-* C64, hires 320x200, multicolor 160x200, standard text mode 40x25, interlaced hires and MCI (not usable).
-* C16, C116, Plus4 TED machines, hires 320x200, multicolor 160x200, interlaced hires.
+* C64, hires 320x200, multicolor 160x200, standard text mode 40x25, interlaced hires and MCI (now usable).
+* C16, C116, Plus4 TED machines, hires 320x200, multicolor 160x200, interlaced hires and MCI (experimental).
 * ZX Spectrum 48/+ 256x192 in 16 colors.
 * Amstrad CPC series mode0 160x200 16 colors, mode1 320x200 in 4 colors.
 * Atari ST, 320x200 in 16 colors on screen from 512 palette colors.
@@ -32,7 +33,8 @@ Requirements: JRE16 installed.
 
 ## Graphics formats
 
-* executable PRG, Koala Paint, ArtStudio for C64
+* executable PRG for TED machines
+* executable PRG, Koala Paint, ArtStudio, TruePaint for C64
 * ZX SCR format
 * ArtStudio for CPC machines
 * DEGAS for Atari
@@ -44,11 +46,11 @@ Requirements: JRE16 installed.
 Try all options available.
 
 * Dithering - pictures are dithered using Bayer, Floyds-Steinberg or Atkinson algorithms.
-* Error - error tolerance for Bayer algorithm.
+* Error - error tolerance for algorithms.
 * Color distance – how color distance in the RGB cube is measured: euclidean, redmean simple approximation (close to human perception), picking highest luminance color.
 * Contrast processing - experimental luma histogram equalizer designed for 8 bit machines primarly, now enabled for every available machine. HE - standard global equalization, CLAHE & SWAHE - clipped local equalization, first fast method for local contrast enhancer, second slow but for more demanding.
 * Aspect - keeps aspect ratio of original picture
-* PAL - renders PAL encoded preview (simple). 
+* PAL - renders PAL encoded preview (simple algorithm). 
 
 ### Commodore C64
 
@@ -147,7 +149,7 @@ Export to Delux Paint IFF file format.
 Experimental interlace modes - 136 colors. You can select max luma difference in blending colors together. Adjusted for C64C (9 luma levels), best experience with PEPTO [calculated](https://www.pepto.de/projects/colorvic/) palette.
 
 * Hires - uses max 3 colors in 8x8 screen cell.
-* MCI 320x200 - uses max 10 colors in 8x8 screen cell not usable for now.
+* MCI 320x200 - uses max 8 colors in 8x8 screen cell.
 
 * luma threshold - interlace is about blending, only colors with the same luminance can produce non flickering new one. White has luma set to 32 black is 0, choose luminance difference which is not annoying for you.
 * error - max color error you can accept.
@@ -168,6 +170,7 @@ Below interlace hires played on VICE...
 Experimental interlace modes - 14k colors. You can select max luma difference in blending colors together. 
 
 * Hires - uses max 3 colors in 8x8 screen cell.
+* MCI 320x200 - uses max 8 colors in 8x8 screen cell.
 
 * luma threshold - interlace is about blending, only colors with the same luminance can produce non flickering new one. White has luma set to 32 black is 0, choose luminance difference which is not annoying for you.
 * error - max color error you can accept.
