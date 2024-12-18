@@ -12,7 +12,7 @@ public class ZXConfig extends Config {
 		highContrast = HIGH_CONTRAST.SWAHE;
 		windowSize = 20;
 		
-		error_threshold = 4;
+		error_threshold = 5;
 	}
 
 	@Override

@@ -207,36 +207,45 @@ public class ZXRenderer extends AbstractRenderer {
 
 	protected void hiresBayer() {
 		int bitmapIndex = 0;
-		work = new int[8 * 8 * 3];
 
 		for (int y = 0; y < 192; y += 8) { // every 8 line
 			final int p = y * 256 * 3;
 
 			for (int x = 0; x < 256; x += 8) { // every 8 pixel
 				final int offset = p + x * 3;
-
-				int index = 0;
 				int f = 0, n = 0;
+				
+				final int occurrence[] = new int[16];
 
 				// get 8x8 tile palette
 				for (int y0 = 0; y0 < 8; y0 += 1) {
 					for (int x0 = 0; x0 < 24; x0 += 3) {
 						final int position = offset + y0 * 256 * 3 + x0;
 
-						final int r = pixels[position] & 0xff;
+						final int r = pixels[position + 0] & 0xff;
 						final int g = pixels[position + 1] & 0xff;
 						final int b = pixels[position + 2] & 0xff;
 
-						work[index++] = r;
-						work[index++] = g;
-						work[index++] = b;
+						occurrence[getColorIndex(r, g, b)]++;
 					}
 				}
 				
-				final int colors[] = Gfx.get2RGBCubeColor(colorAlg, work, palette);
-				f = colors[0];
-				n = colors[1];
-
+				int m1 = 0, m2 = 0;
+				
+				for (int i = 0; i < 16; i++) {
+					if (occurrence[i] > m1) {
+						m2 = m1;
+						n = f;
+						
+						m1 = occurrence[i];
+						f = i;
+					} else
+					if (occurrence[i] > m2) {
+						m2 = occurrence[i];
+						n = i;
+					}	
+				}
+				
 				final int fr = palette[f][0];
 				final int fg = palette[f][1];
 				final int fb = palette[f][2];
@@ -248,9 +257,9 @@ public class ZXRenderer extends AbstractRenderer {
 				final int localPalette[][] = new int[][] { { fr, fg, fb }, { nr, ng, nb } };
 				final int address = (y >> 3) * 32 + (x >> 3);
 
-				int ink = f >> 1;
-				int paper = n >> 1;
-				int bright = (f % 1 | n % 1) << 6;
+				final int ink = f >> 1;
+				final int paper = n >> 1;
+				final int bright = (f % 1 | n % 1) << 6;
 
 				attribs[address] = ((paper & 0xf) << 3) | (ink & 0x7) | bright;
 				int value = 0, bitcount = 0;
@@ -261,7 +270,7 @@ public class ZXRenderer extends AbstractRenderer {
 					for (int x0 = 0; x0 < 8; x0++) {
 						final int pyx0 = k0 + x0 * 3;
 
-						final int r = pixels[pyx0] & 0xff;
+						final int r = pixels[pyx0 + 0] & 0xff;
 						final int g = pixels[pyx0 + 1] & 0xff;
 						final int b = pixels[pyx0 + 2] & 0xff;
 												
@@ -275,7 +284,7 @@ public class ZXRenderer extends AbstractRenderer {
 
 						bitcount += 1;
 
-						pixels[pyx0] = (byte) localPalette[color][0];
+						pixels[pyx0 + 0] = (byte) localPalette[color][0];
 						pixels[pyx0 + 1] = (byte) localPalette[color][1];
 						pixels[pyx0 + 2] = (byte) localPalette[color][2];
 					}

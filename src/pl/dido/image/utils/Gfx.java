@@ -1000,7 +1000,7 @@ public class Gfx {
 		int len = work.length;
 
 		for (int i = 0; i < len; i += 3) {
-			sr += work[i];
+			sr += work[i + 0];
 			sg += work[i + 1];
 			sb += work[i + 2];
 		}
@@ -1015,7 +1015,7 @@ public class Gfx {
 		float max = -Float.MAX_VALUE;
 
 		for (int i = 0; i < len; i += 3) {
-			r = work[i];
+			r = work[i + 0];
 			g = work[i + 1];
 			b = work[i + 2];
 
@@ -1114,143 +1114,5 @@ public class Gfx {
 			return sum / (float) (Math.sqrt(powA) * Math.sqrt(powB));
 		else
 			return -1f;
-	}
-
-	public static int[][] getTile4x4Palette(final byte data[]) {
-		final int len = data.length;
-		final int len3 = len / 3;
-
-		int sr = 0, sg = 0, sb = 0;
-		for (int i = 0; i < len; i += 3) {
-			sr += data[i] & 0xff;
-			sg += data[i + 1] & 0xff;
-			sb += data[i + 2] & 0xff;
-		}
-
-		// center of samples cube
-		sr /= len3;
-		sg /= len3;
-		sb /= len3;
-
-		float m = Integer.MIN_VALUE;
-		int i1 = 0;
-
-		for (int i = 0; i < len; i += 3) {
-			final int r = data[i] & 0xff;
-			final int g = data[i + 1] & 0xff;
-			final int b = data[i + 2] & 0xff;
-
-			// try to find most distant proportional vector (similarity = 1)
-			// vector with 0,0,0 base
-			final float d = Gfx.euclideanDistance(sr, sg, sb, r, g, b)
-					* cosineSimilarity(new int[] { sr, sg, sb }, new int[] { r, g, b });
-			if (d > m) {
-				i1 = i;
-				m = d;
-			}
-		}
-
-		// most distant proportional color
-		int r1 = data[i1] & 0xff;
-		int g1 = data[i1 + 1] & 0xff;
-		int b1 = data[i1 + 2] & 0xff;
-		
-		final float l1 = Gfx.getLuma(r1, g1, b1);
-
-		r1 -= sr;
-		g1 -= sg;
-		b1 -= sb;
-		
-		m = Integer.MAX_VALUE;
-		int i2 = 0;
-
-		for (int i = 0; i < len; i += 3)
-			if (i != i1) {
-				int r = (data[i] & 0xff);
-				int g = (data[i + 1] & 0xff);
-				int b = (data[i + 2] & 0xff);
-
-				final float luma = 1 - Math.abs(Gfx.getLuma(r, g, b) - l1) / 255;
-				
-				// vector base sr, sg, sb
-				r -= sr;
-				g -= sg;
-				b -= sb;
-				
-				final float dist = Gfx.euclideanDistance(r1, g1, b1, r, g, b);
-				// try to find most distant opposite vector (similarity = -1)
-				final float sim = cosineSimilarity(new int[] { r1, g1, b1 }, new int[] { r, g, b });
-				
-				if (dist * sim * luma < m) {
-					i2 = i;
-					m = dist;
-				}
-			}
-
-		final int r2 = (data[i2] & 0xff) - sr;
-		final int g2 = (data[i2 + 1] & 0xff) - sg;
-		final int b2 = (data[i2 + 2] & 0xff) - sb;
-
-		m = Integer.MIN_VALUE;
-		int i3 = 0;
-
-		for (int i = 0; i < len; i += 3)
-			if (i != i1 && i != i2) {
-				int r = data[i] & 0xff;
-				int g = data[i + 1] & 0xff;
-				int b = data[i + 2] & 0xff;
-				
-				final float luma = 1 - Math.abs(Gfx.getLuma(r, g, b) - l1) / 255;
-				
-				// vector base sr, sg, sb
-				r -= sr;
-				g -= sg;
-				b -= sb;
-
-				final float sim = cosineSimilarity(new int[] { r2, g2, b2 }, new int[] { r, g, b });
-				// try to find most distant orthogonal vector (similarity = 0)
-				final float dist = Gfx.euclideanDistance(r2, g2, b2, r, g, b);;
-				
-				if (dist * luma * (1 - Math.abs(sim)) > m) {
-					i3 = i;
-					m = dist;
-				}
-			}
-
-		final int r3 = (data[i3] & 0xff) - sr;
-		final int g3 = (data[i3 + 1] & 0xff) - sg;
-		final int b3 = (data[i3 + 2] & 0xff) - sb;
-
-		m = Integer.MAX_VALUE;
-		int i4 = 0;
-
-		for (int i = 0; i < len; i += 3)
-			if (i != i1 && i != i2 && i != i3) {
-				int r = data[i] & 0xff;
-				int g = data[i + 1] & 0xff;
-				int b = data[i + 2] & 0xff;
-				
-				final float luma = 1 - Math.abs(Gfx.getLuma(r, g, b) - l1) / 255;
-				
-				// vector base sr, sg, sb
-				r -= sr;
-				g -= sg;
-				b -= sb;
-
-				final float dist = Gfx.euclideanDistance(r3, g3, b3, r, g, b);
-				// try to find most distant opposite vector (similarity = -1)
-				final float sim = cosineSimilarity(new int[] { r3, g3, b3 }, new int[] { r, g, b });
-				if (dist * sim * luma < m) {
-					i4 = i;
-					m = dist;
-				}
-			}
-
-		final int r4 = data[i4] & 0xff;
-		final int g4 = data[i4 + 1] & 0xff;
-		final int b4 = data[i4 + 2] & 0xff;
-
-		return new int[][] { { r1 + sr, g1 + sg, b1 + sb }, { r2 + sr, g2 + sg, b2 + sb },
-				{ r3 + sr, g3 + sg, b3 + sb }, { r4, g4, b4 } };
 	}
 }
