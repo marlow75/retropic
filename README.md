@@ -159,11 +159,11 @@ Exports to executable PRG or True Paint file format.
 
 Below interlace hires played on VICE...
 
-![Naive hires](c64Extra.png)
+![hiresC64](c64Extra.png)
 
-... and following MCI picture. More working examples in MCI project folder. It contains a few pictures of my city dated back 1990s.
+... and following MCI picture.
 
-![Naive hires](c64ExtraMCI.png)
+![MCIC64](c64ExtraMCI.png)
 
 ### Commodore Plus4 extra
 
@@ -180,4 +180,8 @@ Exports to executable PRG.
 
 Below interlace hires played on VICE...
 
-![Naive hires](plus4Extra.png)
+![HiresPlus4](plus4Extra.png)
+
+... and following MCI picture.
+
+![MCIPlus4](plus4MCI.png)
