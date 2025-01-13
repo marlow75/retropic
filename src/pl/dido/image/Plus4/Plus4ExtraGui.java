@@ -26,6 +26,8 @@ public class Plus4ExtraGui {
 		
 		final JRadioButton rdbtnLinearButton = new JRadioButton("linear");
 		final JRadioButton rdbtnCubeButton = new JRadioButton("cube");
+		final JSlider sldFlickering = new JSlider(JSlider.HORIZONTAL, 0, 3, (int) (config.flickering_factor * 1.3f));
+		sldFlickering.setEnabled(config.extra_mode == EXTRA_MODE.MULTI_COLOR_INTERLACED);
 
 		final JLabel lblConvertLabel = new JLabel("Converter mode:");
 		lblConvertLabel.setFont(GuiUtils.bold);
@@ -44,6 +46,7 @@ public class Plus4ExtraGui {
 				
 				rdbtnLinearButton.setEnabled(true);
 				rdbtnCubeButton.setEnabled(true);
+				sldFlickering.setEnabled(false);
 			}});
 
 		panelPlus4Extra.add(rdbtnHiresButton);
@@ -60,6 +63,7 @@ public class Plus4ExtraGui {
 				
 				rdbtnLinearButton.setEnabled(false);
 				rdbtnCubeButton.setEnabled(false);
+				sldFlickering.setEnabled(true);
 			}});
 
 		panelPlus4Extra.add(rdbtnMCIButton);
@@ -71,37 +75,16 @@ public class Plus4ExtraGui {
 		final Canvas plus4ExtraLogo = new ImageCanvas("plus4.png");
 		plus4ExtraLogo.setBounds(381, 7, 100, 96);
 		panelPlus4Extra.add(plus4ExtraLogo);
-		
-		final JLabel thresholdLabel = new JLabel("luma threshold");
-		thresholdLabel.setFont(GuiUtils.bold);
-		thresholdLabel.setBounds(46, 120, 120, 20);
-		panelPlus4Extra.add(thresholdLabel);
 
-		final JSlider sldLuma = new JSlider(JSlider.HORIZONTAL, 1, 32, config.luma_threshold);
-		sldLuma.setBounds(41, 140, 150, 35);
-		sldLuma.setFont(GuiUtils.std);
-		sldLuma.addChangeListener(new ChangeListener() {
-			public void stateChanged(final ChangeEvent e) {
-				final JSlider source = (JSlider) e.getSource();
-
-				if (!source.getValueIsAdjusting())
-					config.luma_threshold = source.getValue();
-			}
-		});
-		
-		sldLuma.setMajorTickSpacing(5);
-		sldLuma.setPaintLabels(true);
-		panelPlus4Extra.add(sldLuma);
-		
 		final JLabel approxLabel = new JLabel("color approximation");
 		approxLabel.setFont(GuiUtils.bold);
-		approxLabel.setBounds(215, 120, 120, 20);
+		approxLabel.setBounds(25, 120, 120, 20);
 		panelPlus4Extra.add(approxLabel);
 		
 		rdbtnLinearButton.setToolTipText(
 				"Linear color approximation. Most distant colors");
 		rdbtnLinearButton.setFont(GuiUtils.std);
-		rdbtnLinearButton.setBounds(210, 140, 60, 23);
+		rdbtnLinearButton.setBounds(46, 140, 60, 23);
 		rdbtnLinearButton.setSelected(config.rgb_approximation == RGB_APPROXIMATION.LINEAR);
 		rdbtnLinearButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
@@ -113,7 +96,7 @@ public class Plus4ExtraGui {
 		rdbtnCubeButton.setToolTipText(
 				"Cube color approximation. Calculated within RGB cube");
 		rdbtnCubeButton.setFont(GuiUtils.std);
-		rdbtnCubeButton.setBounds(290, 140, 60, 23);
+		rdbtnCubeButton.setBounds(106, 140, 50, 23);
 		rdbtnCubeButton.setSelected(config.rgb_approximation == RGB_APPROXIMATION.CUBE);
 		rdbtnCubeButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
@@ -125,6 +108,48 @@ public class Plus4ExtraGui {
 		final ButtonGroup groupApprox = new ButtonGroup();
 		groupApprox.add(rdbtnLinearButton);
 		groupApprox.add(rdbtnCubeButton);
+
+		
+		final JLabel thresholdLabel = new JLabel("luma threshold");
+		thresholdLabel.setFont(GuiUtils.bold);
+		thresholdLabel.setBounds(165, 120, 120, 20);
+		panelPlus4Extra.add(thresholdLabel);
+
+		final JSlider sldLuma = new JSlider(JSlider.HORIZONTAL, 1, 32, config.luma_threshold);
+		sldLuma.setBounds(160, 140, 100, 35);
+		sldLuma.setFont(GuiUtils.std);
+		sldLuma.addChangeListener(new ChangeListener() {
+			public void stateChanged(final ChangeEvent e) {
+				final JSlider source = (JSlider) e.getSource();
+
+				if (!source.getValueIsAdjusting())
+					config.luma_threshold = source.getValue();
+			}
+		});
+		
+		sldLuma.setMajorTickSpacing(10);
+		sldLuma.setPaintLabels(true);
+		panelPlus4Extra.add(sldLuma);
+				
+		final JLabel flickeringLabel = new JLabel("flickering");
+		flickeringLabel.setFont(GuiUtils.bold);
+		flickeringLabel.setBounds(285, 120, 100, 20);
+		panelPlus4Extra.add(flickeringLabel);
+
+		sldFlickering.setBounds(280, 140, 100, 35);
+		sldFlickering.setFont(GuiUtils.std);
+		sldFlickering.addChangeListener(new ChangeListener() {
+			public void stateChanged(final ChangeEvent e) {
+				final JSlider source = (JSlider) e.getSource();
+
+				if (!source.getValueIsAdjusting())
+					config.flickering_factor = source.getValue() * 1.3f;
+			}
+		});
+		
+		sldFlickering.setMajorTickSpacing(1);
+		sldFlickering.setPaintLabels(true);
+		panelPlus4Extra.add(sldFlickering);
 				
 		GuiUtils.addContrastControls(panelPlus4Extra, config);
 		GuiUtils.addColorControls(panelPlus4Extra, config);

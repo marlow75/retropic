@@ -743,6 +743,22 @@ public class Gfx {
 			}
 		}
 	}
+	
+	public static void lowpassFilter(final byte pixels[]) {
+		int r = pixels[0] & 0xff;
+		int g = pixels[1] & 0xff;
+		int b = pixels[2] & 0xff;
+
+		for (int i = 3; i < pixels.length; i += 3) {			
+			r = (r + 2 *(pixels[i + 0] & 0xff)) / 3;
+			g = (g + 2 *(pixels[i + 1] & 0xff)) / 3;
+			b = (b + 2 *(pixels[i + 2] & 0xff)) / 3;
+
+			pixels[i + 0] = (byte) r;
+			pixels[i + 1] = (byte) g;
+			pixels[i + 2] = (byte) b;
+		}
+	}
 
 	public static void bayer(final int matrix[][], final byte pixels[], final int palette[][],
 			final NEAREST_COLOR colorAlg, final int width, final int height, final int bpp) {

@@ -49,7 +49,7 @@ public abstract class AbstractRenderer {
 	}
 
 	public void setImage(final BufferedImage image) {
-		this.image = Gfx.scaleImage(image, screenWidth, screenHeight, config.preserveAspect);
+		this.image = Gfx.scaleImage(image, screenWidth, screenHeight, config.preserve_aspect);
 		pixels = ((DataBufferByte) this.image.getRaster().getDataBuffer()).getData();
 	}
 
@@ -58,19 +58,22 @@ public abstract class AbstractRenderer {
 	}
 
 	public void imageProcess() {
+		if (config.filter)
+			Gfx.lowpassFilter(pixels);
+		
 		processContrast();
 		setupPalette();
 
 		imageDithering();
 		
 		imagePostproces();
-		if (config.emuPAL)
+		if (config.pal_view)
 			emuPAL();
 	}
 
 	protected void processContrast() {
 		// contrast correction
-		switch (config.highContrast) {
+		switch (config.high_contrast) {
 		case HE:
 			Gfx.HE(pixels);
 			break;
@@ -78,7 +81,7 @@ public abstract class AbstractRenderer {
 			Gfx.CLAHE(pixels, config instanceof AmigaConfig ? 16 : 8, config.details, screenWidth, screenHeight);
 			break;
 		case SWAHE:
-			Gfx.SWAHE(pixels, config.windowSize, config.details, screenWidth, screenHeight);
+			Gfx.SWAHE(pixels, config.window_size, config.details, screenWidth, screenHeight);
 			break;
 		default:
 			break;
@@ -133,8 +136,8 @@ public abstract class AbstractRenderer {
 
 	public void savePreview(final String exportFileName) {
 		try {
-			final BufferedImage img = config.emuPAL
-					? Gfx.scaleImage(image, screenWidth, screenHeight, config.preserveAspect)
+			final BufferedImage img = config.pal_view
+					? Gfx.scaleImage(image, screenWidth, screenHeight, config.preserve_aspect)
 					: image;
 
 			ImageIO.write(img, "jpg", new File(exportFileName + ".jpg"));

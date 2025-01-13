@@ -27,6 +27,8 @@ public class C64ExtraGui {
 		
 		final JRadioButton rdbtnLinearButton = new JRadioButton("linear");
 		final JRadioButton rdbtnCubeButton = new JRadioButton("cube");
+		final JSlider sldFlickering = new JSlider(JSlider.HORIZONTAL, 0, 3, (int) (config.flickering_factor * 1.8f));
+		sldFlickering.setEnabled(config.extra_mode == EXTRA_MODE.MULTI_COLOR_INTERLACED);
 		
 		final JLabel lblConvertLabel = new JLabel("Converter mode:");
 		lblConvertLabel.setFont(GuiUtils.bold);
@@ -45,6 +47,8 @@ public class C64ExtraGui {
 				
 				rdbtnLinearButton.setEnabled(true);
 				rdbtnCubeButton.setEnabled(true);
+				
+				sldFlickering.setEnabled(false);
 			}});
 
 		panelC64Extra.add(rdbtnHiresButton);
@@ -61,6 +65,8 @@ public class C64ExtraGui {
 				
 				rdbtnLinearButton.setEnabled(false);
 				rdbtnCubeButton.setEnabled(false);
+				
+				sldFlickering.setEnabled(true);
 			}});
 
 		panelC64Extra.add(rdbtnMCIButton);
@@ -69,11 +75,11 @@ public class C64ExtraGui {
 		groupMode.add(rdbtnHiresButton);
 		groupMode.add(rdbtnMCIButton);
 		
-		final JCheckBox chckbxColorRamp = new JCheckBox("WB shades");
+		final JCheckBox chckbxColorRamp = new JCheckBox("Monochrome");
 		chckbxColorRamp.setToolTipText("Reduce colors to 21 shades of grey");
 		chckbxColorRamp.setFont(GuiUtils.std);
 		chckbxColorRamp.setBounds(240, 85, 100, 20);
-		chckbxColorRamp.setSelected(config.preserveAspect);
+		chckbxColorRamp.setSelected(config.color_ramp);
 		
 		chckbxColorRamp.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
@@ -81,18 +87,52 @@ public class C64ExtraGui {
 			}});
 		
 		panelC64Extra.add(chckbxColorRamp);
-		
+				
 		final Canvas c64Logo = new ImageCanvas("c64Extra.png");
 		c64Logo.setBounds(381, 7, 100, 96);
 		panelC64Extra.add(c64Logo);
 		
+		final JLabel approxLabel = new JLabel("color approximation");
+		approxLabel.setFont(GuiUtils.bold);
+		approxLabel.setBounds(25, 120, 120, 20);
+		panelC64Extra.add(approxLabel);
+		
+		rdbtnLinearButton.setToolTipText(
+				"Linear color approximation. Most distant colors");
+		rdbtnLinearButton.setFont(GuiUtils.std);
+		rdbtnLinearButton.setBounds(46, 140, 60, 23);
+		rdbtnLinearButton.setSelected(config.rgb_approximation == RGB_APPROXIMATION.LINEAR);
+		rdbtnLinearButton.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				config.rgb_approximation = RGB_APPROXIMATION.LINEAR;
+			}});
+
+		panelC64Extra.add(rdbtnLinearButton);
+		
+		rdbtnCubeButton.setToolTipText(
+				"Cube color approximation. Calculated within RGB cube");
+		rdbtnCubeButton.setFont(GuiUtils.std);
+		rdbtnCubeButton.setBounds(106, 140, 50, 23);
+		rdbtnCubeButton.setSelected(config.rgb_approximation == RGB_APPROXIMATION.CUBE);
+		rdbtnCubeButton.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				config.rgb_approximation = RGB_APPROXIMATION.CUBE;
+			}});
+
+		panelC64Extra.add(rdbtnCubeButton);
+		
+		final ButtonGroup groupApprox = new ButtonGroup();
+		groupApprox.add(rdbtnLinearButton);
+		groupApprox.add(rdbtnCubeButton);
+
+		
 		final JLabel thresholdLabel = new JLabel("luma threshold");
 		thresholdLabel.setFont(GuiUtils.bold);
-		thresholdLabel.setBounds(46, 120, 120, 20);
+		thresholdLabel.setBounds(165, 120, 120, 20);
 		panelC64Extra.add(thresholdLabel);
 
 		final JSlider sldLuma = new JSlider(JSlider.HORIZONTAL, 1, 32, config.luma_threshold);
-		sldLuma.setBounds(41, 140, 100, 35);
+		sldLuma.setBounds(160, 140, 100, 35);
 		sldLuma.setFont(GuiUtils.std);
 		sldLuma.addChangeListener(new ChangeListener() {
 			public void stateChanged(final ChangeEvent e) {
@@ -106,39 +146,26 @@ public class C64ExtraGui {
 		sldLuma.setMajorTickSpacing(10);
 		sldLuma.setPaintLabels(true);
 		panelC64Extra.add(sldLuma);
-		
-		final JLabel approxLabel = new JLabel("color approximation");
-		approxLabel.setFont(GuiUtils.bold);
-		approxLabel.setBounds(155, 120, 120, 20);
-		panelC64Extra.add(approxLabel);
-		
-		rdbtnLinearButton.setToolTipText(
-				"Linear color approximation. Most distant colors");
-		rdbtnLinearButton.setFont(GuiUtils.std);
-		rdbtnLinearButton.setBounds(155, 140, 60, 23);
-		rdbtnLinearButton.setSelected(config.rgb_approximation == RGB_APPROXIMATION.LINEAR);
-		rdbtnLinearButton.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				config.rgb_approximation = RGB_APPROXIMATION.LINEAR;
-			}});
+				
+		final JLabel flickeringLabel = new JLabel("flickering");
+		flickeringLabel.setFont(GuiUtils.bold);
+		flickeringLabel.setBounds(285, 120, 100, 20);
+		panelC64Extra.add(flickeringLabel);
 
-		panelC64Extra.add(rdbtnLinearButton);
-		
-		rdbtnCubeButton.setToolTipText(
-				"Cube color approximation. Calculated within RGB cube");
-		rdbtnCubeButton.setFont(GuiUtils.std);
-		rdbtnCubeButton.setBounds(215, 140, 60, 23);
-		rdbtnCubeButton.setSelected(config.rgb_approximation == RGB_APPROXIMATION.CUBE);
-		rdbtnCubeButton.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				config.rgb_approximation = RGB_APPROXIMATION.CUBE;
-			}});
+		sldFlickering.setBounds(280, 140, 100, 35);
+		sldFlickering.setFont(GuiUtils.std);
+		sldFlickering.addChangeListener(new ChangeListener() {
+			public void stateChanged(final ChangeEvent e) {
+				final JSlider source = (JSlider) e.getSource();
 
-		panelC64Extra.add(rdbtnCubeButton);
+				if (!source.getValueIsAdjusting())
+					config.flickering_factor = source.getValue() * 1.8f;
+			}
+		});
 		
-		final ButtonGroup groupApprox = new ButtonGroup();
-		groupApprox.add(rdbtnLinearButton);
-		groupApprox.add(rdbtnCubeButton);
+		sldFlickering.setMajorTickSpacing(1);
+		sldFlickering.setPaintLabels(true);
+		panelC64Extra.add(sldFlickering);
 				
 		GuiUtils.addContrastControls(panelC64Extra, config);
 		GuiUtils.addColorControls(panelC64Extra, config);

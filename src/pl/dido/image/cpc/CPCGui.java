@@ -89,11 +89,11 @@ public class CPCGui {
 		chckbxRasterCheckBox.setToolTipText("Simple PAL emulation");
 		chckbxRasterCheckBox.setFont(GuiUtils.std);
 		chckbxRasterCheckBox.setBounds(100, 60, 50, 20);
-		chckbxRasterCheckBox.setSelected(config.emuPAL);
+		chckbxRasterCheckBox.setSelected(config.pal_view);
 
 		chckbxRasterCheckBox.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				config.emuPAL = !config.emuPAL;
+				config.pal_view = !config.pal_view;
 			}
 		});
 
@@ -103,11 +103,11 @@ public class CPCGui {
 		chckbxAspectCheckBox.setToolTipText("Preserve orginal image aspect ratio");
 		chckbxAspectCheckBox.setFont(GuiUtils.std);
 		chckbxAspectCheckBox.setBounds(150, 60, 80, 20);
-		chckbxAspectCheckBox.setSelected(config.preserveAspect);
+		chckbxAspectCheckBox.setSelected(config.preserve_aspect);
 
 		chckbxAspectCheckBox.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				config.preserveAspect = !config.preserveAspect;
+				config.preserve_aspect = !config.preserve_aspect;
 			}
 		});
 

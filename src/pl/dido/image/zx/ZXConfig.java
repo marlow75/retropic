@@ -9,10 +9,11 @@ public class ZXConfig extends Config {
 		color_alg = NEAREST_COLOR.PERCEPTED;
 		dither_alg = DITHERING.BAYER2x2;
 		
-		highContrast = HIGH_CONTRAST.SWAHE;
-		windowSize = 20;
+		high_contrast = HIGH_CONTRAST.SWAHE;
+		window_size = 20;
 		
 		error_threshold = 5;
+		filter = true;
 	}
 
 	@Override

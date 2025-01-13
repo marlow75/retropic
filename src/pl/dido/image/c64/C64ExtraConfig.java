@@ -15,7 +15,8 @@ public class C64ExtraConfig extends C64Config {
 	public RGB_APPROXIMATION rgb_approximation;
 	public EXTRA_MODE extra_mode;
 	
-	public boolean color_ramp; 
+	public boolean color_ramp;
+	public float flickering_factor; 
 	
 	public C64ExtraConfig() {
 		super();
@@ -29,6 +30,7 @@ public class C64ExtraConfig extends C64Config {
 		error_threshold = 2;
 		
 		color_ramp = false;
+		flickering_factor = 0;
 	}
 	
 	@Override
@@ -40,7 +42,7 @@ public class C64ExtraConfig extends C64Config {
 			configString += "x3 ";
 			break;
 		case MULTI_COLOR_INTERLACED:
-			configString += "x8 ";
+			configString += "x10 ";
 		default:
 			break;
 		}

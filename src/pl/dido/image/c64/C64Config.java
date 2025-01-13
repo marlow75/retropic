@@ -24,11 +24,13 @@ public class C64Config extends Config {
 		screen_mode = SCREEN_MODE.HIRES;
 		color_alg = NEAREST_COLOR.PERCEPTED;		
 		
-		highContrast = HIGH_CONTRAST.SWAHE;
+		high_contrast = HIGH_CONTRAST.SWAHE;
 		dither_alg = DITHERING.ATKINSON;
 		
 		luma_pixels = LUMA_PIXELS.OUTER;		
 		pixel_merge = PIXEL_MERGE.AVERAGE;
+		
+		filter = true;
 	}
 	
 	public String getColorsNumber() {

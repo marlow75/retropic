@@ -18,7 +18,7 @@ public class CPCConfig extends Config {
 	
 	public CPCConfig() {	
 		dither_alg = DITHERING.BAYER4x4;
-		highContrast = HIGH_CONTRAST.SWAHE;
+		high_contrast = HIGH_CONTRAST.SWAHE;
 		
 		screen_mode = SCREEN_MODE.MODE1;
 		pixel_merge = PIXEL_MERGE.AVERAGE;
@@ -27,6 +27,7 @@ public class CPCConfig extends Config {
 		color_alg = NEAREST_COLOR.PERCEPTED;
 		
 		error_threshold = 3;
+		filter = true;
 	}
 	
 	@Override

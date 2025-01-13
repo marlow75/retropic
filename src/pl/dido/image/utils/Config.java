@@ -14,17 +14,18 @@ abstract public class Config implements Cloneable {
 		EUCLIDEAN, PERCEPTED, LUMA_WEIGHTED
 	};
 
-	public boolean preserveAspect;
-	public boolean emuPAL;
+	public boolean preserve_aspect;
+	public boolean pal_view;
 
-	public HIGH_CONTRAST highContrast;
-	public int windowSize;
+	public HIGH_CONTRAST high_contrast;
+	public int window_size;
 	
 	public int details;
 	public int error_threshold;
 	
 	public static String export_path;
-
+	public boolean filter;
+	
 	public DITHERING dither_alg;
 	public NEAREST_COLOR color_alg;
 
@@ -32,15 +33,16 @@ abstract public class Config implements Cloneable {
 		dither_alg = DITHERING.ATKINSON;
 		color_alg = NEAREST_COLOR.PERCEPTED;
 
-		preserveAspect = false;
+		preserve_aspect = false;
 
-		highContrast = HIGH_CONTRAST.NONE;
-		windowSize = 40;
+		high_contrast = HIGH_CONTRAST.NONE;
+		window_size = 40;
 
 		details = 3;
 		export_path = "export";
 
-		emuPAL = true;
+		pal_view = true;
+		filter = false;
 		error_threshold = 4;
 	}
 
@@ -88,7 +90,7 @@ abstract public class Config implements Cloneable {
 			break;
 		}
 
-		switch (highContrast) {
+		switch (high_contrast) {
 		case HE:
 			configString += " HE ";
 			break;
@@ -96,7 +98,7 @@ abstract public class Config implements Cloneable {
 			configString += " CLAHE D" + this.details + " ";
 			break;
 		case SWAHE:
-			configString += " SWAHE W" + this.windowSize + " D" + this.details + " ";
+			configString += " SWAHE W" + this.window_size + " D" + this.details + " ";
 		default:
 			break;
 		}

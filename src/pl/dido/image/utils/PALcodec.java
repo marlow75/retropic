@@ -9,7 +9,7 @@ public class PALcodec {
 	
 	private final static float LINE_SYNC     = 0.0000047f;
 	private final static float BACK_PORCH    = 0.0000057f;
-	private final static float FRONT_PORCH   = 0.00000165f;
+	private final static float FRONT_PORCH   = 0.00000161f;
 	
 	private final static float SUBCARRIER_FREQ = 4.43361875e6f;
 

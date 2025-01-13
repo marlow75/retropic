@@ -29,11 +29,11 @@ public class ZXGui {
 		chckbxRasterCheckBox.setToolTipText("Simple PAL emulation");
 		chckbxRasterCheckBox.setFont(GuiUtils.std);
 		chckbxRasterCheckBox.setBounds(20, 43, 50, 20);
-		chckbxRasterCheckBox.setSelected(config.emuPAL);
+		chckbxRasterCheckBox.setSelected(config.pal_view);
 		
 		chckbxRasterCheckBox.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				config.emuPAL = !config.emuPAL;
+				config.pal_view = !config.pal_view;
 			}});
 		
 		panelZX.add(chckbxRasterCheckBox);
@@ -42,11 +42,11 @@ public class ZXGui {
 		chckbxAspectCheckBox.setToolTipText("Preserve orginal image aspect ratio");
 		chckbxAspectCheckBox.setFont(GuiUtils.std);
 		chckbxAspectCheckBox.setBounds(80, 43, 100, 20);
-		chckbxAspectCheckBox.setSelected(config.preserveAspect);
+		chckbxAspectCheckBox.setSelected(config.preserve_aspect);
 		
 		chckbxAspectCheckBox.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				config.preserveAspect = !config.preserveAspect;
+				config.preserve_aspect = !config.preserve_aspect;
 			}});
 		
 		panelZX.add(chckbxAspectCheckBox);

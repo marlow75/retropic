@@ -10,6 +10,7 @@ Requirements: JRE16 installed.
 
 ## Versions
 
+* 1.9 - Small improvements for MCI modes, low pass filter for 8 bit machines
 * 1.8 - Reworked MCI mode for C64, extra modes for TED machines (hires & MCI)
 * 1.7 - New simple PAL view for all machines, Commodore TED machines (Plus4, C16, C116), scanlines removed
 * 1.6 - Bayer dithering for all machines

@@ -98,11 +98,11 @@ public class GuiUtils {
 		chckbxAspectCheckBox.setToolTipText("Preserve orginal image aspect ratio");
 		chckbxAspectCheckBox.setFont(GuiUtils.std);
 		chckbxAspectCheckBox.setBounds(46, 50, 58, 20);
-		chckbxAspectCheckBox.setSelected(config.preserveAspect);
+		chckbxAspectCheckBox.setSelected(config.preserve_aspect);
 		
 		chckbxAspectCheckBox.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				config.preserveAspect = !config.preserveAspect;
+				config.preserve_aspect = !config.preserve_aspect;
 			}});
 		
 		panel.add(chckbxAspectCheckBox);
@@ -112,11 +112,11 @@ public class GuiUtils {
 			chckbxRasterCheckBox.setToolTipText("Simple PAL emulation");
 			chckbxRasterCheckBox.setFont(GuiUtils.std);
 			chckbxRasterCheckBox.setBounds(110, 50, 58, 20);
-			chckbxRasterCheckBox.setSelected(config.emuPAL);
+			chckbxRasterCheckBox.setSelected(config.pal_view);
 			
 			chckbxRasterCheckBox.addActionListener(new ActionListener() {
 				public void actionPerformed(final ActionEvent e) {
-					config.emuPAL = !config.emuPAL;
+					config.pal_view = !config.pal_view;
 				}});
 			
 			panel.add(chckbxRasterCheckBox);
@@ -136,10 +136,10 @@ public class GuiUtils {
 		sizeLabel.setBounds(225, 235, 120, 20);
 		panel.add(sizeLabel);
 
-		final JSlider sldWindow = new JSlider(JSlider.HORIZONTAL, 1, 3, config.windowSize == 20 ? 1 : config.windowSize == 30 ? 2 : 3);
+		final JSlider sldWindow = new JSlider(JSlider.HORIZONTAL, 1, 3, config.window_size == 20 ? 1 : config.window_size == 30 ? 2 : 3);
 		sldWindow.setBounds(220, 255, 120, 35);
 		sldWindow.setFont(std);
-		sldWindow.setEnabled(config.highContrast == Config.HIGH_CONTRAST.SWAHE);
+		sldWindow.setEnabled(config.high_contrast == Config.HIGH_CONTRAST.SWAHE);
 		sldWindow.addChangeListener(new ChangeListener() {
 			public void stateChanged(final ChangeEvent e) {
 				final JSlider source = (JSlider) e.getSource();
@@ -147,13 +147,13 @@ public class GuiUtils {
 				if (!source.getValueIsAdjusting())
 					switch (source.getValue()) {
 					case 1:
-						config.windowSize = 20;
+						config.window_size = 20;
 						break;
 					case 2:
-						config.windowSize = 30;
+						config.window_size = 30;
 						break;
 					case 3:
-						config.windowSize = 40;
+						config.window_size = 40;
 						break;
 					}
 					
@@ -178,7 +178,7 @@ public class GuiUtils {
 		panel.add(brightLabel);
 
 		final JSlider sldBrightness = new JSlider(JSlider.HORIZONTAL, 1, 5, config.details);
-		sldBrightness.setEnabled(config.highContrast == Config.HIGH_CONTRAST.SWAHE || config.highContrast == Config.HIGH_CONTRAST.CLAHE);
+		sldBrightness.setEnabled(config.high_contrast == Config.HIGH_CONTRAST.SWAHE || config.high_contrast == Config.HIGH_CONTRAST.CLAHE);
 		sldBrightness.setFont(std);
 		sldBrightness.setBounds(350, 255, 120, 35);
 		sldBrightness.addChangeListener(new ChangeListener() {
@@ -207,11 +207,11 @@ public class GuiUtils {
 		rdbtnNoContrastExpanderButton.setToolTipText("No contrast processing");
 		rdbtnNoContrastExpanderButton.setFont(std);
 		rdbtnNoContrastExpanderButton.setBounds(46, 213, 50, 20);
-		rdbtnNoContrastExpanderButton.setSelected(config.highContrast == Config.HIGH_CONTRAST.NONE);
+		rdbtnNoContrastExpanderButton.setSelected(config.high_contrast == Config.HIGH_CONTRAST.NONE);
 
 		rdbtnNoContrastExpanderButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				config.highContrast = Config.HIGH_CONTRAST.NONE;
+				config.high_contrast = Config.HIGH_CONTRAST.NONE;
 				sldWindow.setEnabled(false);
 				sldBrightness.setEnabled(false);
 			}
@@ -223,11 +223,11 @@ public class GuiUtils {
 		rdbtnHEButton.setToolTipText("Histogram Equalizer");
 		rdbtnHEButton.setFont(std);
 		rdbtnHEButton.setBounds(116, 213, 50, 20);
-		rdbtnHEButton.setSelected(config.highContrast == Config.HIGH_CONTRAST.HE);
+		rdbtnHEButton.setSelected(config.high_contrast == Config.HIGH_CONTRAST.HE);
 
 		rdbtnHEButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				config.highContrast = Config.HIGH_CONTRAST.HE;
+				config.high_contrast = Config.HIGH_CONTRAST.HE;
 				sldWindow.setEnabled(false);
 				sldBrightness.setEnabled(false);
 			}
@@ -239,11 +239,11 @@ public class GuiUtils {
 		rdbtnCLAHEButton.setToolTipText("Clipped Adaptive Histogram Equalizer");
 		rdbtnCLAHEButton.setFont(std);
 		rdbtnCLAHEButton.setBounds(186, 213, 70, 20);
-		rdbtnCLAHEButton.setSelected(config.highContrast == Config.HIGH_CONTRAST.CLAHE);
+		rdbtnCLAHEButton.setSelected(config.high_contrast == Config.HIGH_CONTRAST.CLAHE);
 
 		rdbtnCLAHEButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				config.highContrast = Config.HIGH_CONTRAST.CLAHE;
+				config.high_contrast = Config.HIGH_CONTRAST.CLAHE;
 				sldWindow.setEnabled(false);
 				sldBrightness.setEnabled(true);
 			}
@@ -255,11 +255,11 @@ public class GuiUtils {
 		rdbtnSWAHEButton.setToolTipText("Sliding Window Adaptive Histogram Equalizer");
 		rdbtnSWAHEButton.setFont(std);
 		rdbtnSWAHEButton.setBounds(256, 213, 70, 20);
-		rdbtnSWAHEButton.setSelected(config.highContrast == Config.HIGH_CONTRAST.SWAHE);
+		rdbtnSWAHEButton.setSelected(config.high_contrast == Config.HIGH_CONTRAST.SWAHE);
 
 		rdbtnSWAHEButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				config.highContrast = Config.HIGH_CONTRAST.SWAHE;
+				config.high_contrast = Config.HIGH_CONTRAST.SWAHE;
 				sldWindow.setEnabled(true);
 				sldBrightness.setEnabled(true);
 			}
