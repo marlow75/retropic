@@ -30,7 +30,7 @@ public class GuiUtils {
 	}
 	
 	public static final JPanel addDASControls(final JPanel panel, final Config config, final boolean scan) {		
-		final JLabel lblDitherLabel = new JLabel("Dithering & aspect & pal:");
+		final JLabel lblDitherLabel = new JLabel("Dithering & aspect & pal & bw:");
 		lblDitherLabel.setFont(bold);
 		lblDitherLabel.setBounds(20, 8, 200, 20);
 		panel.add(lblDitherLabel);
@@ -108,20 +108,34 @@ public class GuiUtils {
 		panel.add(chckbxAspectCheckBox);
 		
 		if (scan) {
-			final JCheckBox chckbxRasterCheckBox = new JCheckBox("pal");
-			chckbxRasterCheckBox.setToolTipText("Simple PAL emulation");
-			chckbxRasterCheckBox.setFont(GuiUtils.std);
-			chckbxRasterCheckBox.setBounds(110, 50, 58, 20);
-			chckbxRasterCheckBox.setSelected(config.pal_view);
+			final JCheckBox chckbxBWCheckBox = new JCheckBox("bw");
+			chckbxBWCheckBox.setToolTipText("Black/White PAL");
+			chckbxBWCheckBox.setFont(GuiUtils.std);
+			chckbxBWCheckBox.setBounds(158, 50, 58, 20);
+			chckbxBWCheckBox.setSelected(config.bw);
 			
-			chckbxRasterCheckBox.addActionListener(new ActionListener() {
+			chckbxBWCheckBox.addActionListener(new ActionListener() {
 				public void actionPerformed(final ActionEvent e) {
-					config.pal_view = !config.pal_view;
+					config.bw = !config.bw;
 				}});
 			
-			panel.add(chckbxRasterCheckBox);
+			panel.add(chckbxBWCheckBox);
+			
+			final JCheckBox chckbxPALCheckBox = new JCheckBox("pal");
+			chckbxPALCheckBox.setToolTipText("Simple PAL emulation");
+			chckbxPALCheckBox.setFont(GuiUtils.std);
+			chckbxPALCheckBox.setBounds(110, 50, 58, 20);
+			chckbxPALCheckBox.setSelected(config.pal_view);
+			
+			chckbxPALCheckBox.addActionListener(new ActionListener() {
+				public void actionPerformed(final ActionEvent e) {
+					config.pal_view = !config.pal_view;
+					chckbxBWCheckBox.setEnabled(config.pal_view);
+				}});
+			
+			panel.add(chckbxPALCheckBox);
 		}
-		
+
 		return panel;
 	}
 	

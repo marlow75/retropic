@@ -65,7 +65,7 @@ public abstract class AbstractRenderer {
 		setupPalette();
 
 		imageDithering();
-		
+
 		imagePostproces();
 		if (config.pal_view)
 			emuPAL();
@@ -92,8 +92,8 @@ public abstract class AbstractRenderer {
 		final BufferedImage crt = new BufferedImage(PALcodec.WIDTH, PALcodec.HEIGHT, BufferedImage.TYPE_3BYTE_BGR);
 		final byte[] data = ((DataBufferByte) crt.getRaster().getDataBuffer()).getData();
 
-		PALcodec.encodeYC(image.getWidth(), image.getHeight(), pixels);
-		PALcodec.decodeYC(data);
+		PALcodec.encodeYC(image.getWidth(), image.getHeight(), pixels, config.bw);
+		PALcodec.decodeYC(data, config.bw);
 
 		image = Gfx.byteArrayToBGRImage(data, PALcodec.WIDTH, PALcodec.HEIGHT);
 	}

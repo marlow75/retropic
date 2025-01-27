@@ -69,6 +69,10 @@ import pl.dido.image.cpc.CPCConfig;
 import pl.dido.image.cpc.CPCGui;
 import pl.dido.image.cpc.CPCRenderer;
 import pl.dido.image.cpc.CPCRunner;
+import pl.dido.image.pc.CGAGui;
+import pl.dido.image.pc.CGARenderer;
+import pl.dido.image.pc.CGARunner;
+import pl.dido.image.pc.CGAConfig;
 import pl.dido.image.petscii.PetsciiConfig;
 import pl.dido.image.petscii.PetsciiGui;
 import pl.dido.image.petscii.PetsciiRenderer;
@@ -93,6 +97,8 @@ public class RetroPIC {
 
 	protected CPCConfig cpcConfig;
 	protected STConfig stConfig;
+	
+	protected CGAConfig cgaConfig;
 	
 	protected Plus4Config plus4Config;
 	protected Plus4ExtraConfig plus4ExtraConfig;
@@ -129,6 +135,8 @@ public class RetroPIC {
 
 		amiga500Config = new Amiga500Config();
 		amiga1200Config = new Amiga1200Config();
+		
+		cgaConfig = new CGAConfig();
 
 		frame = new JFrame("RetroPIC");
 		frame.setIconImage(Toolkit.getDefaultToolkit().getImage(Utils.getResourceAsURL("retro.png")));
@@ -153,6 +161,7 @@ public class RetroPIC {
 		tabbedPane.addTab("Amiga 1200", null, Amiga1200Gui.amigaTab(amiga1200Config), null);
 		tabbedPane.addTab("Commodore 64 extra", null, C64ExtraGui.c64Extra(c64ExtraConfig), null);
 		tabbedPane.addTab("Commodore Plus4 extra", null, Plus4ExtraGui.plus4ExtraTab(plus4ExtraConfig), null);
+		tabbedPane.addTab("PC CGA ASCII", null, CGAGui.cgaTab(cgaConfig), null);
 		tabbedPane.addTab("About", null, AboutGui.aboutTab("aboutRetroPIC.htm"), null);
 
 		tabbedPane.addChangeListener(new ChangeListener() {
@@ -301,6 +310,9 @@ public class RetroPIC {
 				break;
 			case 9:
 				new Thread(new Plus4ExtraRunner(new Plus4ExtraRenderer(image, plus4ExtraConfig), fileName)).start();
+				break;
+			case 10:
+				new Thread(new CGARunner(new CGARenderer(image, cgaConfig), fileName)).start();
 				break;
 			}
 

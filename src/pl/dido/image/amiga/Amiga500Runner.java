@@ -4,7 +4,6 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.image.BufferedImage;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -98,9 +97,8 @@ public class Amiga500Runner extends AbstractRendererRunner {
 				break;
 			}
 
-			final BufferedImage image = a500.getImage();
-			final int width = image.getWidth();
-			final int height = image.getHeight();
+			final int width = a500.config.getScreenWidth();
+			final int height = a500.config.getScreenHeight();
 			
 			final boolean compressed = ((AmigaConfig) a500.config).rleCompress;
 			chk.write(IFF.getILBMFormat(

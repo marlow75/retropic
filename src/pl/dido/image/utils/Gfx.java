@@ -18,12 +18,12 @@ public class Gfx {
 	public static final int M2x1[][] = new int[][] { { 77, 171 } }; // 3 colors
 
 	public static final int M1x2[][] = new int[][] { { 77 }, { 171 } }; // 3 colors
-	
+
 	public static final int M2x2[][] = new int[][] { // 5 colors
-		{ 51, 206 }, { 153, 102 } };
+			{ 51, 206 }, { 153, 102 } };
 
 	public static final int M4x4[][] = new int[][] { // 17 colors
-		{ 15, 195, 60, 240 }, { 135, 75, 180, 120 }, { 45, 225, 30, 210 }, { 165, 105, 150, 90 } };
+			{ 15, 195, 60, 240 }, { 135, 75, 180, 120 }, { 45, 225, 30, 210 }, { 165, 105, 150, 90 } };
 
 	public static final int M8x8[][] = new int[][] { // 65 colors
 			{ 0, 32, 8, 40, 2, 34, 10, 42 }, { 48, 16, 56, 24, 50, 18, 58, 26 }, { 12, 44, 4, 36, 14, 46, 6, 38 },
@@ -702,17 +702,17 @@ public class Gfx {
 			final int width, final int height, final int bpp) {
 		bayer(M8x8, pixels, palette, colorAlg, width, height, bpp);
 	}
-	
+
 	public static void bayer2x2(final byte pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
 			final int width, final int height, final int bpp) {
 		bayer(M2x2, pixels, palette, colorAlg, width, height, bpp);
 	}
-	
+
 	public static void bayer2x1(final byte pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
 			final int width, final int height, final int bpp) {
 		bayer(M2x1, pixels, palette, colorAlg, width, height, bpp);
 	}
-	
+
 	public static void bayer1x2(final byte pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
 			final int width, final int height, final int bpp) {
 		bayer(M1x2, pixels, palette, colorAlg, width, height, bpp);
@@ -743,16 +743,16 @@ public class Gfx {
 			}
 		}
 	}
-	
+
 	public static void lowpassFilter(final byte pixels[]) {
 		int r = pixels[0] & 0xff;
 		int g = pixels[1] & 0xff;
 		int b = pixels[2] & 0xff;
 
-		for (int i = 3; i < pixels.length; i += 3) {			
-			r = (r + 2 *(pixels[i + 0] & 0xff)) / 3;
-			g = (g + 2 *(pixels[i + 1] & 0xff)) / 3;
-			b = (b + 2 *(pixels[i + 2] & 0xff)) / 3;
+		for (int i = 3; i < pixels.length; i += 3) {
+			r = (r + 2 * (pixels[i + 0] & 0xff)) / 3;
+			g = (g + 2 * (pixels[i + 1] & 0xff)) / 3;
+			b = (b + 2 * (pixels[i + 2] & 0xff)) / 3;
 
 			pixels[i + 0] = (byte) r;
 			pixels[i + 1] = (byte) g;
@@ -797,7 +797,7 @@ public class Gfx {
 	public static final int bayer(final int matrix[][], final int x0, final int y0, final int c, final float bpp) {
 		final int mody = matrix.length;
 		final int modx = matrix[0].length;
-		
+
 		final float divider = 255 / bpp;
 		final float e = matrix[y0 % mody][x0 % modx] / bpp;
 

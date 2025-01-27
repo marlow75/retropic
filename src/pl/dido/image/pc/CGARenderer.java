@@ -1,10 +1,9 @@
-package pl.dido.image.petscii;
+package pl.dido.image.pc;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 import pl.dido.image.renderer.AbstractRenderer;
-import pl.dido.image.utils.C64PaletteCalculator;
 import pl.dido.image.utils.Config;
 import pl.dido.image.utils.Gfx;
 import pl.dido.image.utils.Utils;
@@ -13,41 +12,45 @@ import pl.dido.image.utils.neural.HL1Network;
 import pl.dido.image.utils.neural.HL2Network;
 import pl.dido.image.utils.neural.Network;
 
-public class PetsciiRenderer extends AbstractRenderer {
+public class CGARenderer extends AbstractRenderer {
+	// CGA palette
+	private final static int colors[] = new int[] { 0x000000, 0x0000AA, 0x00AA00, 0x00AAAA, 0xAA0000, 0xAA00AA, 0xAA5500,
+			0xAAAAAA, 0x555555, 0x5555FF, 0x55FF55, 0x55FFFF, 0xFF5555, 0xFF55FF, 0xFFFF55, 0xFFFFFF };
+
 	private final static int power2[] = new int[] { 128, 64, 32, 16, 8, 4, 2, 1 };
 
-	protected final static String PETSCII_NETWORK_L1 = "petscii.L1network";
-	protected final static String PETSCII_NETWORK_L2 = "petscii.L2network";
+	protected final static String CGAASCII_NETWORK_L1 = "cga.L1network";
+	protected final static String CGAASCII_NETWORK_L2 = "cga.L2network";
 
-	protected final static String PETSCII_CHARSET = "petscii.bin";
+	protected final static String CGA_CHARSET = "cga.prg";
 
-	protected int screen[] = new int[1000];
-	protected int nibble[] = new int[1000];
-
-	protected int backgroundColor = 0;
+	protected int screen[] = new int[2000];
+	protected int color[] = new int[2000];
 
 	protected Network neural; // matches pattern with petscii
 	protected byte charset[]; // charset 8x8 pixels per char
+	
+	protected int background[][] = new int[8][3]; 
 
 	protected void initialize() {
 		palette = new int[16][3];
 		final String networkFile;
 
-		switch (((PetsciiConfig) config).network) {
+		switch (((CGAConfig) config).network) {
 		case L2:
 			neural = new HL2Network(64, 128, 256);
-			networkFile = PETSCII_NETWORK_L2;
+			networkFile = CGAASCII_NETWORK_L2;
 
 			break;
 		default:
 			neural = new HL1Network(64, 128, 256);
-			networkFile = PETSCII_NETWORK_L1;
+			networkFile = CGAASCII_NETWORK_L1;
 
 			break;
 		}
 
 		try {
-			charset = Utils.loadCharset(Utils.getResourceAsStream(PETSCII_CHARSET));
+			charset = Utils.loadCharset(Utils.getResourceAsStream(CGA_CHARSET));
 			neural.load(Utils.getResourceAsStream(networkFile));
 		} catch (final IOException e) {
 			// mass hysteria
@@ -55,96 +58,66 @@ public class PetsciiRenderer extends AbstractRenderer {
 		}
 	}
 
-	public int getBackgroundColor() {
-		return backgroundColor;
-	}
-
 	public int[] getScreen() {
 		return screen;
 	}
 
-	public int[] getNibble() {
-		return nibble;
+	public int[] getColor() {
+		return color;
 	}
 
 	public byte[] getCharset() {
 		return charset;
 	}
 
-	public void setBackgroundColor(final int backgroundColor) {
-		this.backgroundColor = backgroundColor;
-	}
-
-	public PetsciiRenderer(final Config config) {
+	public CGARenderer(final Config config) {
 		super(config);
 		initialize();
 	}
 
-	public PetsciiRenderer(final BufferedImage image, final Config config) {
+	public CGARenderer(final BufferedImage image, final Config config) {
 		super(image, config);
 		initialize();
 	}
 
 	@Override
 	protected void setupPalette() {
-		palette = C64PaletteCalculator.getCalculatedPalette();
+		for (int i = 0; i < colors.length; i++) {
+			palette[i][0] = (colors[i] & 0x0000ff); // blue
+			palette[i][1] = (colors[i] & 0x00ff00) >> 8; // green
+			palette[i][2] = (colors[i] & 0xff0000) >> 16; // red
+		}
+		
+		for (int i = 0; i < colors.length / 2; i++) {
+			background[i][0] = (colors[i] & 0x0000ff); // blue
+			background[i][1] = (colors[i] & 0x00ff00) >> 8; // green
+			background[i][2] = (colors[i] & 0xff0000) >> 16; // red
+		}
 	}
 
 	@Override
 	protected void imagePostproces() {
-		petscii();
+		ascii();
 	}
 
-	protected void petscii() {
+	protected void ascii() {
 		// tiles screen and pattern
 		final int work[] = new int[64 * 3];
 		final float tile[] = new float[64];
-
-		// calculate average
-		int nr = 0, ng = 0, nb = 0, count = 0;
-		final int occurrence[] = new int[16];
-
-		for (int i = 0; i < pixels.length; i += 3) {
-			nr = pixels[i] & 0xff;
-			ng = pixels[i + 1] & 0xff;
-			nb = pixels[i + 2] & 0xff;
-
-			// dimmer better
-			occurrence[Gfx.getColorIndex(colorAlg, palette, nr, ng, nb)] += (255 - Gfx.getLuma(nr, ng, nb));
-		}
-
-		// get background color with maximum occurrence
-		int k = 0;
-		for (int i = 0; i < 16; i++) {
-			final int o = occurrence[i];
-			if (count < o) {
-				count = o;
-				k = i;
-			}
-		}
-
-		// most occurrence color as background
-		setBackgroundColor(k);
-
-		nr = palette[k][0];
-		ng = palette[k][1];
-		nb = palette[k][2];
-
-		final float backLuma = Gfx.getLuma(nr, ng, nb);
-
+		
 		for (int y = 0; y < 200; y += 8) {
-			final int p = y * 320 * 3;
+			final int p = y * 640 * 3;
 
-			for (int x = 0; x < 320; x += 8) {
+			for (int x = 0; x < 640; x += 8) {
 				final int offset = p + x * 3;
 
-				int index = 0, f = 0;
-				float max_distance = 0;
+				int index = 0, f = 0, n = 0;
+				float mf = 0, mn = Float.MAX_VALUE;
 
 				// pickup brightest color in 8x8 tile
 				for (int y0 = 0; y0 < 8; y0++) {
 					for (int x0 = 0; x0 < 24; x0 += 3) {
-						final int position = offset + y0 * 320 * 3 + x0;
+						final int position = offset + y0 * 640 * 3 + x0;
 
 						final int r = pixels[position] & 0xff;
 						final int g = pixels[position + 1] & 0xff;
@@ -154,19 +127,31 @@ public class PetsciiRenderer extends AbstractRenderer {
 						work[index++] = g;
 						work[index++] = b;
 
-						final float distance = Math.abs(Gfx.getLuma(r, g, b) - backLuma);
-						if (max_distance < distance) {
-							max_distance = distance;
+						final float luma = Gfx.getLuma(r, g, b);
+						if (luma > mf) {
+							mf = luma;
 							f = Gfx.getColorIndex(colorAlg, palette, r, g, b);
+						}
+						if (luma < mn) {
+							mn = luma;
+							n = Gfx.getColorIndex(colorAlg, background, r, g, b);
 						}
 					}
 				}
 
 				// foreground color
 				final int cf[] = palette[f];
+				
 				final int fr = cf[0];
 				final int fg = cf[1];
 				final int fb = cf[2];
+				
+				// foreground color
+				final int cn[] = background[n];
+				
+				final int nr = cn[0];
+				final int ng = cn[1];
+				final int nb = cn[2];
 
 				for (int y0 = 0; y0 < 8; y0++)
 					for (int x0 = 0; x0 < 8; x0++) {
@@ -199,8 +184,8 @@ public class PetsciiRenderer extends AbstractRenderer {
 					}
 
 				// colors
-				final int address = (y >> 3) * 40 + (x >> 3);
-				nibble[address] = f;
+				final int address = (y >> 3) * 80 + (x >> 3);
+				color[address] = f | (n << 4);
 				screen[address] = code;
 
 				// draw character
@@ -210,7 +195,7 @@ public class PetsciiRenderer extends AbstractRenderer {
 
 					for (int x0 = 0; x0 < 8; x0++) {
 						final int bitValue = power2[x0];
-						final int screen_pos = offset + y0 * 320 * 3 + x0 * 3;
+						final int screen_pos = offset + y0 * 640 * 3 + x0 * 3;
 
 						if ((charByte & bitValue) == bitValue) {
 							pixels[screen_pos] = (byte) fr;
