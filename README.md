@@ -32,6 +32,7 @@ Requirements: JRE16 installed.
 * Atari ST, 320x200 in 16 colors on screen from 512 palette colors.
 * Amiga 500/1000, PAL 320x256 and 320x512 in 32 colors or in HAM6 encoding, 4096 palette colors.
 * Amiga 1200/4000, PAL 320x256, 320x512, 640x512 in 256 colors or in HAM8 encoding, 16M palette colors.
+* CGA Text mode (experimental)
 
 ## Graphics formats
 
