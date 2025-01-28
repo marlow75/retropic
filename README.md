@@ -43,7 +43,7 @@ Requirements: JRE16 installed.
 * DEGAS for Atari
 * IFF format for Delux Paint – Amiga (RLE option)
 * True Paint for MCI (experimental)
-* com executable for CGA
+* COM executable for CGA
 
 ## Conversion options
 
@@ -53,8 +53,9 @@ Try all options available.
 * Error - error tolerance for algorithms.
 * Color distance – how color distance in the RGB cube is measured: euclidean, redmean simple approximation (close to human perception), picking highest luminance color.
 * Contrast processing - experimental luma histogram equalizer designed for 8 bit machines primarly, now enabled for every available machine. HE - standard global equalization, CLAHE & SWAHE - clipped local equalization, first fast method for local contrast enhancer, second slow but for more demanding.
-* Aspect - keeps aspect ratio of original picture
-* PAL - renders PAL encoded preview (simple algorithm). 
+* Aspect - keeps aspect ratio of original picture.
+* PAL - renders PAL encoded preview in S-Video quality (separated luma & chroma signals).
+* BW - renders monochrome PAL image.
 
 ### Commodore C64
 
