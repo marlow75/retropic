@@ -4,6 +4,7 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -32,7 +33,15 @@ public class CGARunner extends AbstractRendererRunner {
 	private void asciiExportPRG(final String fileName) {
 		try {
 			final BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(new File(fileName)), 8192);
+			final BufferedInputStream in = new BufferedInputStream(Utils.getResourceAsStream("cga.com"), 512);
 
+			int data;
+
+			while ((data = in.read()) != -1)
+				out.write(data);
+
+			in.close();
+			
 			final int table[] = ascii.getScreen();
 			final int color[] = ascii.getColor();
 			
@@ -54,14 +63,14 @@ public class CGARunner extends AbstractRendererRunner {
 		final JMenu menuFile = new JMenu("File");
 		menuFile.setMnemonic(KeyEvent.VK_F);
 
-		final JMenuItem miExecutable = new JMenuItem("Export as text... ");
+		final JMenuItem miExecutable = new JMenuItem("Export as com... ");
 		miExecutable.setMnemonic(KeyEvent.VK_E);
 		miExecutable.setAccelerator(
 				KeyStroke.getKeyStroke(KeyEvent.VK_E, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
 		miExecutable.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				try {
-					final String exportFileName = Utils.createDirectory(Config.export_path) + "/" + fileName + ".txt";
+					final String exportFileName = Utils.createDirectory(Config.export_path) + "/" + fileName + ".com";
 					final int result = JOptionPane.showConfirmDialog(null, "Export " + exportFileName + "?", "Confirm",
 							JOptionPane.YES_NO_OPTION);
 
