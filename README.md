@@ -208,6 +208,9 @@ PC text modes.
 Exports to executable COM.
 
 ![CGA](cga.png)
+
+VESA mode on SVGA card
+
 ![VESA](vesa.png)
 
 ### VIC-20
@@ -217,7 +220,10 @@ Exports to executable COM.
 * 22x23 - uses 2 colors - petscii charset.
 * 176x184 - uses 2 colors and regenerated charset
 
-Exports to executable COM.
+Exports to executable PRG.
 
 ![VIC20-txt](vic20txt.png)
+
+Pseudographic mode - regenerated charset 
+
 ![VIC20-gen](vic20gfx.png)
