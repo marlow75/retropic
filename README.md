@@ -33,17 +33,9 @@ Requirements: JRE16 installed.
 * Atari ST, 320x200 in 16 colors on screen from 512 palette colors.
 * Amiga 500/1000, PAL 320x256 and 320x512 in 32 colors or in HAM6 encoding, 4096 palette colors.
 * Amiga 1200/4000, PAL 320x256, 320x512, 640x512 in 256 colors or in HAM8 encoding, 16M palette colors.
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 * CGA text mode (experimental)
-=======
 * PC CGA & VESA 10bh text modes
 * VIC-20 text (unexpanded) and hires 176x184 mode (8kB expanded) 
->>>>>>> Stashed changes
-=======
-* PC CGA & VESA 10bh text modes
-* VIC-20 text (unexpanded) and hires 176x184 mode (8kB expanded) 
->>>>>>> Stashed changes
 
 ## Graphics formats
 
@@ -55,15 +47,7 @@ Requirements: JRE16 installed.
 * DEGAS for Atari
 * IFF format for Delux Paint – Amiga (RLE option)
 * True Paint for MCI (experimental)
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 * COM executable for CGA
-=======
-* executable COM for PC
->>>>>>> Stashed changes
-=======
-* executable COM for PC
->>>>>>> Stashed changes
 
 ## Conversion options
 
@@ -224,7 +208,7 @@ PC text modes.
 Exports to executable COM.
 
 ![CGA](cga.png)
-![VESA](VESA.png)
+![VESA](vesa.png)
 
 ### VIC-20
 
