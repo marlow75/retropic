@@ -24,7 +24,7 @@ abstract public class Config implements Cloneable {
 	public int error_threshold;
 	
 	public static String export_path;
-	public boolean filter;
+	public boolean low_pass_filter;
 	
 	public DITHERING dither_alg;
 	public NEAREST_COLOR color_alg;
@@ -45,7 +45,7 @@ abstract public class Config implements Cloneable {
 		export_path = "export";
 
 		pal_view = true;
-		filter = false;
+		low_pass_filter = false;
 		
 		error_threshold = 4;
 	}

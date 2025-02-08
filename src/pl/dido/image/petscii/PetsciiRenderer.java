@@ -19,7 +19,7 @@ public class PetsciiRenderer extends AbstractRenderer {
 	protected final static String PETSCII_NETWORK_L1 = "petscii.L1network";
 	protected final static String PETSCII_NETWORK_L2 = "petscii.L2network";
 
-	protected final static String PETSCII_CHARSET = "petscii.bin";
+	protected final static String PETSCII_CHARSET = "c64petscii.bin";
 
 	protected int screen[] = new int[1000];
 	protected int nibble[] = new int[1000];

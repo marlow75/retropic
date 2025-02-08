@@ -69,16 +69,20 @@ import pl.dido.image.cpc.CPCConfig;
 import pl.dido.image.cpc.CPCGui;
 import pl.dido.image.cpc.CPCRenderer;
 import pl.dido.image.cpc.CPCRunner;
-import pl.dido.image.pc.CGAGui;
-import pl.dido.image.pc.CGARenderer;
-import pl.dido.image.pc.CGARunner;
-import pl.dido.image.pc.CGAConfig;
+import pl.dido.image.pc.PCGui;
+import pl.dido.image.pc.PCRenderer;
+import pl.dido.image.pc.PCRunner;
+import pl.dido.image.pc.PCConfig;
 import pl.dido.image.petscii.PetsciiConfig;
 import pl.dido.image.petscii.PetsciiGui;
 import pl.dido.image.petscii.PetsciiRenderer;
 import pl.dido.image.petscii.PetsciiRunner;
 import pl.dido.image.utils.Gfx;
 import pl.dido.image.utils.Utils;
+import pl.dido.image.vic20.Vic20Config;
+import pl.dido.image.vic20.Vic20Gui;
+import pl.dido.image.vic20.Vic20Renderer;
+import pl.dido.image.vic20.Vic20Runner;
 import pl.dido.image.zx.ZXConfig;
 import pl.dido.image.zx.ZXGui;
 import pl.dido.image.zx.ZXRenderer;
@@ -98,7 +102,8 @@ public class RetroPIC {
 	protected CPCConfig cpcConfig;
 	protected STConfig stConfig;
 	
-	protected CGAConfig cgaConfig;
+	protected PCConfig cgaConfig;
+	protected Vic20Config vic20Config;
 	
 	protected Plus4Config plus4Config;
 	protected Plus4ExtraConfig plus4ExtraConfig;
@@ -136,7 +141,8 @@ public class RetroPIC {
 		amiga500Config = new Amiga500Config();
 		amiga1200Config = new Amiga1200Config();
 		
-		cgaConfig = new CGAConfig();
+		cgaConfig = new PCConfig();
+		vic20Config = new Vic20Config();
 
 		frame = new JFrame("RetroPIC");
 		frame.setIconImage(Toolkit.getDefaultToolkit().getImage(Utils.getResourceAsURL("retro.png")));
@@ -154,6 +160,7 @@ public class RetroPIC {
 		tabbedPane.addTab("Commodore 64", null, C64Gui.c64Tab(c64Config), null);
 		tabbedPane.addTab("C64 PETSCII", null, PetsciiGui.petsciiTab(petsciiConfig), null);
 		tabbedPane.addTab("Commodore Plus4", null, Plus4Gui.plus4Tab(plus4Config), null);
+		tabbedPane.addTab("Commodore VIC-20", null, Vic20Gui.vic20Tab(vic20Config), null);
 		tabbedPane.addTab("ZX 48/+", null, ZXGui.zxTab(zxConfig), null);
 		tabbedPane.addTab("Amstrad CPC", null, CPCGui.cpcTab(cpcConfig), null);
 		tabbedPane.addTab("Atari ST", null, STGui.stTab(stConfig), null);
@@ -161,7 +168,7 @@ public class RetroPIC {
 		tabbedPane.addTab("Amiga 1200", null, Amiga1200Gui.amigaTab(amiga1200Config), null);
 		tabbedPane.addTab("Commodore 64 extra", null, C64ExtraGui.c64Extra(c64ExtraConfig), null);
 		tabbedPane.addTab("Commodore Plus4 extra", null, Plus4ExtraGui.plus4ExtraTab(plus4ExtraConfig), null);
-		tabbedPane.addTab("PC CGA ASCII", null, CGAGui.cgaTab(cgaConfig), null);
+		tabbedPane.addTab("PC ASCII", null, PCGui.pcTab(cgaConfig), null);
 		tabbedPane.addTab("About", null, AboutGui.aboutTab("aboutRetroPIC.htm"), null);
 
 		tabbedPane.addChangeListener(new ChangeListener() {
@@ -291,28 +298,31 @@ public class RetroPIC {
 				new Thread(new Plus4Runner(new Plus4Renderer(image, plus4Config), fileName)).start();
 				break;
 			case 3:
-				new Thread(new ZXRunner(new ZXRenderer(image, zxConfig), fileName)).start();
+				new Thread(new Vic20Runner(new Vic20Renderer(image, vic20Config), fileName)).start();
 				break;
 			case 4:
-				new Thread(new CPCRunner(new CPCRenderer(image, cpcConfig), fileName)).start();
+				new Thread(new ZXRunner(new ZXRenderer(image, zxConfig), fileName)).start();
 				break;
 			case 5:
-				new Thread(new STRunner(new STRenderer(image, stConfig), fileName)).start();
+				new Thread(new CPCRunner(new CPCRenderer(image, cpcConfig), fileName)).start();
 				break;
 			case 6:
-				new Thread(new Amiga500Runner(new Amiga500Renderer(image, amiga500Config), fileName)).start();
+				new Thread(new STRunner(new STRenderer(image, stConfig), fileName)).start();
 				break;
 			case 7:
-				new Thread(new Amiga1200Runner(new Amiga1200Renderer(image, amiga1200Config), fileName)).start();
+				new Thread(new Amiga500Runner(new Amiga500Renderer(image, amiga500Config), fileName)).start();
 				break;
 			case 8:
-				new Thread(new C64ExtraRunner(new C64ExtraRenderer(image, c64ExtraConfig), fileName)).start();
+				new Thread(new Amiga1200Runner(new Amiga1200Renderer(image, amiga1200Config), fileName)).start();
 				break;
 			case 9:
-				new Thread(new Plus4ExtraRunner(new Plus4ExtraRenderer(image, plus4ExtraConfig), fileName)).start();
+				new Thread(new C64ExtraRunner(new C64ExtraRenderer(image, c64ExtraConfig), fileName)).start();
 				break;
 			case 10:
-				new Thread(new CGARunner(new CGARenderer(image, cgaConfig), fileName)).start();
+				new Thread(new Plus4ExtraRunner(new Plus4ExtraRenderer(image, plus4ExtraConfig), fileName)).start();
+				break;
+			case 11:
+				new Thread(new PCRunner(new PCRenderer(image, cgaConfig), fileName)).start();
 				break;
 			}
 

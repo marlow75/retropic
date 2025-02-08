@@ -76,10 +76,10 @@ public class GuiUtils {
 		
 		final JLabel errorLabel = new JLabel("error:");
 		errorLabel.setFont(GuiUtils.bold);
-		errorLabel.setBounds(170, 28, 30, 20);
+		errorLabel.setBounds(210, 28, 30, 20);
 		panel.add(errorLabel);
 
-		sldError.setBounds(200, 28, 80, 30);
+		sldError.setBounds(240, 28, 80, 30);
 		sldError.setFont(GuiUtils.std);
 		sldError.addChangeListener(new ChangeListener() {
 			public void stateChanged(final ChangeEvent e) {
@@ -94,10 +94,10 @@ public class GuiUtils {
 		sldError.setPaintLabels(true);
 		panel.add(sldError);
 		
-		final JCheckBox chckbxAspectCheckBox = new JCheckBox("aspect");
+		final JCheckBox chckbxAspectCheckBox = new JCheckBox("asp");
 		chckbxAspectCheckBox.setToolTipText("Preserve orginal image aspect ratio");
 		chckbxAspectCheckBox.setFont(GuiUtils.std);
-		chckbxAspectCheckBox.setBounds(46, 50, 58, 20);
+		chckbxAspectCheckBox.setBounds(46, 50, 50, 20);
 		chckbxAspectCheckBox.setSelected(config.preserve_aspect);
 		
 		chckbxAspectCheckBox.addActionListener(new ActionListener() {
@@ -111,7 +111,7 @@ public class GuiUtils {
 			final JCheckBox chckbxBWCheckBox = new JCheckBox("bw");
 			chckbxBWCheckBox.setToolTipText("Black/White PAL");
 			chckbxBWCheckBox.setFont(GuiUtils.std);
-			chckbxBWCheckBox.setBounds(158, 50, 58, 20);
+			chckbxBWCheckBox.setBounds(146, 50, 40, 20);
 			chckbxBWCheckBox.setSelected(config.bw);
 			
 			chckbxBWCheckBox.addActionListener(new ActionListener() {
@@ -124,7 +124,7 @@ public class GuiUtils {
 			final JCheckBox chckbxPALCheckBox = new JCheckBox("pal");
 			chckbxPALCheckBox.setToolTipText("Simple PAL emulation");
 			chckbxPALCheckBox.setFont(GuiUtils.std);
-			chckbxPALCheckBox.setBounds(110, 50, 58, 20);
+			chckbxPALCheckBox.setBounds(96, 50, 40, 20);
 			chckbxPALCheckBox.setSelected(config.pal_view);
 			
 			chckbxPALCheckBox.addActionListener(new ActionListener() {

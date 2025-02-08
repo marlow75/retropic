@@ -20,7 +20,7 @@ public class PetsciiConfig extends Config {
 		high_contrast = HIGH_CONTRAST.NONE;
 		error_threshold = 3;
 		
-		filter = true;
+		low_pass_filter = true;
 	}
 	
 	@Override

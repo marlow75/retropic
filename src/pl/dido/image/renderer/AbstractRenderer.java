@@ -58,7 +58,7 @@ public abstract class AbstractRenderer {
 	}
 
 	public void imageProcess() {
-		if (config.filter)
+		if (config.low_pass_filter)
 			Gfx.lowpassFilter(pixels);
 		
 		processContrast();

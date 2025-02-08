@@ -10,6 +10,7 @@ Requirements: JRE16 installed.
 
 ## Versions
 
+* 1.10 - New PC & VIC-20 machines
 * 1.9a - PAL viewer improved, fixed IFF file problems introduced in 1.7 version, CGA text mode (experimental) 
 * 1.9 - Small improvements for MCI modes, low pass filter for 8 bit machines
 * 1.8 - Reworked MCI mode for C64, extra modes for TED machines (hires & MCI)
@@ -32,18 +33,28 @@ Requirements: JRE16 installed.
 * Atari ST, 320x200 in 16 colors on screen from 512 palette colors.
 * Amiga 500/1000, PAL 320x256 and 320x512 in 32 colors or in HAM6 encoding, 4096 palette colors.
 * Amiga 1200/4000, PAL 320x256, 320x512, 640x512 in 256 colors or in HAM8 encoding, 16M palette colors.
+<<<<<<< Updated upstream
 * CGA text mode (experimental)
+=======
+* PC CGA & VESA 10bh text modes
+* VIC-20 text (unexpanded) and hires 176x184 mode (8kB expanded) 
+>>>>>>> Stashed changes
 
 ## Graphics formats
 
 * executable PRG for TED machines
+* executable PRG for VIC-20 
 * executable PRG, Koala Paint, ArtStudio, TruePaint for C64
 * ZX SCR format
 * ArtStudio for CPC machines
 * DEGAS for Atari
 * IFF format for Delux Paint – Amiga (RLE option)
 * True Paint for MCI (experimental)
+<<<<<<< Updated upstream
 * COM executable for CGA
+=======
+* executable COM for PC
+>>>>>>> Stashed changes
 
 ## Conversion options
 
@@ -190,3 +201,30 @@ Below interlace hires played on VICE...
 ... and following MCI picture.
 
 ![MCIPlus4](plus4ExtraMCI.png)
+
+### PC
+
+PC text modes.
+
+* CGA 80x25 - uses max 16 foreground colors, one common background color with standard CGA character set.
+* VESA 132x50 - uses max 16 foreground colors, one common background color with standard CGA character set.
+
+* One hidden layer, sigmoid activation - neural net character matcher with single hidden layer, preffers semigraphics.
+* Two hidden layers, sigmoid activation - neural net character matcher with two hidden layers, preffers characters.
+
+Exports to executable COM.
+
+![CGA](cga.png)
+![VESA](VESA.png)
+
+### VIC-20
+
+16 colors total, 1 text mode.
+
+* 22x23 - uses 2 colors - petscii charset.
+* 176x184 - uses 2 colors and regenerated charset
+
+Exports to executable COM.
+
+![VIC20-txt](vic20txt.png)
+![VIC20-gen](vic20gfx.png)

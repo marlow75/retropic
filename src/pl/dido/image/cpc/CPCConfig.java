@@ -27,7 +27,7 @@ public class CPCConfig extends Config {
 		color_alg = NEAREST_COLOR.PERCEPTED;
 		
 		error_threshold = 3;
-		filter = true;
+		low_pass_filter = true;
 	}
 	
 	@Override

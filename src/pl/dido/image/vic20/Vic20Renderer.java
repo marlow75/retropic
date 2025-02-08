@@ -1,0 +1,354 @@
+package pl.dido.image.vic20;
+
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.Vector;
+
+import pl.dido.image.renderer.AbstractRenderer;
+import pl.dido.image.utils.Config;
+import pl.dido.image.utils.BitVector;
+import pl.dido.image.utils.Gfx;
+import pl.dido.image.utils.Utils;
+import pl.dido.image.utils.neural.Dataset;
+import pl.dido.image.utils.neural.HL1Network;
+import pl.dido.image.utils.neural.HL1SoftmaxNetwork;
+import pl.dido.image.utils.neural.HL2Network;
+import pl.dido.image.utils.neural.NNUtils;
+import pl.dido.image.utils.neural.Network;
+import pl.dido.image.utils.neural.SOMCharsetNetwork;
+import pl.dido.image.utils.neural.SOMDataset;
+
+public class Vic20Renderer extends AbstractRenderer {
+	protected final static int colors[] = new int[] { 0x000000, 0xFFFFFF, 0xF00000, 0x00F0F0, 0x600060, 0x00A000,
+			0x0000F0, 0xD0D000, 0xC0A000, 0xFFA000, 0xF08080, 0x00FFFF, 0xFF00FF, 0x00FF00, 0x00A0FF, 0xFFFF00 };
+
+	protected final static int power2[] = new int[] { 128, 64, 32, 16, 8, 4, 2, 1 };
+
+	protected final static String PETSCII_NETWORK_L1 = "vic20.L1network";
+	protected final static String PETSCII_NETWORK_L2 = "vic20.L2network";
+
+	protected final static String PETSCII_CHARSET = "vic20petscii.bin";
+
+	protected int screen[] = new int[1000];
+	protected int nibble[] = new int[1000];
+
+	protected int backgroundColor;
+	protected int foregroundPalette[][];
+
+	protected Network neural; // matches pattern with petscii
+	protected byte charset[]; // charset 8x8 pixels per char
+
+	protected void initialize() {
+		foregroundPalette = new int[8][3];
+		palette = new int[16][3];
+		
+		final String networkFile;
+
+		switch (((Vic20Config) config).network) {
+		case L2:
+			neural = new HL2Network(64, 128, 256);
+			networkFile = PETSCII_NETWORK_L2;
+
+			break;
+		default:
+			neural = new HL1Network(64, 128, 256);
+			networkFile = PETSCII_NETWORK_L1;
+
+			break;
+		}
+
+		try {
+			charset = Utils.loadCharset(Utils.getResourceAsStream(PETSCII_CHARSET));
+			neural.load(Utils.getResourceAsStream(networkFile));
+		} catch (final IOException e) {
+			// mass hysteria
+			throw new RuntimeException(e);
+		}
+	}
+
+	public Vic20Renderer(final Config config) {
+		super(config);
+		initialize();
+	}
+
+	public Vic20Renderer(final BufferedImage image, final Config config) {
+		super(image, config);
+		initialize();
+	}
+
+	@Override
+	protected void setupPalette() {
+		for (int i = 0; i < colors.length / 2; i++) {
+			final int pixel1[] = palette[i];
+			final int pixel2[] = foregroundPalette[i];
+
+			pixel1[0] = (colors[i] & 0x0000ff); // blue
+			pixel1[1] = (colors[i] & 0x00ff00) >> 8; // green
+			pixel1[2] = (colors[i] & 0xff0000) >> 16; // red
+			
+			pixel2[0] = pixel1[0];
+			pixel2[1] = pixel1[1];
+			pixel2[2] = pixel1[2];
+		}
+		
+		for (int i = colors.length / 2; i < colors.length; i++) {
+			final int pixel[] = palette[i];
+
+			pixel[0] = (colors[i] & 0x0000ff); // blue
+			pixel[1] = (colors[i] & 0x00ff00) >> 8; // green
+			pixel[2] = (colors[i] & 0xff0000) >> 16; // red
+		}
+	}
+
+	@Override
+	protected void imagePostproces() {
+		if (((Vic20Config) config).gen_charset) {
+			final SOMDataset dataset = new SOMDataset();
+			final SOMCharsetNetwork som = new SOMCharsetNetwork(16, 16);
+
+			final SOMDataset item = getChargen();
+
+			for (int i = 0; i < 5; i++) // learn same 5 times
+				dataset.addAll(item);
+
+			charset = som.train(dataset);
+			neural = new HL1SoftmaxNetwork(64, 128, 256);
+
+			final Vector<Dataset> samples = NNUtils.loadData(new ByteArrayInputStream(charset));
+			neural.train(samples);
+		}
+		
+		petscii();
+	}
+
+	protected SOMDataset getChargen() {
+		final SOMDataset dataset = new SOMDataset();
+
+		// tiles screen and pattern
+		final int work[] = new int[64 * 3];
+
+		// calculate average
+		int nr = 0, ng = 0, nb = 0, count = 0;
+		final int occurrence[] = new int[16];
+
+		for (int i = 0; i < pixels.length; i += 3) {
+			nr = pixels[i] & 0xff;
+			ng = pixels[i + 1] & 0xff;
+			nb = pixels[i + 2] & 0xff;
+
+			// dimmer better
+			occurrence[Gfx.getColorIndex(colorAlg, palette, nr, ng, nb)] += (255 - Gfx.getLuma(nr, ng, nb));
+		}
+
+		// get background color with maximum occurrence
+		int k = 0;
+		for (int i = 0; i < 16; i++) {
+			final int o = occurrence[i];
+			if (count < o) {
+				count = o;
+				k = i;
+			}
+		}
+
+		// most occurrence color as background
+		nr = palette[k][0];
+		ng = palette[k][1];
+		nb = palette[k][2];
+
+		final float backLuma = Gfx.getLuma(nr, ng, nb);
+
+		for (int y = 0; y < 184; y += 8) {
+			final int p = y * 176 * 3;
+
+			for (int x = 0; x < 176; x += 8) {
+				final int offset = p + x * 3;
+
+				int index = 0, f = 0;
+				float max_distance = 0;
+
+				// pickup brightest color in 8x8 tile
+				for (int y0 = 0; y0 < 8; y0++) {
+					for (int x0 = 0; x0 < 24; x0 += 3) {
+						final int position = offset + y0 * 176 * 3 + x0;
+
+						final int r = pixels[position] & 0xff;
+						final int g = pixels[position + 1] & 0xff;
+						final int b = pixels[position + 2] & 0xff;
+
+						work[index++] = r;
+						work[index++] = g;
+						work[index++] = b;
+
+						final float distance = Math.abs(Gfx.getLuma(r, g, b) - backLuma);
+						if (max_distance < distance) {
+							max_distance = distance;
+							f = Gfx.getColorIndex(colorAlg, foregroundPalette, r, g, b);
+						}
+					}
+				}
+
+				// foreground color
+				final int cf[] = foregroundPalette[f];
+				final int fr = cf[0];
+				final int fg = cf[1];
+				final int fb = cf[2];
+
+				final BitVector vec = new BitVector(64);
+
+				for (int y0 = 0; y0 < 8; y0++)
+					for (int x0 = 0; x0 < 8; x0++) {
+						final int pyx0 = y0 * 24 + x0 * 3;
+
+						final int r = work[pyx0];
+						final int g = work[pyx0 + 1];
+						final int b = work[pyx0 + 2];
+
+						// fore or background color?
+						final float df = Gfx.getDistance(colorAlg, r, g, b, fr, fg, fb);
+						final float db = Gfx.getDistance(colorAlg, r, g, b, nr, ng, nb);
+
+						// ones as color of the bright pixels
+						if (df <= db)
+							vec.set(y0 * 8 + x0);
+					}
+
+				dataset.add(vec);
+			}
+		}
+
+		return dataset;
+	}
+
+	protected void petscii() {
+		// tiles screen and pattern
+		final int work[] = new int[64 * 3];
+		final float tile[] = new float[64];
+
+		// calculate average
+		int nr = 0, ng = 0, nb = 0, count = 0;
+		final int occurrence[] = new int[16];
+
+		for (int i = 0; i < pixels.length; i += 3) {
+			nr = pixels[i] & 0xff;
+			ng = pixels[i + 1] & 0xff;
+			nb = pixels[i + 2] & 0xff;
+
+			// dimmer better
+			occurrence[Gfx.getColorIndex(colorAlg, palette, nr, ng, nb)] += (255 - Gfx.getLuma(nr, ng, nb));
+		}
+
+		// get background color with maximum occurrence
+		int k = 0;
+		for (int i = 0; i < 16; i++) {
+			final int o = occurrence[i];
+			if (count < o) {
+				count = o;
+				k = i;
+			}
+		}
+
+		// most occurrence color as background
+		this.backgroundColor = k;
+
+		nr = palette[k][0];
+		ng = palette[k][1];
+		nb = palette[k][2];
+
+		final float backLuma = Gfx.getLuma(nr, ng, nb);
+
+		for (int y = 0; y < 184; y += 8) {
+			final int p = y * 176 * 3;
+
+			for (int x = 0; x < 176; x += 8) {
+				final int offset = p + x * 3;
+
+				int index = 0, f = 0;
+				float max_distance = 0;
+
+				// pickup brightest color in 8x8 tile
+				for (int y0 = 0; y0 < 8; y0++) {
+					for (int x0 = 0; x0 < 24; x0 += 3) {
+						final int position = offset + y0 * 176 * 3 + x0;
+
+						final int r = pixels[position] & 0xff;
+						final int g = pixels[position + 1] & 0xff;
+						final int b = pixels[position + 2] & 0xff;
+
+						work[index++] = r;
+						work[index++] = g;
+						work[index++] = b;
+
+						final float distance = Math.abs(Gfx.getLuma(r, g, b) - backLuma);
+						if (max_distance < distance) {
+							max_distance = distance;
+							f = Gfx.getColorIndex(colorAlg, foregroundPalette, r, g, b);
+						}
+					}
+				}
+
+				// foreground color
+				final int cf[] = palette[f];
+				final int fr = cf[0];
+				final int fg = cf[1];
+				final int fb = cf[2];
+
+				for (int y0 = 0; y0 < 8; y0++)
+					for (int x0 = 0; x0 < 8; x0++) {
+						final int pyx0 = y0 * 24 + x0 * 3;
+
+						final int r = work[pyx0];
+						final int g = work[pyx0 + 1];
+						final int b = work[pyx0 + 2];
+
+						// fore or background color?
+						final float df = Gfx.getDistance(colorAlg, r, g, b, fr, fg, fb);
+						final float db = Gfx.getDistance(colorAlg, r, g, b, nr, ng, nb);
+
+						// ones as color of the bright pixels
+						tile[(y0 << 3) + x0] = (df <= db) ? 1 : 0;
+					}
+
+				// pattern match character
+				neural.forward(new Dataset(tile));
+				final float[] result = neural.getResult();
+
+				int code = 0;
+				float value = result[0];
+
+				// get code of character in charset
+				for (int i = 1; i < 256; i++)
+					if (result[i] > value) {
+						code = i;
+						value = result[i];
+					}
+
+				// colors
+				final int address = (y >> 3) * 22 + (x >> 3);
+				nibble[address] = f;
+				screen[address] = code;
+
+				// draw character
+				for (int y0 = 0; y0 < 8; y0++) {
+					final int charset_pos = code * 8 + y0;
+					final int charByte = charset[charset_pos];
+
+					for (int x0 = 0; x0 < 8; x0++) {
+						final int bitValue = power2[x0];
+						final int screen_pos = offset + y0 * 176 * 3 + x0 * 3;
+
+						if ((charByte & bitValue) == bitValue) {
+							pixels[screen_pos] = (byte) fr;
+							pixels[screen_pos + 1] = (byte) fg;
+							pixels[screen_pos + 2] = (byte) fb;
+						} else {
+							pixels[screen_pos] = (byte) nr;
+							pixels[screen_pos + 1] = (byte) ng;
+							pixels[screen_pos + 2] = (byte) nb;
+						}
+					}
+				}
+			}
+		}
+	}
+}

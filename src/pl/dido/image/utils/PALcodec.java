@@ -62,13 +62,13 @@ public class PALcodec {
 
 			for (int x0 = 0; x0 < WIDTH; x0++) {
 				final int p = a + (int) (x0 * dotX) * 3;
-				final float b, g, r;
+				float b, g, r;
 
 				if (p < len - 3) {
 					b = scale(data[p + 0] & 0xff);
 					g = scale(data[p + 1] & 0xff);
-					r = scale(data[p + 2] & 0xff);
-				} else
+					r = scale(data[p + 2] & 0xff);	
+				}else
 					b = g = r = 0f;
 
 				// get luminance component
@@ -99,9 +99,9 @@ public class PALcodec {
 
 			for (int x0 = 0; x0 < WIDTH; x0++) {
 				final int p = a + (int) (x0 * dotX) * 3;
-				final float b, g, r;
+				float b, g, r;
 
-				if (p < len - 3) {
+				if (p < len - 3) { 
 					b = scale(data[p + 0] & 0xff);
 					g = scale(data[p + 1] & 0xff);
 					r = scale(data[p + 2] & 0xff);

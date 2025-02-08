@@ -933,12 +933,10 @@ public class Gfx {
 			final int pg = color[1];
 			final int pb = color[2];
 
-			final float distance = Gfx.euclideanDistance(r, g, b, pr, pg, pb);
+			final float distance = Math.abs(getLuma(pr, pg, pb) - y);
 
 			if (distance < min) {
 				min = distance;
-
-				old_index = index;
 				index = i;
 
 				oy1 = y1;
