@@ -218,7 +218,7 @@ VESA mode on SVGA card
 16 colors total, 1 text mode.
 
 * 22x23 - uses 2 colors - petscii charset.
-* 176x184 - uses 2 colors and regenerated charset
+* 176x184 - uses 2 colors and neural net regenerated charset, slow
 
 Exports to executable PRG.
 
