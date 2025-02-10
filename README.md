@@ -199,8 +199,8 @@ Below interlace hires played on VICE...
 
 PC text modes.
 
-* CGA 80x25 - uses max 16 foreground colors, one common background color with standard CGA character set.
-* VESA 132x50 - uses max 16 foreground colors, one common background color with standard CGA character set.
+* CGA 80x25 - uses max 16 foreground colors, 8 background colors with standard CGA character set.
+* VESA 132x50 - uses max 16 foreground colors, 8 background colors with standard CGA character set.
 
 * One hidden layer, sigmoid activation - neural net character matcher with single hidden layer, preffers semigraphics.
 * Two hidden layers, sigmoid activation - neural net character matcher with two hidden layers, preffers characters.
@@ -218,7 +218,7 @@ VESA mode on SVGA card
 16 colors total, 1 text mode.
 
 * 22x23 - uses 2 colors - petscii charset.
-* 176x184 - uses 2 colors and regenerated charset
+* 176x184 - uses 2 colors and neural net regenerated charset, slow
 
 Exports to executable PRG.
 
