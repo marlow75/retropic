@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Vector;
 
+import at.fhtw.ai.nn.utils.Dataset;
+
 public class NNUtils {
 
 	public static Vector<Dataset> loadData(final InputStream inputStream) {

@@ -3,15 +3,16 @@ package pl.dido.image.petscii;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
+import at.fhtw.ai.nn.utils.Network;
+import at.fhtw.ai.nn.utils.Dataset;
+import at.fhtw.ai.nn.utils.HL1SoftmaxNetwork;
+import at.fhtw.ai.nn.utils.HL2SoftmaxNetwork;
+
 import pl.dido.image.renderer.AbstractRenderer;
 import pl.dido.image.utils.C64PaletteCalculator;
 import pl.dido.image.utils.Config;
 import pl.dido.image.utils.Gfx;
 import pl.dido.image.utils.Utils;
-import pl.dido.image.utils.neural.Dataset;
-import pl.dido.image.utils.neural.HL1Network;
-import pl.dido.image.utils.neural.HL2Network;
-import pl.dido.image.utils.neural.Network;
 
 public class PetsciiRenderer extends AbstractRenderer {
 	private final static int power2[] = new int[] { 128, 64, 32, 16, 8, 4, 2, 1 };
@@ -35,12 +36,12 @@ public class PetsciiRenderer extends AbstractRenderer {
 
 		switch (((PetsciiConfig) config).network) {
 		case L2:
-			neural = new HL2Network(64, 128, 256);
+			neural = new HL2SoftmaxNetwork(64, 128, 256);
 			networkFile = PETSCII_NETWORK_L2;
 
 			break;
 		default:
-			neural = new HL1Network(64, 128, 256);
+			neural = new HL1SoftmaxNetwork(64, 128, 256);
 			networkFile = PETSCII_NETWORK_L1;
 
 			break;
