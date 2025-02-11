@@ -2,8 +2,8 @@ package pl.dido.image.utils.neural;
 
 import java.util.ArrayList;
 
+import at.fhtw.ai.nn.utils.NetworkProgressListener;
 import pl.dido.image.utils.BitVector;
-import pl.dido.image.utils.ProgressListener;
 
 public class SOMCharsetNetwork {
 
@@ -13,23 +13,23 @@ public class SOMCharsetNetwork {
 	protected float radius = 0.4f;
 	protected int epoch = 10;
 
-	protected ArrayList<ProgressListener> listeners;
+	protected ArrayList<NetworkProgressListener> listeners;
 
 	public SOMCharsetNetwork(final int width, final int height) {
 		this.width = width;
 		this.height = height;
 	}
 
-	public void addProgressListener(final ProgressListener listener) {
+	public void addProgressListener(final NetworkProgressListener listener) {
 		if (listeners == null)
-			listeners = new ArrayList<ProgressListener>();
+			listeners = new ArrayList<NetworkProgressListener>();
 
 		listeners.add(listener);
 	}
 
 	public void notifyListeners() {
 		if (listeners != null)
-			for (final ProgressListener listener : listeners)
+			for (final NetworkProgressListener listener : listeners)
 				listener.notifyProgress();
 	}
 
