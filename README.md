@@ -10,6 +10,7 @@ Requirements: JRE16 installed.
 
 ## Versions
 
+* 1.11 - VIC-20 hires and lowres modes
 * 1.10 - New PC & VIC-20 machines
 * 1.9a - PAL viewer improved, fixed IFF file problems introduced in 1.7 version, CGA text mode (experimental) 
 * 1.9 - Small improvements for MCI modes, low pass filter for 8 bit machines
@@ -218,12 +219,17 @@ VESA mode on SVGA card
 16 colors total, 1 text mode.
 
 * 22x23 - uses 2 colors - petscii charset.
-* 176x184 - uses 2 colors and neural net regenerated charset, slow
+* 176x184 - uses 2 colors in 8x8 grid and neural net regenerated charset, slow & experimental
+* 88x184 - uses 4 colors (entire screen) and neural net regenerated charset, slow & experimental
 
 Exports to executable PRG.
 
 ![VIC20-txt](vic20txt.png)
 
-Pseudographic mode - regenerated charset 
+Pseudographic hires mode - regenerated charset 
 
 ![VIC20-gen](vic20gfx.png)
+
+Pseudographic lowres mode - regenerated charset 
+
+![VIC20-gen](vic20low.png)
