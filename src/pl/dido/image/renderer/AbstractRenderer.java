@@ -65,6 +65,7 @@ public abstract class AbstractRenderer {
 		setupPalette();
 
 		imageDithering();
+		runner.showImage();
 
 		imagePostproces();
 		if (config.pal_view)

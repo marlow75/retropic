@@ -13,12 +13,14 @@ import javax.swing.JRadioButton;
 import pl.dido.image.GuiUtils;
 import pl.dido.image.petscii.PetsciiConfig.NETWORK;
 import pl.dido.image.utils.ImageCanvas;
+import pl.dido.image.vic20.Vic20Config.VIDEO_MODE;
 
 public class Vic20Gui {
-	public static final String TEXT = "Text 22x23x2";
-	public static final String GRAPHICS = "Graphics 174x184x2";
+	public static final String TEXT   = "Text 22x23x2";
+	public static final String HIRES  = "Hires 174x184x2";
+	public static final String LOWRES = "Lowres 88x184x4";
 	
-	final private static String[] modesStrings = { TEXT, GRAPHICS };
+	final private static String[] modesStrings = { TEXT, HIRES, LOWRES };
 	
 	public static JPanel vic20Tab(final Vic20Config config) {
 		final JPanel vic20Panel = new JPanel();
@@ -43,10 +45,13 @@ public class Vic20Gui {
 		        
 		        switch (modeName) {
 		        case TEXT:
-		        	config.gen_charset = false; 
+		        	config.mode = VIDEO_MODE.PETSCII; 
 		        	break;
-		        case GRAPHICS:
-		        	config.gen_charset = true;
+		        case HIRES:
+		        	config.mode = VIDEO_MODE.HIRES;
+		        	break;
+		        case LOWRES:
+		        	config.mode = VIDEO_MODE.LOWRES;
 		        	break;
 		        }
 		}});

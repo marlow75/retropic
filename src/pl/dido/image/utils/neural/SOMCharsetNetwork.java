@@ -50,9 +50,9 @@ public class SOMCharsetNetwork {
 		}
 	}
 
-	public byte[] train(final SOMDataset dataset) {
+	public byte[] train(final SOMDataset<BitVector> dataset) {
 		matrixInit();
-		final float delta_radius = radius / epoch;
+		final float delta_radius = radius / (epoch + 1);
 
 		while (epoch-- > 0) {
 			dataset.reset();
@@ -94,18 +94,14 @@ public class SOMCharsetNetwork {
 		return result;
 	}
 
-	protected BitVector getCharacter(final BitVector ch) {
-		final Position position = getBMU(ch);
-		return matrix[position.x][position.y].getVector();
-	}
-
 	protected void learn(final Position best, final BitVector sample) {
 		for (int y = 0; y < height; y++) {
 			final Neuron line[] = matrix[y];
 
 			for (int x = 0; x < width; x++) {
 				final float gain = neighbourhood(distance(best.x, best.y, x, y), radius);
-				line[x].add(sample, gain);
+				if (gain != 0f)
+					line[x].add(sample, gain);
 			}
 		}
 	}
@@ -149,9 +145,8 @@ public class SOMCharsetNetwork {
 
 			for (int x = 0; x < width; x++) {
 				final BitVector vec = line[x].getVector();
-
-				//final float m = hammingDistance(vec, sample);
 				final float m = diceSimilarity(vec, sample);
+				
 				if (m > max) {
 					max = m;
 

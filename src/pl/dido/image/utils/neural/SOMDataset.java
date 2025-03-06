@@ -2,17 +2,15 @@ package pl.dido.image.utils.neural;
 
 import java.util.ArrayList;
 
-import pl.dido.image.utils.BitVector;
-
-public class SOMDataset {
-	protected final ArrayList<BitVector> set = new ArrayList<BitVector>(10);
+public class SOMDataset<T> {
+	protected final ArrayList<T> set = new ArrayList<T>(10);
 	protected int index = 0;
 	
-	public void add(final BitVector vec) {
+	public void add(final T vec) {
 		set.add(vec);
 	}
 	
-	public BitVector getNext() {
+	public T getNext() {
 		if (index < set.size())
 			return set.get(index++);
 		
@@ -27,7 +25,7 @@ public class SOMDataset {
 		return set.size();
 	}
 
-	public void addAll(final SOMDataset dataset) {
+	public void addAll(final SOMDataset<T> dataset) {
 		set.addAll(dataset.set);
 	}
 }

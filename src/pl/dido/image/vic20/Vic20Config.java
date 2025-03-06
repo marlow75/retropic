@@ -3,12 +3,13 @@ package pl.dido.image.vic20;
 import pl.dido.image.petscii.PetsciiConfig;
 
 public class Vic20Config extends PetsciiConfig {
+	public enum VIDEO_MODE { PETSCII, HIRES, LOWRES };
 	
-	public boolean gen_charset;
+	public VIDEO_MODE mode;
 	
 	public Vic20Config() {
 		super();
-		this.gen_charset = false;
+		this.mode = VIDEO_MODE.PETSCII;
 		this.dither_alg = DITHERING.BAYER2x2;
 	}
 		
@@ -25,10 +26,14 @@ public class Vic20Config extends PetsciiConfig {
 			break;
 		}
 		
-		if (this.gen_charset)
+		switch (mode) {
+		case HIRES:
 			return "176x184x2 " + n;
-		else
+		case LOWRES:
+			return "88x184x2 " + n;
+		default:
 			return "22x23x2 " + n;
+		}
 	}
 
 	@Override

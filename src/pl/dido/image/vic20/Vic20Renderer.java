@@ -3,47 +3,53 @@ package pl.dido.image.vic20;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Vector;
 
+import at.fhtw.ai.nn.utils.Dataset;
+import at.fhtw.ai.nn.utils.HL1SoftmaxNetwork;
+import at.fhtw.ai.nn.utils.HL2SoftmaxNetwork;
+import at.fhtw.ai.nn.utils.Network;
 import pl.dido.image.renderer.AbstractRenderer;
 import pl.dido.image.utils.BitVector;
 import pl.dido.image.utils.Config;
 import pl.dido.image.utils.Gfx;
 import pl.dido.image.utils.Utils;
-import at.fhtw.ai.nn.utils.Dataset;
-import at.fhtw.ai.nn.utils.HL1SoftmaxNetwork;
-import at.fhtw.ai.nn.utils.HL2SoftmaxNetwork;
-import at.fhtw.ai.nn.utils.Network;
-
 import pl.dido.image.utils.neural.NNUtils;
 import pl.dido.image.utils.neural.SOMCharsetNetwork;
 import pl.dido.image.utils.neural.SOMDataset;
+import pl.dido.image.utils.neural.SOMMulticolorCharsetNetwork;
 
 public class Vic20Renderer extends AbstractRenderer {
 	protected final static int colors[] = new int[] { 0x000000, 0xFFFFFF, 0xF00000, 0x00F0F0, 0x600060, 0x00A000,
 			0x0000F0, 0xD0D000, 0xC0A000, 0xFFA000, 0xF08080, 0x00FFFF, 0xFF00FF, 0x00FF00, 0x00A0FF, 0xFFFF00 };
 
 	protected final static int power2[] = new int[] { 128, 64, 32, 16, 8, 4, 2, 1 };
+	protected final static int power22[] = new int[] { 192, 48, 12, 3 };
 
 	protected final static String PETSCII_NETWORK_L1 = "vic20.L1network";
 	protected final static String PETSCII_NETWORK_L2 = "vic20.L2network";
 
 	protected final static String PETSCII_CHARSET = "vic20petscii.bin";
 
-	protected int screen[] = new int[1000];
-	protected int nibble[] = new int[1000];
+	protected int screen[] = new int[22 * 23];
+	protected int nibble[] = new int[22 * 23];
 
 	protected int backgroundColor;
+	protected int auxiliaryColor;
+	
+	protected int borderColor;
 	protected int foregroundPalette[][];
 
 	protected Network neural; // matches pattern with petscii
 	protected byte charset[]; // charset 8x8 pixels per char
 
+	public String networkFile;
+
 	protected void initialize() {
 		foregroundPalette = new int[8][3];
 		palette = new int[16][3];
-		
-		final String networkFile;
 
 		switch (((Vic20Config) config).network) {
 		case L2:
@@ -62,7 +68,6 @@ public class Vic20Renderer extends AbstractRenderer {
 			charset = Utils.loadCharset(Utils.getResourceAsStream(PETSCII_CHARSET));
 			neural.load(Utils.getResourceAsStream(networkFile));
 		} catch (final IOException e) {
-			// mass hysteria
 			throw new RuntimeException(e);
 		}
 	}
@@ -86,12 +91,12 @@ public class Vic20Renderer extends AbstractRenderer {
 			pixel1[0] = (colors[i] & 0x0000ff); // blue
 			pixel1[1] = (colors[i] & 0x00ff00) >> 8; // green
 			pixel1[2] = (colors[i] & 0xff0000) >> 16; // red
-			
+
 			pixel2[0] = pixel1[0];
 			pixel2[1] = pixel1[1];
 			pixel2[2] = pixel1[2];
 		}
-		
+
 		for (int i = colors.length / 2; i < colors.length; i++) {
 			final int pixel[] = palette[i];
 
@@ -103,27 +108,50 @@ public class Vic20Renderer extends AbstractRenderer {
 
 	@Override
 	protected void imagePostproces() {
-		if (((Vic20Config) config).gen_charset) {
-			final SOMDataset dataset = new SOMDataset();
+		switch (((Vic20Config) config).mode) {
+		case HIRES: {
+			final SOMDataset<BitVector> dataset = new SOMDataset<BitVector>();
 			final SOMCharsetNetwork som = new SOMCharsetNetwork(16, 16);
 
-			final SOMDataset item = getChargen();
-
+			final SOMDataset<BitVector> item = getChargenHires();
 			for (int i = 0; i < 5; i++) // learn same 5 times
 				dataset.addAll(item);
 
 			charset = som.train(dataset);
 			neural = new HL1SoftmaxNetwork(64, 128, 256);
 
-			final Vector<Dataset> samples = NNUtils.loadData(new ByteArrayInputStream(charset));
+			final Vector<Dataset> samples = NNUtils.loadData8x8(new ByteArrayInputStream(charset));
 			neural.train(samples);
+
+			hires();
 		}
-		
-		petscii();
+			break;
+		case LOWRES: {
+			final SOMDataset<float[]> dataset = new SOMDataset<float[]>();
+			final SOMMulticolorCharsetNetwork som = new SOMMulticolorCharsetNetwork(16, 16);
+
+			final SOMDataset<float[]> item = getChargenLowres();
+			for (int i = 0; i < 5; i++) // learn same 5 times
+				dataset.addAll(item);
+
+			charset = som.train(dataset);
+			neural = new HL1SoftmaxNetwork(32, 128, 256);
+			
+			final Vector<Dataset> samples = NNUtils.loadData4x8(new ByteArrayInputStream(charset));
+			neural.train(samples);
+			
+			lowres();
+		}
+			break;
+		case PETSCII:
+
+			hires();
+			break;
+		}
 	}
 
-	protected SOMDataset getChargen() {
-		final SOMDataset dataset = new SOMDataset();
+	protected SOMDataset<BitVector> getChargenHires() {
+		final SOMDataset<BitVector> dataset = new SOMDataset<BitVector>();
 
 		// tiles screen and pattern
 		final int work[] = new int[64 * 3];
@@ -220,7 +248,7 @@ public class Vic20Renderer extends AbstractRenderer {
 		return dataset;
 	}
 
-	protected void petscii() {
+	protected void hires() {
 		// tiles screen and pattern
 		final int work[] = new int[64 * 3];
 		final float tile[] = new float[64];
@@ -264,7 +292,7 @@ public class Vic20Renderer extends AbstractRenderer {
 				final int offset = p + x * 3;
 
 				int index = 0, f = 0;
-				float max_distance = 0;
+				float maxDistance = 0;
 
 				// pickup brightest color in 8x8 tile
 				for (int y0 = 0; y0 < 8; y0++) {
@@ -280,8 +308,8 @@ public class Vic20Renderer extends AbstractRenderer {
 						work[index++] = b;
 
 						final float distance = Math.abs(Gfx.getLuma(r, g, b) - backLuma);
-						if (max_distance < distance) {
-							max_distance = distance;
+						if (maxDistance < distance) {
+							maxDistance = distance;
 							f = Gfx.getColorIndex(colorAlg, foregroundPalette, r, g, b);
 						}
 					}
@@ -306,7 +334,7 @@ public class Vic20Renderer extends AbstractRenderer {
 						final float db = Gfx.getDistance(colorAlg, r, g, b, nr, ng, nb);
 
 						// ones as color of the bright pixels
-						tile[(y0 << 3) + x0] = (df <= db) ? 1 : 0;
+						tile[(y0 << 3) + x0] = (df <= db) ? 1f : 0f;
 					}
 
 				// pattern match character
@@ -330,25 +358,207 @@ public class Vic20Renderer extends AbstractRenderer {
 
 				// draw character
 				for (int y0 = 0; y0 < 8; y0++) {
-					final int charset_pos = code * 8 + y0;
-					final int charByte = charset[charset_pos];
+					final int charByte = charset[code * 8 + y0];
 
 					for (int x0 = 0; x0 < 8; x0++) {
 						final int bitValue = power2[x0];
-						final int screen_pos = offset + y0 * 176 * 3 + x0 * 3;
+						final int screenPos = offset + y0 * 176 * 3 + x0 * 3;
 
 						if ((charByte & bitValue) == bitValue) {
-							pixels[screen_pos] = (byte) fr;
-							pixels[screen_pos + 1] = (byte) fg;
-							pixels[screen_pos + 2] = (byte) fb;
+							pixels[screenPos] = (byte) fr;
+							pixels[screenPos + 1] = (byte) fg;
+							pixels[screenPos + 2] = (byte) fb;
 						} else {
-							pixels[screen_pos] = (byte) nr;
-							pixels[screen_pos + 1] = (byte) ng;
-							pixels[screen_pos + 2] = (byte) nb;
+							pixels[screenPos] = (byte) nr;
+							pixels[screenPos + 1] = (byte) ng;
+							pixels[screenPos + 2] = (byte) nb;
 						}
 					}
 				}
 			}
 		}
+	}
+
+	protected void shrink88(final int newPixels[], final int occurrence[]) {
+		int index = 0;
+
+		// shrinking 176x184 -> 88x184
+		for (int y = 0; y < 184; y++) {
+			final int p = y * 176 * 3;
+
+			for (int x = 0; x < 176; x += 2) {
+				final int o = p + x * 3;
+
+				final int r1 = pixels[o + 0] & 0xff;
+				final int g1 = pixels[o + 1] & 0xff;
+				final int b1 = pixels[o + 2] & 0xff;
+
+				final int r2 = pixels[o + 3] & 0xff;
+				final int g2 = pixels[o + 4] & 0xff;
+				final int b2 = pixels[o + 5] & 0xff;
+
+				// average color
+				final int r = (r1 + r2) >> 1;
+				final int g = (g1 + g2) >> 1;
+				final int b = (b1 + b2) >> 1;
+
+				final int i = getColorIndex(r, g, b);
+				final int c[] = palette[i];
+
+				newPixels[index++] = c[0];
+				newPixels[index++] = c[1];
+				newPixels[index++] = c[2];
+
+				occurrence[i]++;
+			}
+		}
+	}
+
+	protected SOMDataset<float[]> getChargenLowres() {
+		final SOMDataset<float[]> dataset = new SOMDataset<float[]>();
+		final int[] newPixels = new int[88 * 184 * 3]; // 88x184
+		
+		final int occurrence[] = new int[16];
+		shrink88(newPixels, occurrence);
+
+		final Integer indexes[] = new Integer[] { 0, 1, 2, 3, 4, 5, 6, 7 };		
+		Arrays.sort(indexes, new Comparator<Integer>() {
+			public int compare(final Integer o1, final Integer o2) {
+				return -Integer.compare(occurrence[o1], occurrence[o2]);
+			}
+		});
+
+		final int c0 = indexes[0];
+		final int c1 = indexes[1];
+		final int c2 = indexes[2];
+		final int c3 = indexes[3];
+		
+		backgroundColor = c0;
+		borderColor = c1;
+		auxiliaryColor = c3;
+
+		final int locPalette[][] = new int[][] { 
+			{ foregroundPalette[c0][0], foregroundPalette[c0][1], foregroundPalette[c0][2] },
+			{ foregroundPalette[c1][0], foregroundPalette[c1][1], foregroundPalette[c1][2] }, 
+			{ foregroundPalette[c2][0], foregroundPalette[c2][1], foregroundPalette[c2][2] },
+			{ foregroundPalette[c3][0], foregroundPalette[c3][1], foregroundPalette[c3][2] } };
+
+		for (int y = 0; y < 184; y += 8)
+			for (int x = 0; x < 88; x += 4) {
+				final int offset = (y * 88 + x) * 3;
+				final float vec[] = new float[32];
+
+				for (int y0 = 0; y0 < 8; y0++)
+					for (int x0 = 0; x0 < 4; x0++) {
+						final int py0x0 = offset + 3 * (y0 * 88 + x0);
+
+						final int r = newPixels[py0x0 + 0];
+						final int g = newPixels[py0x0 + 1];
+						final int b = newPixels[py0x0 + 2];
+
+						final int color = Gfx.getColorIndex(colorAlg, locPalette, r, g, b);
+						vec[y0 * 4 + x0] = color & 0x3;
+					}
+
+				dataset.add(vec);
+			}
+
+		return dataset;
+	}
+
+	protected void lowres() {
+		final int[] newPixels = new int[88 * 184 * 3]; // 88x184
+		final int occurrence[] = new int[16]; // tiles screen and pattern
+
+		shrink88(newPixels, occurrence);
+		final Integer indexes[] = new Integer[] { 0, 1, 2, 3, 4, 5, 6, 7 };
+		
+		Arrays.sort(indexes, new Comparator<Integer>() {
+			public int compare(final Integer o1, final Integer o2) {
+				return -Integer.compare(occurrence[o1], occurrence[o2]);
+			}
+		});
+
+		final int c0 = indexes[0];
+		final int c1 = indexes[1];
+		final int c2 = indexes[2];
+		final int c3 = indexes[3];
+		
+		backgroundColor = c0;
+		borderColor = c1;
+		auxiliaryColor = c3;
+
+		final int locPalette[][] = new int[][] { 
+			{ foregroundPalette[c0][0], foregroundPalette[c0][1], foregroundPalette[c0][2] },
+			{ foregroundPalette[c1][0], foregroundPalette[c1][1], foregroundPalette[c1][2] }, 
+			{ foregroundPalette[c2][0], foregroundPalette[c2][1], foregroundPalette[c2][2] },
+			{ foregroundPalette[c3][0], foregroundPalette[c3][1], foregroundPalette[c3][2] } };
+			
+		final float vec[] = new float[32];
+		int index = 0;
+
+		for (int y = 0; y < 184; y += 8)
+			for (int x = 0; x < 88; x += 4) {
+				final int offset = 3 * (y * 88 + x);
+
+				for (int y0 = 0; y0 < 8; y0++)
+					for (int x0 = 0; x0 < 4; x0++) {
+						final int py0x0 = offset + 3 * (y0 * 88 + x0);
+
+						final int r = newPixels[py0x0 + 0];
+						final int g = newPixels[py0x0 + 1];
+						final int b = newPixels[py0x0 + 2];
+
+						final int color = Gfx.getColorIndex(colorAlg, locPalette, r, g, b);
+						vec[y0 * 4 + x0] = color & 0x3;
+					}
+
+				// pattern match character
+				neural.forward(new Dataset(vec));
+				final float[] result = neural.getResult();
+
+				int code = 0;
+				float value = result[0];
+
+				// get code of character in char set
+				for (int i = 1; i < 256; i++)
+					if (result[i] > value) {
+						code = i;
+						value = result[i];
+					}
+
+				nibble[index] = c2 + 8; // multicolor mode
+				screen[index] = code;
+				index++;
+			}
+
+		// draw image
+		index = 0;
+		for (int y0 = 0; y0 < 184; y0 += 8)
+			for (int x0 = 0; x0 < 176; x0 += 8) {
+				final int offset = (y0 * 176 + x0) * 3;
+				final int code = screen[index++];
+
+				for (int y = 0; y < 8; y++) {
+					int b = charset[code * 8 + y] & 0xff;
+
+					for (int x = 0; x < 24; x += 6) {
+						final int color = (b & 192) >> 6;
+						final int p = offset + (y * 176 * 3 + x);
+
+						final int lp[] = locPalette[color];
+
+						pixels[p + 0] = (byte) lp[0];
+						pixels[p + 1] = (byte) lp[1];
+						pixels[p + 2] = (byte) lp[2];
+
+						pixels[p + 3] = (byte) lp[0];
+						pixels[p + 4] = (byte) lp[1];
+						pixels[p + 5] = (byte) lp[2];
+
+						b <<= 2;
+					}
+				}
+			}
 	}
 }
