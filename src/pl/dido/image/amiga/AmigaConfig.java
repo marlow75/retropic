@@ -10,5 +10,6 @@ public abstract class AmigaConfig extends Config {
 		super();
 		
 		rleCompress = false;
+		pal_view = false;
 	}
 }

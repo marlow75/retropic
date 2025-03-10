@@ -81,12 +81,12 @@ public class SOMCharsetNetwork {
 					if (vec.getQuick(i))
 						data |= 1 << j;
 
-					j--;
-					if (i % 8 == 7) {
+					if (j == 0) {
 						result[index++] = data;
 						data = 0;
 						j = 7;
-					}
+					} else
+						j--;
 				}
 			}
 		}
@@ -112,16 +112,6 @@ public class SOMCharsetNetwork {
 
 	protected static final float neighbourhood(final float d, final float r) {
 		return (float) Math.exp((-1f * (d * d)) / (2f * (r * r)));
-	}
-
-	protected final static int hammingDistance(final BitVector a, final BitVector b) {
-		int distance = 0;
-
-		for (int j = a.size(); j-- > 0;)
-			if (a.getQuick(j) != b.getQuick(j))
-				distance++;
-
-		return distance;
 	}
 
 	protected final static float diceSimilarity(final BitVector a, final BitVector b) {

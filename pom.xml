@@ -28,18 +28,6 @@
                 </archive>
             </configuration>
         </plugin>
-         <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-jar-plugin</artifactId>
-            <configuration>
-               <archive>
-                  <manifest>
-                     <mainClass>pl.dido.image.RetroPIC</mainClass>
-                     <addClasspath>true</addClasspath>
-                  </manifest>
-               </archive>
-            </configuration>
-         </plugin>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.1</version>

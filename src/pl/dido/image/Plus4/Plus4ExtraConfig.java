@@ -1,4 +1,4 @@
-package pl.dido.image.Plus4;
+package pl.dido.image.plus4;
 
 import pl.dido.image.c64.C64ExtraConfig;
 

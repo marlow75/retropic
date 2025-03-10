@@ -183,7 +183,7 @@ public class Gfx {
 		final BufferedImage img = new BufferedImage(maxX, maxY, image.getType());
 		final Graphics2D g = img.createGraphics();
 
-		g.setPaint(new Color(0, 0, 0)); // white background
+		g.setPaint(new Color(0, 0, 0)); // black background
 		g.fillRect(0, 0, maxX, maxY);
 
 		final float x = image.getWidth();
@@ -915,36 +915,24 @@ public class Gfx {
 		return index;
 	}
 
-	protected int[] matchingLumaColor(final int palette[][], final int r, final int g, final int b) {
-		return palette[getLumaColorIndex(palette, r, g, b)];
-	}
-
 	protected static int getLumaColorIndex(final int palette[][], final int r, final int g, final int b) {
-		int index = 0, old_index = 0;
-		float y1 = 0, oy1 = 0;
-
+		int index = palette.length;		
 		float min = Float.MAX_VALUE;
-		final float y = getLuma(r, g, b);
-		final int len = palette.length;
+		
+		float y = getLuma(r, g, b);
+		final int len = index - 1;
 
-		for (int i = len; i-- > 0;) { // euclidean distance
+		for (int i = len; i-- > 0;) {
 			final int color[] = palette[i];
-			final int pr = color[0];
-			final int pg = color[1];
-			final int pb = color[2];
+			final float d = Math.abs(getLuma(color[0], color[1], color[2]) - y);
 
-			final float distance = Math.abs(getLuma(pr, pg, pb) - y);
-
-			if (distance < min) {
-				min = distance;
+			if (d < min) {
+				min = d;
 				index = i;
-
-				oy1 = y1;
-				y1 = getLuma(pr, pg, pb);
 			}
 		}
 
-		return Math.abs(y1 - y) < Math.abs(oy1 - y) ? index : old_index;
+		return index;
 	}
 
 	public static final void colorScale(final float r, final float g, final float b, final int pixels[]) {

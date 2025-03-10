@@ -1,4 +1,4 @@
-package pl.dido.image.Plus4;
+package pl.dido.image.plus4;
 
 import java.awt.Canvas;
 import java.awt.event.ActionEvent;

@@ -84,25 +84,11 @@ public class CPCGui {
 		});
 
 		cpcPanel.add(chkReplaceBox);
-
-		final JCheckBox chckbxRasterCheckBox = new JCheckBox("pal");
-		chckbxRasterCheckBox.setToolTipText("Simple PAL emulation");
-		chckbxRasterCheckBox.setFont(GuiUtils.std);
-		chckbxRasterCheckBox.setBounds(100, 60, 50, 20);
-		chckbxRasterCheckBox.setSelected(config.pal_view);
-
-		chckbxRasterCheckBox.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				config.pal_view = !config.pal_view;
-			}
-		});
-
-		cpcPanel.add(chckbxRasterCheckBox);
 		
-		final JCheckBox chckbxAspectCheckBox = new JCheckBox("aspect");
+		final JCheckBox chckbxAspectCheckBox = new JCheckBox("asp");
 		chckbxAspectCheckBox.setToolTipText("Preserve orginal image aspect ratio");
 		chckbxAspectCheckBox.setFont(GuiUtils.std);
-		chckbxAspectCheckBox.setBounds(150, 60, 80, 20);
+		chckbxAspectCheckBox.setBounds(100, 60, 50, 20);
 		chckbxAspectCheckBox.setSelected(config.preserve_aspect);
 
 		chckbxAspectCheckBox.addActionListener(new ActionListener() {
@@ -113,6 +99,35 @@ public class CPCGui {
 
 		cpcPanel.add(chckbxAspectCheckBox);
 
+		final JCheckBox chckbxBWCheckBox = new JCheckBox("bw");
+		chckbxBWCheckBox.setToolTipText("Black/White PAL");
+		chckbxBWCheckBox.setFont(GuiUtils.std);
+		chckbxBWCheckBox.setBounds(200, 60, 50, 20);
+		chckbxBWCheckBox.setSelected(config.black_white);
+
+		chckbxBWCheckBox.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				config.black_white = !config.black_white;
+			}
+		});
+
+		cpcPanel.add(chckbxBWCheckBox);
+		
+		final JCheckBox chckbxRasterCheckBox = new JCheckBox("pal");
+		chckbxRasterCheckBox.setToolTipText("Simple PAL emulation");
+		chckbxRasterCheckBox.setFont(GuiUtils.std);
+		chckbxRasterCheckBox.setBounds(150, 60, 50, 20);
+		chckbxRasterCheckBox.setSelected(config.pal_view);
+
+		chckbxRasterCheckBox.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				config.pal_view = !config.pal_view;
+			}
+		});
+
+		cpcPanel.add(chckbxRasterCheckBox);
+		
+		
 
 		final Canvas cpcLogo = new ImageCanvas("amstrad.png");
 		cpcLogo.setBounds(290, 0, 200, 100);

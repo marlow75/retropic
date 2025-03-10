@@ -14,6 +14,8 @@ public class ZXConfig extends Config {
 		
 		error_threshold = 5;
 		low_pass_filter = true;
+		
+		allow_luminance = false;
 	}
 
 	@Override

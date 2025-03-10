@@ -29,14 +29,15 @@ abstract public class Config implements Cloneable {
 	public DITHERING dither_alg;
 	public NEAREST_COLOR color_alg;
 	
-	public boolean bw;
+	public boolean black_white;
+	public boolean allow_luminance;
 
 	public Config() {
 		dither_alg = DITHERING.ATKINSON;
 		color_alg = NEAREST_COLOR.PERCEPTED;
 
 		preserve_aspect = false;
-		bw = false;
+		black_white = false;
 		
 		high_contrast = HIGH_CONTRAST.NONE;
 		window_size = 40;
@@ -48,6 +49,7 @@ abstract public class Config implements Cloneable {
 		low_pass_filter = false;
 		
 		error_threshold = 4;
+		allow_luminance = true;
 	}
 
 	public abstract int getScreenWidth();

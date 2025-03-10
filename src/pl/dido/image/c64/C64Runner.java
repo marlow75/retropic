@@ -181,7 +181,6 @@ public class C64Runner extends AbstractRendererRunner {
 			public void actionPerformed(final ActionEvent e) {
 				try {
 					String exportFileName = Utils.createDirectory(Config.export_path) + "/";
-					c64.savePreview(exportFileName);
 
 					switch (((C64Config) c64.config).screen_mode) {
 					case HIRES:

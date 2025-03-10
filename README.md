@@ -10,20 +10,21 @@ Requirements: JRE16 installed.
 
 ## Versions
 
-* 1.11 - VIC-20 hires and lowres modes
-* 1.10 - New PC & VIC-20 machines
-* 1.9a - PAL viewer improved, fixed IFF file problems introduced in 1.7 version, CGA text mode (experimental) 
-* 1.9 - Small improvements for MCI modes, low pass filter for 8 bit machines
-* 1.8 - Reworked MCI mode for C64, extra modes for TED machines (hires & MCI)
-* 1.7 - New simple PAL view for all machines, Commodore TED machines (Plus4, C16, C116), scanlines removed
-* 1.6 - Bayer dithering for all machines
-* 1.5 - New hires interlace and noisy MCI for C64, screenshots for 8 bit machines
-* 1.4 - Refactoring, new pixel formats
-* 1.3 - Scanline view for C64, ZX, CPC, ST, bug fixes
-* 1.2 - Improved palette & color handling for C64, CPC, Amiga 500, experimental C64 extra 
-* 1.1 - Minor bug fixes, CPC new palette
-* 1.0 - Minor changes, time to start versioning
-* 0.1 - Initial version, bug fixes
+* 1.11a - Usable luminance mode for monochrome displays
+* 1.11  - VIC-20 hires and lowres modes
+* 1.10  - New PC & VIC-20 machines
+* 1.9a  - PAL viewer improved, fixed IFF file problems introduced in 1.7 version, CGA text mode (experimental) 
+* 1.9   - Small improvements for MCI modes, low pass filter for 8 bit machines
+* 1.8   - Reworked MCI mode for C64, extra modes for TED machines (hires & MCI)
+* 1.7   - New simple PAL view for all machines, Commodore TED machines (Plus4, C16, C116), scanlines removed
+* 1.6   - Bayer dithering for all machines
+* 1.5   - New hires interlace and noisy MCI for C64, screenshots for 8 bit machines
+* 1.4   - Refactoring, new pixel formats
+* 1.3   - Scanline view for C64, ZX, CPC, ST, bug fixes
+* 1.2   - Improved palette & color handling for C64, CPC, Amiga 500, experimental C64 extra 
+* 1.1   - Minor bug fixes, CPC new palette
+* 1.0   - Minor changes, time to start versioning
+* 0.1   - Initial version, bug fixes
 
 ## Supported machines
 
@@ -60,7 +61,7 @@ Try all options available.
 * Contrast processing - experimental luma histogram equalizer designed for 8 bit machines primarly, now enabled for every available machine. HE - standard global equalization, CLAHE & SWAHE - clipped local equalization, first fast method for local contrast enhancer, second slow but for more demanding.
 * Aspect - keeps aspect ratio of original picture.
 * PAL - renders PAL encoded preview in S-Video quality (separated luma & chroma signals).
-* BW - renders monochrome PAL image.
+* BW - renders monochrome PAL image, use with luminance distance to get more shades of grey
 
 ### Commodore C64
 
@@ -141,6 +142,10 @@ Export to DEGAS paint program.
 Export to Delux Paint IFF file format.
 
 ![HAM6 encoding](venusAMIGA.png)
+
+Monochrome 32 shades of grey
+
+![32 shades of grey](32greyAMIGA.png)
 
 ### Amiga 1200
 

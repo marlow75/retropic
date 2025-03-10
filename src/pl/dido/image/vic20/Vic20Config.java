@@ -44,5 +44,5 @@ public class Vic20Config extends PetsciiConfig {
 	@Override
 	public int getScreenHeight() {
 		return 184;
-	}
+	}	
 }
