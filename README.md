@@ -58,7 +58,7 @@ Try all options available.
 
 * Dithering - pictures are dithered using Bayer, Floyds-Steinberg or Atkinson algorithms.
 * Error - error tolerance for algorithms.
-* Color distance – how color distance in the RGB cube is measured: euclidean, redmean simple approximation (close to human perception), picking highest luminance color.
+* Color distance – how color distance in the RGB cube is measured: euclidean, redmean simple approximation (close to human perception), nearest luminance color.
 * Contrast processing - experimental luma histogram equalizer designed for 8 bit machines primarly, now enabled for every available machine. HE - standard global equalization, CLAHE & SWAHE - clipped local equalization, first fast method for local contrast enhancer, second slow but for more demanding.
 * Aspect - keeps aspect ratio of original picture.
 * PAL - renders PAL encoded preview in S-Video quality (separated luma & chroma signals).
@@ -79,8 +79,8 @@ Exports to executable PRG or to Art Studio (hires) and Koala Paint (multicolor).
 
 16 foreground colors, 1 common background color for every character on the screen. Orginal PETSCII characterset.
 
-* One hidden layer, sigmoid activation - neural net character matcher with single hidden layer, preffers semigraphics.
-* Two hidden layers, sigmoid activation - neural net character matcher with two hidden layers, preffers characters.
+* One hidden layer, relu activation - neural net character matcher with single hidden layer, preffers semigraphics.
+* Two hidden layers, relu activation - neural net character matcher with two hidden layers, preffers characters.
 
 Exports to executable PRG.
 
@@ -209,8 +209,8 @@ PC text modes.
 * CGA 80x25 - uses max 16 foreground colors, 8 background colors with standard CGA character set.
 * VESA 132x50 - uses max 16 foreground colors, 8 background colors with standard CGA character set.
 
-* One hidden layer, sigmoid activation - neural net character matcher with single hidden layer, preffers semigraphics.
-* Two hidden layers, sigmoid activation - neural net character matcher with two hidden layers, preffers characters.
+* One hidden layer, relu activation - neural net character matcher with single hidden layer, preffers semigraphics.
+* Two hidden layers, relu activation - neural net character matcher with two hidden layers, preffers characters.
 
 Exports to executable COM.
 
