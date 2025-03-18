@@ -10,6 +10,7 @@ Requirements: JRE16 installed.
 
 ## Versions
 
+* 1.11b - Bug fixes, charset renderers did not work at all
 * 1.11a - Usable luminance mode for monochrome displays
 * 1.11  - VIC-20 hires and lowres modes
 * 1.10  - New PC & VIC-20 machines
