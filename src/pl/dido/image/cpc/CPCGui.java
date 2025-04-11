@@ -200,6 +200,7 @@ public class CPCGui {
 
 		GuiUtils.addContrastControls(cpcPanel, config);
 		GuiUtils.addColorControls(cpcPanel, config);
+		GuiUtils.addFiltersControls(cpcPanel, config);
 
 		return cpcPanel;
 	}

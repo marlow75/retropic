@@ -15,8 +15,13 @@ import pl.dido.image.utils.Config.DITHERING;
 import pl.dido.image.utils.Config.NEAREST_COLOR;
 
 public class Gfx {
-	public static final int M2x1[][] = new int[][] { { 77, 171 } }; // 3 colors
+	public static final int sharpenKernel[][] = new int[][] { { 0, -1, 0 }, { -1, 5, -1 }, { 0, -1, 0 } };
 
+	public static final int embossKernel[][] = new int[][] { { -2, -1, 0 }, { -1, 1, 1 }, { 0, 1, 2 } };
+
+	public static final int edgeKernel[][] = new int[][] { { -1, -1, -1 }, { -1, 9, -1 }, { -1, -1, -1 } };
+
+	public static final int M2x1[][] = new int[][] { { 77, 171 } }; // 3 colors
 	public static final int M1x2[][] = new int[][] { { 77 }, { 171 } }; // 3 colors
 
 	public static final int M2x2[][] = new int[][] { // 5 colors
@@ -65,7 +70,7 @@ public class Gfx {
 		// clamp to [0,255]
 		pixels[i + 2] = (byte) (r > 0 ? (r > 255 ? 255 : r) : 0);
 		pixels[i + 1] = (byte) (g > 0 ? (g > 255 ? 255 : g) : 0);
-		pixels[i] = (byte) (b > 0 ? (b > 255 ? 255 : b) : 0);
+		pixels[i + 0] = (byte) (b > 0 ? (b > 255 ? 255 : b) : 0);
 	}
 
 	public static final int saturate(final int i) {
@@ -760,6 +765,86 @@ public class Gfx {
 		}
 	}
 
+	public static void blend(final byte pixels1[], final byte pixels2[]) {
+		for (int i = 0; i < pixels1.length; i += 3) {
+			int r = pixels1[0] & 0xff;
+			int g = pixels1[1] & 0xff;
+			int b = pixels1[2] & 0xff;
+
+			r = (r + 2 * (pixels2[i + 0] & 0xff)) / 3;
+			g = (g + 2 * (pixels2[i + 1] & 0xff)) / 3;
+			b = (b + 2 * (pixels2[i + 2] & 0xff)) / 3;
+			
+			pixels1[i + 0] = (byte) r;
+			pixels1[i + 1] = (byte) g;
+			pixels1[i + 2] = (byte) b;
+		}
+	}
+
+	protected static void filter(final byte pixels[], final int kernel[][], final int width, final int height) {
+		final byte work[] = new byte[pixels.length];
+		final int width3 = width * 3;
+
+		final int yuv[] = new int[3];
+		final byte rgb[] = new byte[3];
+
+		for (int y = 0; y < height; y++)
+			for (int x = 0; x < width; x++) {
+				int w = 0;
+
+				for (int yk = 0; yk < 3; yk++) {
+					final int yp = y + yk - 1;
+					if (yp < 0 || yp >= height - 1)
+						continue;
+
+					for (int xk = 0; xk < 3; xk++) {
+						final int xp = x + xk - 1;
+						if (xp < 0 || xp >= width - 1)
+							continue;
+
+						final int p = kernel[yk][xk];
+						final int address = yp * width3 + xp * 3;
+
+						int r = (pixels[address + 0] & 0xff);
+						int g = (pixels[address + 1] & 0xff);
+						int b = (pixels[address + 3] & 0xff);
+
+						Gfx.rgb2YUV(r, g, b, yuv, 0);
+						w += p * yuv[0];
+					}
+				}
+
+				final int address = y * width3 + x * 3;
+				int r = (pixels[address + 0] & 0xff);
+				int g = (pixels[address + 1] & 0xff);
+				int b = (pixels[address + 2] & 0xff);
+
+				Gfx.rgb2YUV(r, g, b, yuv, 0);
+				int u = yuv[1];
+				int v = yuv[2];
+
+				Gfx.yuv2RGB(w, u, v, rgb, 0);
+
+				work[address + 0] = rgb[0];
+				work[address + 1] = rgb[1];
+				work[address + 2] = rgb[2];
+			}
+
+		System.arraycopy(work, 0, pixels, 0, work.length);
+	}
+
+	public static void sharpen(final byte pixels[], final int width, final int height) {
+		Gfx.filter(pixels, sharpenKernel, width, height);
+	}
+
+	public static void edge(final byte pixels[], final int width, final int height) {
+		Gfx.filter(pixels, edgeKernel, width, height);
+	}
+
+	public static void emboss(final byte pixels[], final int width, final int height) {
+		Gfx.filter(pixels, embossKernel, width, height);
+	}
+
 	public static void bayer(final int matrix[][], final byte pixels[], final int palette[][],
 			final NEAREST_COLOR colorAlg, final int width, final int height, final int bpp) {
 
@@ -916,9 +1001,9 @@ public class Gfx {
 	}
 
 	protected static int getLumaColorIndex(final int palette[][], final int r, final int g, final int b) {
-		int index = palette.length;		
+		int index = palette.length;
 		float min = Float.MAX_VALUE;
-		
+
 		float y = getLuma(r, g, b);
 		final int len = index - 1;
 

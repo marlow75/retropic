@@ -5,11 +5,11 @@ RetroPIC is a simple graphics converter for retro machines. It can turn your mod
 Accepts JPG, PNG file formats.
 
 You can download executable jar [here](retropic.jar).
-
 Requirements: JRE16 installed.
 
 ## Versions
 
+* 1.12  - Kernel, combined filters: lowpass, sharpen, emboss, edge (HE), parametrized faster neuro char matcher 
 * 1.11b - Bug fixes, charset renderers did not work at all
 * 1.11a - Usable luminance mode for monochrome displays
 * 1.11  - VIC-20 hires and lowres modes

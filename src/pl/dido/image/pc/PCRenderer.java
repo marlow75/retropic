@@ -3,14 +3,13 @@ package pl.dido.image.pc;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
+import at.fhtw.ai.nn.utils.Dataset;
+import at.fhtw.ai.nn.utils.HL1SoftmaxNetwork;
+import at.fhtw.ai.nn.utils.Network;
 import pl.dido.image.renderer.AbstractRenderer;
 import pl.dido.image.utils.Config;
 import pl.dido.image.utils.Gfx;
 import pl.dido.image.utils.Utils;
-import at.fhtw.ai.nn.utils.Dataset;
-import at.fhtw.ai.nn.utils.HL1SoftmaxNetwork;
-import at.fhtw.ai.nn.utils.HL2SoftmaxNetwork;
-import at.fhtw.ai.nn.utils.Network;
 
 public class PCRenderer extends AbstractRenderer {
 	// CGA palette
@@ -23,9 +22,7 @@ public class PCRenderer extends AbstractRenderer {
 	private final static int power2[] = new int[] { 128, 64, 32, 16, 8, 4, 2, 1 };
 
 	protected final static String PCASCII_NETWORK_L1 = "cga.L1network";
-	protected final static String PCASCII_NETWORK_L2 = "cga.L2network";
-
-	protected final static String PC_CHARSET = "cga.prg";
+	protected final static String PC_CHARSET = "cga.bin";
 
 	protected int screen[], color[];
 
@@ -38,24 +35,13 @@ public class PCRenderer extends AbstractRenderer {
 		palette = new int[16][3];
 		final String networkFile;
 
-		switch (((PCConfig) config).network) {
-		case L2:
-			neural = new HL2SoftmaxNetwork(64, 128, 256);
-			networkFile = PCASCII_NETWORK_L2;
-
-			break;
-		default:
-			neural = new HL1SoftmaxNetwork(64, 128, 256);
-			networkFile = PCASCII_NETWORK_L1;
-
-			break;
-		}
+		neural = new HL1SoftmaxNetwork(64, 24, 256);
+		networkFile = PCASCII_NETWORK_L1;
 
 		try {
 			charset = Utils.loadCharset(Utils.getResourceAsStream(PC_CHARSET));
 			neural.load(Utils.getResourceAsStream(networkFile));
 		} catch (final IOException e) {
-			// mass hysteria
 			throw new RuntimeException(e);
 		}
 
@@ -211,16 +197,33 @@ public class PCRenderer extends AbstractRenderer {
 				// pattern match character
 				neural.forward(new Dataset(tile));
 				final float[] result = neural.getResult();
-
+				
+				float avg = 0f;
+				for (int i = 0; i < 256; i++) 					
+					avg += result[i];
+				
+				avg /= 256;
+				
+				float sum = 0f;
+				for (int i = 0; i < 256; i++) 
+					sum += (result[i] - avg) * (result[i] - avg);
+				
+				final float std = (float) Math.sqrt(sum / 256);
+				
 				int code = 0;
 				float value = result[0];
-
+				
 				// get code of character in charset
-				for (int i = 1; i < 256; i++)
-					if (result[i] > value) {
+				for (int i = 0; i < 256; i++) {
+					final float d = result[i];
+					if (d > value) {
 						code = i;
-						value = result[i];
+						value = d;
 					}
+				}
+				
+				if (value <= ((PCConfig)config).nn_threshold * (avg + std))
+					code = 0;
 
 				// colors
 				final int address = (y >> 3) * txtWidth + (x >> 3);

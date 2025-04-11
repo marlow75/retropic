@@ -9,7 +9,6 @@ import java.util.Vector;
 
 import at.fhtw.ai.nn.utils.Dataset;
 import at.fhtw.ai.nn.utils.HL1SoftmaxNetwork;
-import at.fhtw.ai.nn.utils.HL2SoftmaxNetwork;
 import at.fhtw.ai.nn.utils.Network;
 import pl.dido.image.renderer.AbstractRenderer;
 import pl.dido.image.utils.BitVector;
@@ -29,8 +28,6 @@ public class Vic20Renderer extends AbstractRenderer {
 	protected final static int power22[] = new int[] { 192, 48, 12, 3 };
 
 	protected final static String PETSCII_NETWORK_L1 = "vic20.L1network";
-	protected final static String PETSCII_NETWORK_L2 = "vic20.L2network";
-
 	protected final static String PETSCII_CHARSET = "vic20petscii.bin";
 
 	protected int screen[] = new int[22 * 23];
@@ -51,18 +48,8 @@ public class Vic20Renderer extends AbstractRenderer {
 		foregroundPalette = new int[8][3];
 		palette = new int[16][3];
 
-		switch (((Vic20Config) config).network) {
-		case L2:
-			neural = new HL2SoftmaxNetwork(64, 128, 256);
-			networkFile = PETSCII_NETWORK_L2;
-
-			break;
-		default:
-			neural = new HL1SoftmaxNetwork(64, 128, 256);
-			networkFile = PETSCII_NETWORK_L1;
-
-			break;
-		}
+		neural = new HL1SoftmaxNetwork(64, 24, 256);
+		networkFile = PETSCII_NETWORK_L1;
 
 		try {
 			charset = Utils.loadCharset(Utils.getResourceAsStream(PETSCII_CHARSET));
@@ -118,7 +105,7 @@ public class Vic20Renderer extends AbstractRenderer {
 				dataset.addAll(item);
 
 			charset = som.train(dataset);
-			neural = new HL1SoftmaxNetwork(64, 128, 256);
+			neural = new HL1SoftmaxNetwork(64, 24, 256);
 
 			final Vector<Dataset> samples = NNUtils.loadData8x8(new ByteArrayInputStream(charset));
 			neural.train(samples);
@@ -135,7 +122,7 @@ public class Vic20Renderer extends AbstractRenderer {
 				dataset.addAll(item);
 
 			charset = som.train(dataset);
-			neural = new HL1SoftmaxNetwork(32, 128, 256);
+			neural = new HL1SoftmaxNetwork(32, 24, 256);
 			
 			final Vector<Dataset> samples = NNUtils.loadData4x8(new ByteArrayInputStream(charset));
 			neural.train(samples);
@@ -340,17 +327,34 @@ public class Vic20Renderer extends AbstractRenderer {
 				// pattern match character
 				neural.forward(new Dataset(tile));
 				final float[] result = neural.getResult();
-
-				int code = 0;
-				float value = result[0];
-
+				
+				float avg = 0f;
+				for (int i = 0; i < 256; i++) 					
+					avg += result[i];
+				
+				avg /= 256;
+				
+				float sum = 0f;
+				for (int i = 0; i < 256; i++) 
+					sum += (result[i] - avg) * (result[i] - avg);
+				
+				final float std = (float) Math.sqrt(sum / 256);
+				
+				int code = 32;
+				float value = result[32];
+				
 				// get code of character in charset
-				for (int i = 1; i < 256; i++)
-					if (result[i] > value) {
+				for (int i = 0; i < 256; i++) {
+					final float d = result[i];
+					if (d > value) {
 						code = i;
-						value = result[i];
+						value = d;
 					}
-
+				}
+				
+				if (value <= ((Vic20Config)config).nn_threshold * (avg + std))
+					code = 32;
+				
 				// colors
 				final int address = (y >> 3) * 22 + (x >> 3);
 				nibble[address] = f;

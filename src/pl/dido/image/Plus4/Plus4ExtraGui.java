@@ -153,6 +153,7 @@ public class Plus4ExtraGui {
 				
 		GuiUtils.addContrastControls(panelPlus4Extra, config);
 		GuiUtils.addColorControls(panelPlus4Extra, config);
+		GuiUtils.addFiltersControls(panelPlus4Extra, config);
 
 		return panelPlus4Extra;
 	}

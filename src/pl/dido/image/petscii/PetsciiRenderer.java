@@ -2,11 +2,7 @@ package pl.dido.image.petscii;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-
-import at.fhtw.ai.nn.utils.Network;
-import at.fhtw.ai.nn.utils.Dataset;
-import at.fhtw.ai.nn.utils.HL1SoftmaxNetwork;
-import at.fhtw.ai.nn.utils.HL2SoftmaxNetwork;
+import at.fhtw.ai.nn.utils.*;
 
 import pl.dido.image.renderer.AbstractRenderer;
 import pl.dido.image.utils.C64PaletteCalculator;
@@ -18,8 +14,6 @@ public class PetsciiRenderer extends AbstractRenderer {
 	private final static int power2[] = new int[] { 128, 64, 32, 16, 8, 4, 2, 1 };
 
 	protected final static String PETSCII_NETWORK_L1 = "petscii.L1network";
-	protected final static String PETSCII_NETWORK_L2 = "petscii.L2network";
-
 	protected final static String PETSCII_CHARSET = "c64petscii.bin";
 
 	protected int screen[] = new int[1000];
@@ -34,24 +28,13 @@ public class PetsciiRenderer extends AbstractRenderer {
 		palette = new int[16][3];
 		final String networkFile;
 
-		switch (((PetsciiConfig) config).network) {
-		case L2:
-			neural = new HL2SoftmaxNetwork(64, 128, 256);
-			networkFile = PETSCII_NETWORK_L2;
-
-			break;
-		default:
-			neural = new HL1SoftmaxNetwork(64, 128, 256);
-			networkFile = PETSCII_NETWORK_L1;
-
-			break;
-		}
+		neural = new HL1SoftmaxNetwork(64, 24, 256);
+		networkFile = PETSCII_NETWORK_L1;
 
 		try {
 			charset = Utils.loadCharset(Utils.getResourceAsStream(PETSCII_CHARSET));
 			neural.load(Utils.getResourceAsStream(networkFile));
 		} catch (final IOException e) {
-			// mass hysteria
 			throw new RuntimeException(e);
 		}
 	}
@@ -188,16 +171,33 @@ public class PetsciiRenderer extends AbstractRenderer {
 				// pattern match character
 				neural.forward(new Dataset(tile));
 				final float[] result = neural.getResult();
-
-				int code = 0;
-				float value = result[0];
-
+				
+				float avg = 0f;
+				for (int i = 0; i < 256; i++) 					
+					avg += result[i];
+				
+				avg /= 256;
+				
+				float sum = 0f;
+				for (int i = 0; i < 256; i++) 
+					sum += (result[i] - avg) * (result[i] - avg);
+				
+				final float std = (float) Math.sqrt(sum / 256);
+				
+				int code = 160;
+				float value = result[160];
+				
 				// get code of character in charset
-				for (int i = 1; i < 256; i++)
-					if (result[i] > value) {
+				for (int i = 0; i < 256; i++) {
+					final float d = result[i];
+					if (d > value) {
 						code = i;
-						value = result[i];
+						value = d;
 					}
+				}
+				
+				if (value <= ((PetsciiConfig)config).nn_threshold * (avg + std))
+					code = 160;
 
 				// colors
 				final int address = (y >> 3) * 40 + (x >> 3);

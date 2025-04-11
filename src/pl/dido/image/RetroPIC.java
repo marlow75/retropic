@@ -147,7 +147,7 @@ public class RetroPIC {
 		frame = new JFrame("RetroPIC");
 		frame.setIconImage(Toolkit.getDefaultToolkit().getImage(Utils.getResourceAsURL("retro.png")));
 		frame.setResizable(false);
-		frame.setBounds(0, 0, 510, 480);
+		frame.setBounds(0, 0, 510, 550);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(new BorderLayout());
 

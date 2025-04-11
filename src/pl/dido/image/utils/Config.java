@@ -1,6 +1,10 @@
 package pl.dido.image.utils;
 
 abstract public class Config implements Cloneable {
+	
+	public enum FILTER {
+		NONE, LOWPASS, SHARPEN, EMBOSS, EDGES_BLEND;
+	}
 
 	public enum HIGH_CONTRAST {
 		HE, SWAHE, NONE, CLAHE;
@@ -24,7 +28,7 @@ abstract public class Config implements Cloneable {
 	public int error_threshold;
 	
 	public static String export_path;
-	public boolean low_pass_filter;
+	public FILTER filter;
 	
 	public DITHERING dither_alg;
 	public NEAREST_COLOR color_alg;
@@ -46,7 +50,7 @@ abstract public class Config implements Cloneable {
 		export_path = "export";
 
 		pal_view = true;
-		low_pass_filter = false;
+		filter = FILTER.NONE;
 		
 		error_threshold = 4;
 		allow_luminance = true;
@@ -84,28 +88,45 @@ abstract public class Config implements Cloneable {
 			break;
 		}
 
-		switch (color_alg) {
-		case EUCLIDEAN:
-			configString += "euclidean";
+		switch (high_contrast) {
+		case HE:
+			configString += "HE ";
 			break;
-		case LUMA_WEIGHTED:
-			configString += "luma";
+		case CLAHE:
+			configString += "CLAHE D" + this.details + " ";
 			break;
-		case PERCEPTED:
-			configString += "percepted";
+		case SWAHE:
+			configString += "SWAHE W" + this.window_size + " D" + this.details + " ";
+		default:
 			break;
 		}
 
-		switch (high_contrast) {
-		case HE:
-			configString += " HE ";
+		switch (color_alg) {
+		case EUCLIDEAN:
+			configString += "euclidean ";
 			break;
-		case CLAHE:
-			configString += " CLAHE D" + this.details + " ";
+		case LUMA_WEIGHTED:
+			configString += "luma ";
 			break;
-		case SWAHE:
-			configString += " SWAHE W" + this.window_size + " D" + this.details + " ";
-		default:
+		case PERCEPTED:
+			configString += "percepted ";
+			break;
+		}
+
+		switch (filter) {
+		case EDGES_BLEND:
+			configString += "edge ";
+			break;
+		case EMBOSS:
+			configString += "emboss ";
+			break;
+		case LOWPASS:
+			configString += "lowpass ";
+			break;
+		case NONE:
+			break;
+		case SHARPEN:
+			configString += "sharpen ";
 			break;
 		}
 

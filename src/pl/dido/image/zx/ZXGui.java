@@ -105,7 +105,8 @@ public class ZXGui {
 		panelZX.add(zxLogo);
 		
 		GuiUtils.addContrastControls(panelZX, config);
-		GuiUtils.addColorControls(panelZX, config);		
+		GuiUtils.addColorControls(panelZX, config);
+		GuiUtils.addFiltersControls(panelZX, config);
 		
 		return panelZX;
 	}

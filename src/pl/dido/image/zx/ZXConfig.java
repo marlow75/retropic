@@ -13,8 +13,6 @@ public class ZXConfig extends Config {
 		window_size = 20;
 		
 		error_threshold = 5;
-		low_pass_filter = true;
-		
 		allow_luminance = false;
 	}
 

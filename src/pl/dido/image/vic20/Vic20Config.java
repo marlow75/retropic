@@ -15,24 +15,13 @@ public class Vic20Config extends PetsciiConfig {
 		
 	@Override
 	public String getConfigString() {
-		final String n;
-		
-		switch (network) {
-		case L1:
-			n = "L1 ";
-			break;
-		default:
-			n = "L2 ";
-			break;
-		}
-		
 		switch (mode) {
 		case HIRES:
-			return "176x184x2 " + n;
+			return "176x184x2 ";
 		case LOWRES:
-			return "88x184x2 " + n;
+			return "88x184x2 ";
 		default:
-			return "22x23x2 " + n;
+			return "22x23x2 ";
 		}
 	}
 

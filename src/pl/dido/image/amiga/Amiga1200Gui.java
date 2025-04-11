@@ -35,7 +35,7 @@ public class Amiga1200Gui {
 		
 		final JLabel lblConvertLabel = new JLabel("Converter mode:");
 		lblConvertLabel.setFont(GuiUtils.bold);
-		lblConvertLabel.setBounds(20, 90, 250, 20);
+		lblConvertLabel.setBounds(20, 85, 250, 20);
 		panelAmiga.add(lblConvertLabel);
 
 		final JComboBox<String> modesList = new JComboBox<String>(modesStrings);
@@ -76,6 +76,7 @@ public class Amiga1200Gui {
 		
 		GuiUtils.addContrastControls(panelAmiga, config);
 		GuiUtils.addColorControls(panelAmiga, config);
+		GuiUtils.addFiltersControls(panelAmiga, config);
 						
 		return panelAmiga;
 	}

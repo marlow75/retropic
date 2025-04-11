@@ -17,6 +17,7 @@ import javax.swing.event.ChangeListener;
 
 import pl.dido.image.utils.Config;
 import pl.dido.image.utils.Config.DITHERING;
+import pl.dido.image.utils.Config.FILTER;
 import pl.dido.image.utils.Config.NEAREST_COLOR;
 
 public class GuiUtils {
@@ -227,7 +228,7 @@ public class GuiUtils {
 		final JRadioButton rdbtnNoContrastExpanderButton = new JRadioButton("none");
 		rdbtnNoContrastExpanderButton.setToolTipText("No contrast processing");
 		rdbtnNoContrastExpanderButton.setFont(std);
-		rdbtnNoContrastExpanderButton.setBounds(46, 213, 50, 20);
+		rdbtnNoContrastExpanderButton.setBounds(46, 213, 60, 20);
 		rdbtnNoContrastExpanderButton.setSelected(config.high_contrast == Config.HIGH_CONTRAST.NONE);
 
 		rdbtnNoContrastExpanderButton.addActionListener(new ActionListener() {
@@ -345,5 +346,85 @@ public class GuiUtils {
 			panel.add(rdbtnLumaButton);
 			groupDistance.add(rdbtnLumaButton);
 		}
+	}
+	
+	public static final void addFiltersControls(final JPanel panel, final Config config) {
+		final JLabel lblFilterLabel = new JLabel("Image filters:");
+		lblFilterLabel.setFont(bold);
+		lblFilterLabel.setBounds(20, 325, 100, 16);
+		panel.add(lblFilterLabel);
+
+		final JRadioButton rdbtnNoneButton = new JRadioButton("none");
+		rdbtnNoneButton.setToolTipText("None of filter is applied");
+		rdbtnNoneButton.setFont(std);
+		rdbtnNoneButton.setBounds(46, 350, 80, 18);
+		rdbtnNoneButton.setSelected(config.filter == FILTER.NONE);
+		rdbtnNoneButton.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				config.filter = FILTER.NONE;
+			}
+		});
+		panel.add(rdbtnNoneButton);
+
+		final JRadioButton rdbtnLowpassButton = new JRadioButton("lowpass");
+		rdbtnLowpassButton.setToolTipText("Lowpass filter");
+		rdbtnLowpassButton.setFont(std);
+		rdbtnLowpassButton.setBounds(126, 350, 80, 18);
+		rdbtnLowpassButton.setSelected(config.filter == FILTER.LOWPASS);
+		rdbtnLowpassButton.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				config.filter = FILTER.LOWPASS;
+			}
+		});
+
+		panel.add(rdbtnLowpassButton);
+
+		final JRadioButton rdbtnSharpenButton = new JRadioButton("sharpen");
+		rdbtnSharpenButton.setToolTipText("More details");
+		rdbtnSharpenButton.setFont(std);
+		rdbtnSharpenButton.setBounds(206, 350, 80, 18);
+		rdbtnSharpenButton.setSelected(config.filter == FILTER.SHARPEN);
+		rdbtnSharpenButton.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				config.filter = FILTER.SHARPEN;
+			}
+		});
+
+		panel.add(rdbtnSharpenButton);	
+
+		final JRadioButton rdbtnEmbossButton = new JRadioButton("emboss");
+		rdbtnEmbossButton.setToolTipText("Simple emboss filter");
+		rdbtnEmbossButton.setFont(std);
+		rdbtnEmbossButton.setBounds(286, 350, 80, 18);
+		rdbtnEmbossButton.setSelected(config.filter == FILTER.EMBOSS);
+		rdbtnEmbossButton.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				config.filter = FILTER.EMBOSS;
+			}
+		});
+
+		panel.add(rdbtnEmbossButton);	
+
+		final JRadioButton rdbtnEdgeButton = new JRadioButton("edge");
+		rdbtnEdgeButton.setToolTipText("More details less color, try with HE");
+		rdbtnEdgeButton.setFont(std);
+		rdbtnEdgeButton.setBounds(366, 350, 80, 18);
+		rdbtnEdgeButton.setSelected(config.filter == FILTER.EDGES_BLEND);
+		rdbtnEdgeButton.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				config.filter = FILTER.EDGES_BLEND;
+			}
+		});
+
+		panel.add(rdbtnEdgeButton);	
+		
+		final ButtonGroup groupDistance = new ButtonGroup();
+		groupDistance.add(rdbtnNoneButton);
+		
+		groupDistance.add(rdbtnLowpassButton);
+		groupDistance.add(rdbtnSharpenButton);
+		
+		groupDistance.add(rdbtnEmbossButton);
+		groupDistance.add(rdbtnEdgeButton);
 	}
 }

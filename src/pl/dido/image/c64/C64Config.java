@@ -29,8 +29,6 @@ public class C64Config extends Config {
 		
 		luma_pixels = LUMA_PIXELS.OUTER;		
 		pixel_merge = PIXEL_MERGE.AVERAGE;
-		
-		low_pass_filter = true;
 	}
 	
 	public String getColorsNumber() {

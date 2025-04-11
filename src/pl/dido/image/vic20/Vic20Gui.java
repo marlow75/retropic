@@ -4,14 +4,14 @@ import java.awt.Canvas;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.ButtonGroup;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
+import javax.swing.JSlider;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import pl.dido.image.GuiUtils;
-import pl.dido.image.petscii.PetsciiConfig.NETWORK;
 import pl.dido.image.utils.ImageCanvas;
 import pl.dido.image.vic20.Vic20Config.VIDEO_MODE;
 
@@ -58,48 +58,35 @@ public class Vic20Gui {
 		
 		vic20Panel.add(modesList);
 
-		final JLabel lblConvertLabel = new JLabel("Converter mode:");
+		final JLabel lblConvertLabel = new JLabel("Detection threshold:");
 		lblConvertLabel.setFont(GuiUtils.bold);
-		lblConvertLabel.setBounds(20, 130, 169, 14);
+		lblConvertLabel.setBounds(20, 136, 169, 14);
 		vic20Panel.add(lblConvertLabel);
+		
+		final JSlider sldDetect = new JSlider(JSlider.HORIZONTAL, 0, 15, config.nn_threshold);
+		sldDetect.setBounds(40, 156, 200, 35);
+		sldDetect.setFont(GuiUtils.std);
+		sldDetect.addChangeListener(new ChangeListener() {
+			public void stateChanged(final ChangeEvent e) {
+				final JSlider source = (JSlider) e.getSource();
 
-		final JRadioButton rdbtnL1Button = new JRadioButton("One hidden layer, semigraphics");
-		rdbtnL1Button.setToolTipText("Simple and fast network architecture");
-		rdbtnL1Button.setFont(GuiUtils.std);
-		rdbtnL1Button.setBounds(46, 145, 331, 23);
-		rdbtnL1Button.setSelected(config.network == NETWORK.L1);
-		rdbtnL1Button.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				config.network = NETWORK.L1;
+				if (!source.getValueIsAdjusting())
+					config.nn_threshold = source.getValue();
 			}
 		});
-
-		vic20Panel.add(rdbtnL1Button);
-
-		final JRadioButton rdbtnL2Button = new JRadioButton("Two hidden layers, characters");
-		rdbtnL2Button.setToolTipText("Robust but a kind of slow network architecture");
-		rdbtnL2Button.setFont(GuiUtils.std);
-		rdbtnL2Button.setBounds(46, 165, 331, 23);
-		rdbtnL2Button.setSelected(config.network == NETWORK.L2);
-		rdbtnL2Button.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				config.network = NETWORK.L2;
-			}
-		});
-
-		vic20Panel.add(rdbtnL2Button);
 		
-		final ButtonGroup groupResolution = new ButtonGroup();
-		groupResolution.add(rdbtnL1Button);
-		groupResolution.add(rdbtnL2Button);
+		sldDetect.setMajorTickSpacing(2);
+		sldDetect.setPaintLabels(true);
+		vic20Panel.add(sldDetect);
 
-		final Canvas c64Logo = new ImageCanvas("vic20.png");
-		c64Logo.setBounds(335, 7, 150, 96);
+		final Canvas vic20Logo = new ImageCanvas("vic20.png");
+		vic20Logo.setBounds(335, 7, 150, 96);
 		
-		vic20Panel.add(c64Logo);
+		vic20Panel.add(vic20Logo);
 		
 		GuiUtils.addContrastControls(vic20Panel, config);
 		GuiUtils.addColorControls(vic20Panel, config);
+		GuiUtils.addFiltersControls(vic20Panel, config);
 
 		return vic20Panel;
 	}

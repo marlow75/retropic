@@ -21,6 +21,7 @@ public class STGui {
 
 		GuiUtils.addContrastControls(panelST, config);
 		GuiUtils.addColorControls(panelST, config);
+		GuiUtils.addFiltersControls(panelST, config);
 		
 		return panelST;
 	}

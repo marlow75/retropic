@@ -127,7 +127,8 @@ public class C64Gui {
 		
 		GuiUtils.addContrastControls(panelC64, config);
 		GuiUtils.addColorControls(panelC64, config);
-
+		
+		GuiUtils.addFiltersControls(panelC64, config);
 		return panelC64;
 	}
 }

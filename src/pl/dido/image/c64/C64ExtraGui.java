@@ -169,6 +169,7 @@ public class C64ExtraGui {
 				
 		GuiUtils.addContrastControls(panelC64Extra, config);
 		GuiUtils.addColorControls(panelC64Extra, config);
+		GuiUtils.addFiltersControls(panelC64Extra, config);
 
 		return panelC64Extra;
 	}

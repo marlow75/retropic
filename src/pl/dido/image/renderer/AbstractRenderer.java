@@ -58,8 +58,29 @@ public abstract class AbstractRenderer {
 	}
 
 	public void imageProcess() {
-		if (config.low_pass_filter)
+		
+		switch (config.filter) {
+		case NONE:
+			break;
+		case EDGES_BLEND:
+			final byte buffer[] = new byte[pixels.length];
+			System.arraycopy(pixels, 0, buffer, 0, pixels.length);
+			
+			Gfx.edge(pixels, screenWidth, screenHeight);
+			Gfx.blend(pixels, buffer);
+			break;
+		case EMBOSS:
+			Gfx.emboss(pixels, screenWidth, screenHeight);
+			break;
+		case LOWPASS:
 			Gfx.lowpassFilter(pixels);
+			break;
+		case SHARPEN:
+			Gfx.sharpen(pixels, screenWidth, screenHeight);
+			break;
+		default:
+			break;
+		}
 		
 		processContrast();
 		setupPalette();
