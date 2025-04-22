@@ -3,7 +3,6 @@ package pl.dido.image.pc;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
-import at.fhtw.ai.nn.utils.Dataset;
 import at.fhtw.ai.nn.utils.HL1SoftmaxNetwork;
 import at.fhtw.ai.nn.utils.Network;
 import pl.dido.image.renderer.AbstractRenderer;
@@ -35,7 +34,7 @@ public class PCRenderer extends AbstractRenderer {
 		palette = new int[16][3];
 		final String networkFile;
 
-		neural = new HL1SoftmaxNetwork(64, 24, 256);
+		neural = new HL1SoftmaxNetwork(64, 20, 256);
 		networkFile = PCASCII_NETWORK_L1;
 
 		try {
@@ -45,7 +44,7 @@ public class PCRenderer extends AbstractRenderer {
 			throw new RuntimeException(e);
 		}
 
-		switch (((PCConfig) config).video_mode) {
+		switch (((PCConfig)config).video_mode) {
 		case CGA_TEXT:
 			screen = new int[2000];
 			color = new int[2000];
@@ -157,6 +156,7 @@ public class PCRenderer extends AbstractRenderer {
 							mf = luma;
 							f = Gfx.getColorIndex(colorAlg, palette, r, g, b);
 						}
+						
 						if (luma < mn) {
 							mn = luma;
 							n = Gfx.getColorIndex(colorAlg, background, r, g, b);
@@ -195,7 +195,7 @@ public class PCRenderer extends AbstractRenderer {
 					}
 
 				// pattern match character
-				neural.forward(new Dataset(tile));
+				neural.forward(tile);
 				final float[] result = neural.getResult();
 				
 				float avg = 0f;

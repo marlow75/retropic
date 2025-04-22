@@ -58,7 +58,6 @@ public abstract class AbstractRenderer {
 	}
 
 	public void imageProcess() {
-		
 		switch (config.filter) {
 		case NONE:
 			break;
@@ -67,7 +66,7 @@ public abstract class AbstractRenderer {
 			System.arraycopy(pixels, 0, buffer, 0, pixels.length);
 			
 			Gfx.edge(pixels, screenWidth, screenHeight);
-			Gfx.blend(pixels, buffer);
+			Gfx.blend(pixels, buffer); // pixels as magnitude
 			break;
 		case EMBOSS:
 			Gfx.emboss(pixels, screenWidth, screenHeight);

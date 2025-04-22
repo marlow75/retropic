@@ -16,10 +16,8 @@ import pl.dido.image.utils.Config.NEAREST_COLOR;
 
 public class Gfx {
 	public static final int sharpenKernel[][] = new int[][] { { 0, -1, 0 }, { -1, 5, -1 }, { 0, -1, 0 } };
-
 	public static final int embossKernel[][] = new int[][] { { -2, -1, 0 }, { -1, 1, 1 }, { 0, 1, 2 } };
-
-	public static final int edgeKernel[][] = new int[][] { { -1, -1, -1 }, { -1, 9, -1 }, { -1, -1, -1 } };
+	public static final int edgeKernel[][] = new int[][] { { -1, -1, -1 }, { -1, 8, -1 }, { -1, -1, -1 } };
 
 	public static final int M2x1[][] = new int[][] { { 77, 171 } }; // 3 colors
 	public static final int M1x2[][] = new int[][] { { 77 }, { 171 } }; // 3 colors
@@ -767,17 +765,17 @@ public class Gfx {
 
 	public static void blend(final byte pixels1[], final byte pixels2[]) {
 		for (int i = 0; i < pixels1.length; i += 3) {
-			int r = pixels1[0] & 0xff;
-			int g = pixels1[1] & 0xff;
-			int b = pixels1[2] & 0xff;
-
-			r = (r + 2 * (pixels2[i + 0] & 0xff)) / 3;
-			g = (g + 2 * (pixels2[i + 1] & 0xff)) / 3;
-			b = (b + 2 * (pixels2[i + 2] & 0xff)) / 3;
+			final int r1 = 1 + ((pixels1[i + 0] & 0xff)) / 255;
+			final int g1 = 1 + ((pixels1[i + 1] & 0xff)) / 255;
+			final int b1 = 1 + ((pixels1[i + 2] & 0xff)) / 255;
 			
-			pixels1[i + 0] = (byte) r;
-			pixels1[i + 1] = (byte) g;
-			pixels1[i + 2] = (byte) b;
+			final int r2 = pixels2[i + 0] & 0xff;
+			final int g2 = pixels2[i + 1] & 0xff;
+			final int b2 = pixels2[i + 2] & 0xff;
+
+			pixels1[i + 0] = (byte) Gfx.saturate(r1 * r2);
+			pixels1[i + 1] = (byte) Gfx.saturate(g1 * g2);
+			pixels1[i + 2] = (byte) Gfx.saturate(b1 * b2);
 		}
 	}
 

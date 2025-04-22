@@ -14,6 +14,7 @@ public class PetsciiConfig extends Config {
 		high_contrast = HIGH_CONTRAST.NONE;
 		error_threshold = 3;
 		
+		this.filter = FILTER.NONE;
 		nn_threshold = 0;
 	}
 	

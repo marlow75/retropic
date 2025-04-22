@@ -48,7 +48,7 @@ public class Vic20Renderer extends AbstractRenderer {
 		foregroundPalette = new int[8][3];
 		palette = new int[16][3];
 
-		neural = new HL1SoftmaxNetwork(64, 24, 256);
+		neural = new HL1SoftmaxNetwork(64, 20, 256);
 		networkFile = PETSCII_NETWORK_L1;
 
 		try {
@@ -105,7 +105,7 @@ public class Vic20Renderer extends AbstractRenderer {
 				dataset.addAll(item);
 
 			charset = som.train(dataset);
-			neural = new HL1SoftmaxNetwork(64, 24, 256);
+			neural = new HL1SoftmaxNetwork(64, 20, 256);
 
 			final Vector<Dataset> samples = NNUtils.loadData8x8(new ByteArrayInputStream(charset));
 			neural.train(samples);
@@ -122,7 +122,7 @@ public class Vic20Renderer extends AbstractRenderer {
 				dataset.addAll(item);
 
 			charset = som.train(dataset);
-			neural = new HL1SoftmaxNetwork(32, 24, 256);
+			neural = new HL1SoftmaxNetwork(32, 20, 256);
 			
 			final Vector<Dataset> samples = NNUtils.loadData4x8(new ByteArrayInputStream(charset));
 			neural.train(samples);
@@ -239,8 +239,7 @@ public class Vic20Renderer extends AbstractRenderer {
 		// tiles screen and pattern
 		final int work[] = new int[64 * 3];
 		final float tile[] = new float[64];
-
-		// calculate average
+		
 		int nr = 0, ng = 0, nb = 0, count = 0;
 		final int occurrence[] = new int[16];
 
@@ -294,7 +293,7 @@ public class Vic20Renderer extends AbstractRenderer {
 						work[index++] = g;
 						work[index++] = b;
 
-						final float distance = Math.abs(Gfx.getLuma(r, g, b) - backLuma);
+						final float distance = Gfx.getLuma(r, g, b) - backLuma;
 						if (maxDistance < distance) {
 							maxDistance = distance;
 							f = Gfx.getColorIndex(colorAlg, foregroundPalette, r, g, b);
@@ -325,7 +324,7 @@ public class Vic20Renderer extends AbstractRenderer {
 					}
 
 				// pattern match character
-				neural.forward(new Dataset(tile));
+				neural.forward(tile);
 				final float[] result = neural.getResult();
 				
 				float avg = 0f;
@@ -498,7 +497,7 @@ public class Vic20Renderer extends AbstractRenderer {
 			{ foregroundPalette[c2][0], foregroundPalette[c2][1], foregroundPalette[c2][2] },
 			{ foregroundPalette[c3][0], foregroundPalette[c3][1], foregroundPalette[c3][2] } };
 			
-		final float vec[] = new float[32];
+		final float tile[] = new float[32];
 		int index = 0;
 
 		for (int y = 0; y < 184; y += 8)
@@ -514,11 +513,11 @@ public class Vic20Renderer extends AbstractRenderer {
 						final int b = newPixels[py0x0 + 2];
 
 						final int color = Gfx.getColorIndex(colorAlg, locPalette, r, g, b);
-						vec[y0 * 4 + x0] = color & 0x3;
+						tile[y0 * 4 + x0] = color & 0x3;
 					}
 
 				// pattern match character
-				neural.forward(new Dataset(vec));
+				neural.forward(tile);
 				final float[] result = neural.getResult();
 
 				int code = 0;

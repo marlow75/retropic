@@ -28,7 +28,7 @@ public class PetsciiRenderer extends AbstractRenderer {
 		palette = new int[16][3];
 		final String networkFile;
 
-		neural = new HL1SoftmaxNetwork(64, 24, 256);
+		neural = new HL1SoftmaxNetwork(64, 20, 256);
 		networkFile = PETSCII_NETWORK_L1;
 
 		try {
@@ -84,7 +84,6 @@ public class PetsciiRenderer extends AbstractRenderer {
 		final int work[] = new int[64 * 3];
 		final float tile[] = new float[64];
 
-		// calculate average
 		int nr = 0, ng = 0, nb = 0, count = 0;
 		final int occurrence[] = new int[16];
 
@@ -114,7 +113,7 @@ public class PetsciiRenderer extends AbstractRenderer {
 		ng = palette[k][1];
 		nb = palette[k][2];
 
-		final float backLuma = Gfx.getLuma(nr, ng, nb);
+		final float back_luma = Gfx.getLuma(nr, ng, nb);
 
 		for (int y = 0; y < 200; y += 8) {
 			final int p = y * 320 * 3;
@@ -138,7 +137,7 @@ public class PetsciiRenderer extends AbstractRenderer {
 						work[index++] = g;
 						work[index++] = b;
 
-						final float distance = Math.abs(Gfx.getLuma(r, g, b) - backLuma);
+						final float distance = Gfx.getLuma(r, g, b) - back_luma;
 						if (max_distance < distance) {
 							max_distance = distance;
 							f = Gfx.getColorIndex(colorAlg, palette, r, g, b);
@@ -169,7 +168,7 @@ public class PetsciiRenderer extends AbstractRenderer {
 					}
 
 				// pattern match character
-				neural.forward(new Dataset(tile));
+				neural.forward(tile);
 				final float[] result = neural.getResult();
 				
 				float avg = 0f;
