@@ -63,7 +63,8 @@ Try all options available.
 * Contrast processing - experimental luma histogram equalizer designed for 8 bit machines primarly, now enabled for every available machine. HE - standard global equalization, CLAHE & SWAHE - clipped local equalization, first fast method for local contrast enhancer, second slow but for more demanding.
 * Aspect - keeps aspect ratio of original picture.
 * PAL - renders PAL encoded preview in S-Video quality (separated luma & chroma signals).
-* BW - renders monochrome PAL image, use with luminance distance to get more shades of grey
+* BW - renders monochrome PAL image, use with luminance distance to get more shades of grey.
+* Image filters - preprocess filters: none, low pass filter, sharpen kernel 3x3 filter, emboss kernel 3x3 filter, edge combined filter.
 
 ### Commodore C64
 
