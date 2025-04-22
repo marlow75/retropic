@@ -9,6 +9,7 @@ Requirements: JRE16 installed.
 
 ## Versions
 
+* 1.12b - Minor bug fixes
 * 1.12  - Kernel, combined filters: lowpass, sharpen, emboss, edge (HE), parametrized faster neuro char matcher 
 * 1.11b - Bug fixes, charset renderers did not work at all
 * 1.11a - Usable luminance mode for monochrome displays
