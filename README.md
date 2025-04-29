@@ -81,8 +81,7 @@ Exports to executable PRG or to Art Studio (hires) and Koala Paint (multicolor).
 
 16 foreground colors, 1 common background color for every character on the screen. Orginal PETSCII characterset.
 
-* One hidden layer, relu activation - neural net character matcher with single hidden layer, preffers semigraphics.
-* Two hidden layers, relu activation - neural net character matcher with two hidden layers, preffers characters.
+* One hidden layer, relu activation - neural net character matcher with single hidden layer.
 
 Exports to executable PRG.
 
@@ -211,8 +210,7 @@ PC text modes.
 * CGA 80x25 - uses max 16 foreground colors, 8 background colors with standard CGA character set.
 * VESA 132x50 - uses max 16 foreground colors, 8 background colors with standard CGA character set.
 
-* One hidden layer, relu activation - neural net character matcher with single hidden layer, preffers semigraphics.
-* Two hidden layers, relu activation - neural net character matcher with two hidden layers, preffers characters.
+* One hidden layer, relu activation - neural net character matcher with single hidden layer.
 
 Exports to executable COM.
 
