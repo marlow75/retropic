@@ -50,7 +50,7 @@ Requirements: JRE16 installed.
 * DEGAS for Atari
 * IFF format for Delux Paint – Amiga (RLE option)
 * True Paint for MCI (experimental)
-* COM executable for CGA
+* COM executable for CGA & VGA
 
 ## Conversion options
 
