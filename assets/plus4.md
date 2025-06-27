@@ -8,3 +8,19 @@
 Exports to executable PRG.
 
 ![Hires](venusPlus4.png)
+
+### Plus4 extra
+
+Converter mode
+
+* Hires interlaced - 3 colors in a cell 8x8
+* Multicolor interlaced - 8 colors in a cell 8x8
+
+Color aproximation for hires interlaced
+
+* linear - most distant colors in RGB cube
+* cube - cube color approximation
+
+Flickering for multicolor interlaced (MCI) - eliminate picture flashing.
+
+luma threshold - how far apart can be the brightness of used colors.

@@ -2,7 +2,7 @@
 
 27 colors total, 3 modes, 2 useful.
 
-* dithering – Bayer or Atkinson dithering, colors of the original picture are replaced by retro machine palette
+* dithering – Bayer for 320x200 or noise dithering for 160x200 colors
 * high contrast - replaces brightest/dimmest color with white and black
 
 * 320x200 - uses 4 colors on whole screen.

@@ -9,7 +9,7 @@ Requirements: JRE16 installed.
 
 ## Versions
 
-* 1.14  - Bug fixes, Blue noise dithering for all machines
+* 1.14  - Bug fixes, blue noise dithering for all machines
 * 1.12b - Minor bug fixes
 * 1.12  - Kernel, combined filters: lowpass, sharpen, emboss, edge (HE), parametrized faster neuro char matcher 
 * 1.11b - Bug fixes, charset renderers did not work at all
@@ -68,7 +68,7 @@ Try all options available.
 
 More info for all machines in following hyper links
 
-![C64](assets/C64.md)
+![C64](assets/c64.md)
 ![Plus4](assets/plus4.md)
 ![ZX](assets/zx.md)
 ![CPC](assets/cpc.md)
