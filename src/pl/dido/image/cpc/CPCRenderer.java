@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.util.HashSet;
 
 import pl.dido.image.renderer.AbstractRenderer;
+import pl.dido.image.utils.Config;
 import pl.dido.image.utils.Config.DITHERING;
 import pl.dido.image.utils.Gfx;
 import pl.dido.image.utils.neural.SOMFixedPalette;
@@ -19,9 +20,8 @@ public class CPCRenderer extends AbstractRenderer {
 
 	protected int bitmap[] = new int[16384];
 	protected int pictureColors[][];
-
+	
 	protected int firmwareIndexes[];
-
 	protected int colorMapping[] = new int[] { 0x54, 0x44, 0x55, 0x5C, 0x58, 0x5D, 0x4C, 0x45, 0x4D, 0x56, 0x46, 0x57,
 			0x5E, 0x40, 0x5F, 0x4E, 0x47, 0x4F, 0x52, 0x42, 0x53, 0x5A, 0x59, 0x5B, 0x4A, 0x43, 0x4B };
 
@@ -472,6 +472,16 @@ public class CPCRenderer extends AbstractRenderer {
 				pixels[ph + 2] = (byte) b;
 				pixels[ph + 5] = (byte) b;
 			}
+		}
+	}
+
+	@Override
+	protected int getGraphicModeColorsNumber(final Config config) {
+		switch (((CPCConfig) config).screen_mode) {
+		case MODE0:
+			return 48;
+		default:
+			return 12;
 		}
 	}
 }

@@ -11,7 +11,8 @@ abstract public class Config implements Cloneable {
 	}
 
 	public enum DITHERING {
-		NONE, FLOYDS, ATKINSON, BAYER2x2, BAYER4x4, BAYER8x8, BAYER16x16
+		NONE, FLOYDS, ATKINSON, BAYER2x2, BAYER4x4, 
+		BAYER8x8, BAYER16x16, NOISE8x8, NOISE16x16
 	};
 
 	public enum NEAREST_COLOR {
@@ -30,12 +31,14 @@ abstract public class Config implements Cloneable {
 	public static String export_path;
 	public FILTER filter;
 	
+	public float lowpass_gain;
+	
 	public DITHERING dither_alg;
 	public NEAREST_COLOR color_alg;
 	
 	public boolean black_white;
 	public boolean allow_luminance;
-
+	
 	public Config() {
 		dither_alg = DITHERING.ATKINSON;
 		color_alg = NEAREST_COLOR.PERCEPTED;
@@ -52,8 +55,10 @@ abstract public class Config implements Cloneable {
 		pal_view = true;
 		filter = FILTER.NONE;
 		
-		error_threshold = 4;
+		error_threshold = 0;
 		allow_luminance = true;
+		
+		lowpass_gain = 1.2f;
 	}
 
 	public abstract int getScreenWidth();
@@ -83,6 +88,10 @@ abstract public class Config implements Cloneable {
 		case BAYER8x8:
 		case BAYER16x16:
 			configString += "bayer ";
+			break;
+		case NOISE8x8:
+		case NOISE16x16:
+			configString += "noise ";
 			break;
 		default:
 			break;

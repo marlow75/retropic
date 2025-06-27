@@ -6,6 +6,7 @@ import java.util.Arrays;
 import pl.dido.image.renderer.AbstractRenderer;
 import pl.dido.image.utils.C64PaletteCalculator;
 import pl.dido.image.utils.ColorBuffer;
+import pl.dido.image.utils.Config;
 import pl.dido.image.utils.Config.NEAREST_COLOR;
 import pl.dido.image.utils.Gfx;
 import pl.dido.image.utils.neural.SOMPalette;
@@ -630,5 +631,15 @@ public class C64ExtraRenderer extends AbstractRenderer {
 		}
 
 		return buffer;
+	}
+	
+	@Override
+	protected int getGraphicModeColorsNumber(final Config config) {
+		switch (config.dither_alg) {
+		case NOISE16x16, NOISE8x8:
+			return 32;
+		default:
+			return 8;
+		} 
 	}
 }

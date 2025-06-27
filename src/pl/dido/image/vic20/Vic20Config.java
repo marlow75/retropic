@@ -9,8 +9,10 @@ public class Vic20Config extends PetsciiConfig {
 	
 	public Vic20Config() {
 		super();
-		this.mode = VIDEO_MODE.PETSCII;
-		this.dither_alg = DITHERING.BAYER2x2;
+		
+		mode = VIDEO_MODE.PETSCII;
+		dither_alg = DITHERING.NONE;
+		filter = FILTER.LOWPASS;
 	}
 		
 	@Override

@@ -167,4 +167,14 @@ public class STRenderer extends AbstractPictureColorsRenderer {
 			}
 		}
 	}
+
+	@Override
+	protected int getGraphicModeColorsNumber(final Config config) {
+		switch (config.dither_alg) {
+		case NOISE16x16, NOISE8x8:
+			return 64;
+		default:
+			return 16;
+		} 
+	}
 }

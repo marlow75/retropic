@@ -198,18 +198,6 @@ public class PCRenderer extends AbstractRenderer {
 				neural.forward(tile);
 				final float[] result = neural.getResult();
 				
-				float avg = 0f;
-				for (int i = 0; i < 256; i++) 					
-					avg += result[i];
-				
-				avg /= 256;
-				
-				float sum = 0f;
-				for (int i = 0; i < 256; i++) 
-					sum += (result[i] - avg) * (result[i] - avg);
-				
-				final float std = (float) Math.sqrt(sum / 256);
-				
 				int code = 0;
 				float value = result[0];
 				
@@ -221,9 +209,6 @@ public class PCRenderer extends AbstractRenderer {
 						value = d;
 					}
 				}
-				
-				if (value <= ((PCConfig)config).nn_threshold * (avg + std))
-					code = 0;
 
 				// colors
 				final int address = (y >> 3) * txtWidth + (x >> 3);
@@ -253,5 +238,10 @@ public class PCRenderer extends AbstractRenderer {
 				}
 			}
 		}
+	}
+
+	@Override
+	protected int getGraphicModeColorsNumber(final Config config) {
+		return 3;
 	}
 }

@@ -50,4 +50,14 @@ public class Amiga500Config extends AmigaConfig {
 	public int getScreenWidth() {
 		return 320;
 	}
+	
+	@Override
+	public int getWindowWidth() {
+		return 640;
+	}
+
+	@Override
+	public int getWindowHeight() {
+		return 512;
+	}
 }

@@ -23,10 +23,10 @@ public class Gfx {
 	public static final int M1x2[][] = new int[][] { { 77 }, { 171 } }; // 3 colors
 
 	public static final int M2x2[][] = new int[][] { // 5 colors
-			{ 51, 206 }, { 153, 102 } };
+			{ 0, 2 }, { 3, 1 } };
 
 	public static final int M4x4[][] = new int[][] { // 17 colors
-			{ 15, 195, 60, 240 }, { 135, 75, 180, 120 }, { 45, 225, 30, 210 }, { 165, 105, 150, 90 } };
+			{ 0, 8, 2, 10 }, { 12, 4, 14, 6 }, { 3, 11, 1, 9 }, { 15, 7, 13, 5 } };
 
 	public static final int M8x8[][] = new int[][] { // 65 colors
 			{ 0, 32, 8, 40, 2, 34, 10, 42 }, { 48, 16, 56, 24, 50, 18, 58, 26 }, { 12, 44, 4, 36, 14, 46, 6, 38 },
@@ -50,6 +50,29 @@ public class Gfx {
 			{ 137, 74, 185, 122, 133, 70, 181, 118, 136, 73, 184, 121, 132, 69, 180, 117 },
 			{ 42, 233, 26, 217, 38, 229, 22, 213, 41, 232, 25, 216, 37, 228, 21, 212 },
 			{ 169, 106, 153, 90, 165, 102, 149, 86, 168, 105, 152, 89, 164, 101, 148, 85 } };
+
+	public static final int NOISE16x16[][] = new int[][] {
+			{ 68, 158, 7, 145, 21, 253, 105, 81, 6, 153, 186, 130, 222, 149, 211, 25 },
+			{ 249, 200, 83, 227, 122, 40, 166, 213, 117, 205, 71, 17, 86, 167, 1, 94 },
+			{ 44, 133, 109, 176, 53, 187, 135, 63, 31, 174, 250, 108, 51, 238, 140, 188 },
+			{ 61, 214, 29, 237, 93, 2, 224, 241, 87, 144, 39, 216, 193, 74, 113, 229 },
+			{ 126, 13, 160, 69, 202, 151, 24, 101, 197, 11, 163, 131, 23, 155, 35, 173 },
+			{ 183, 100, 252, 141, 80, 124, 170, 47, 119, 184, 58, 91, 204, 247, 10, 88 },
+			{ 206, 48, 18, 191, 34, 230, 207, 67, 254, 220, 75, 232, 123, 103, 64, 223 },
+			{ 77, 150, 116, 218, 55, 111, 9, 139, 157, 32, 3, 147, 177, 41, 161, 136 },
+			{ 5, 234, 178, 89, 164, 242, 98, 181, 82, 112, 199, 50, 245, 16, 192, 240 },
+			{ 107, 37, 132, 26, 65, 195, 22, 43, 236, 168, 95, 134, 209, 84, 115, 54 },
+			{ 198, 72, 210, 248, 120, 146, 226, 128, 212, 57, 19, 225, 70, 30, 154, 171 },
+			{ 20, 99, 152, 182, 0, 52, 78, 159, 8, 189, 148, 102, 180, 125, 215, 255 },
+			{ 142, 228, 46, 85, 219, 201, 106, 246, 66, 118, 251, 42, 231, 4, 92, 62 },
+			{ 12, 165, 114, 27, 169, 137, 36, 179, 90, 28, 203, 76, 162, 138, 49, 190 },
+			{ 221, 129, 243, 60, 97, 233, 15, 127, 217, 143, 172, 14, 110, 196, 244, 79 },
+			{ 104, 38, 185, 208, 73, 156, 194, 56, 239, 45, 96, 235, 59, 33, 121, 175 } };
+
+	public static final int NOISE8x8[][] = new int[][] { { 53, 24, 12, 1, 17, 25, 4, 59 },
+			{ 40, 34, 50, 28, 56, 37, 47, 8 }, { 2, 21, 58, 9, 33, 52, 13, 31 }, { 16, 42, 46, 5, 18, 44, 22, 62 },
+			{ 55, 11, 27, 61, 39, 0, 26, 49 }, { 36, 32, 23, 54, 14, 35, 57, 6 }, { 19, 3, 48, 7, 30, 51, 10, 45 },
+			{ 15, 63, 38, 43, 60, 20, 41, 29 } };
 
 	public static final void rgb2YUV(final int b, final int g, final int r, final int yuv[], final int i) {
 		yuv[i] = Math.round(r * .299000f + g * .587000f + b * .114000f);
@@ -688,40 +711,40 @@ public class Gfx {
 
 	public static void bayer16x16(final byte pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
 			final int width, final int height, final int bpp) {
-		bayer(M16x16, pixels, palette, colorAlg, width, height, bpp);
+		bayerByte(M16x16, pixels, palette, colorAlg, width, height, bpp);
 	}
 
 	public static void bayer8x8(final byte pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
 			final int width, final int height, final int bpp) {
-		bayer(M8x8, pixels, palette, colorAlg, width, height, bpp);
+		bayerByte(M8x8, pixels, palette, colorAlg, width, height, bpp);
 	}
 
 	public static void bayer4x4(final int pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
 			final int width, final int height, final int bpp) {
-		bayer(M4x4, pixels, palette, colorAlg, width, height, bpp);
+		bayerInt(M4x4, pixels, palette, colorAlg, width, height, bpp);
 	}
 
 	public static void bayer4x4(final byte pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
 			final int width, final int height, final int bpp) {
-		bayer(M8x8, pixels, palette, colorAlg, width, height, bpp);
+		bayerByte(M8x8, pixels, palette, colorAlg, width, height, bpp);
 	}
 
 	public static void bayer2x2(final byte pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
 			final int width, final int height, final int bpp) {
-		bayer(M2x2, pixels, palette, colorAlg, width, height, bpp);
+		bayerByte(M2x2, pixels, palette, colorAlg, width, height, bpp);
 	}
 
 	public static void bayer2x1(final byte pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
 			final int width, final int height, final int bpp) {
-		bayer(M2x1, pixels, palette, colorAlg, width, height, bpp);
+		bayerByte(M2x1, pixels, palette, colorAlg, width, height, bpp);
 	}
 
 	public static void bayer1x2(final byte pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
 			final int width, final int height, final int bpp) {
-		bayer(M1x2, pixels, palette, colorAlg, width, height, bpp);
+		bayerByte(M1x2, pixels, palette, colorAlg, width, height, bpp);
 	}
 
-	public static void bayer(final int matrix[][], final int pixels[], final int palette[][],
+	public static void bayerInt(final int matrix[][], final int pixels[], final int palette[][],
 			final NEAREST_COLOR colorAlg, final int width, final int height, final int bpp) {
 
 		for (int y = 0; y < height; y++) {
@@ -747,15 +770,145 @@ public class Gfx {
 		}
 	}
 
-	public static void lowpassFilter(final byte pixels[]) {
+	public static void bayerByte(final int matrix[][], final byte pixels[], final int palette[][],
+			final NEAREST_COLOR colorAlg, final int width, final int height, final int bpp) {
+
+		for (int y = 0; y < height; y++) {
+			final int width3 = width * 3;
+
+			for (int x = 0; x < width; x++) {
+				final int pyx = y * width3 + x * 3;
+
+				int r = pixels[pyx] & 0xff;
+				int g = pixels[pyx + 1] & 0xff;
+				int b = pixels[pyx + 2] & 0xff;
+
+				r = Gfx.bayer(matrix, x, y, r, bpp);
+				g = Gfx.bayer(matrix, x, y, g, bpp);
+				b = Gfx.bayer(matrix, x, y, b, bpp);
+
+				final int color = Gfx.getColorIndex(colorAlg, palette, r, g, b);
+
+				pixels[pyx] = (byte) palette[color][0];
+				pixels[pyx + 1] = (byte) palette[color][1];
+				pixels[pyx + 2] = (byte) palette[color][2];
+			}
+		}
+	}
+
+	public static void noise16x16(final int pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
+			final int width, final int height, final int error) {
+
+		for (int y = 0; y < height; y++) {
+			final int width3 = width * 3;
+
+			for (int x = 0; x < width; x++) {
+				final int pyx = y * width3 + x * 3;
+
+				int r = pixels[pyx];
+				int g = pixels[pyx + 1];
+				int b = pixels[pyx + 2];
+
+				r = Gfx.noise16x16(x, y, r, error);
+				g = Gfx.noise16x16(x, y, g, error);
+				b = Gfx.noise16x16(x, y, b, error);
+
+				final int color = Gfx.getColorIndex(colorAlg, palette, r, g, b);
+
+				pixels[pyx] = (byte) palette[color][0];
+				pixels[pyx + 1] = (byte) palette[color][1];
+				pixels[pyx + 2] = (byte) palette[color][2];
+			}
+		}
+	}
+
+	public static void noise16x16(final byte pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
+			final int width, final int height, final int error) {
+
+		for (int y = 0; y < height; y++) {
+			final int width3 = width * 3;
+
+			for (int x = 0; x < width; x++) {
+				final int pyx = y * width3 + x * 3;
+
+				int r = pixels[pyx] & 0xff;
+				int g = pixels[pyx + 1] & 0xff;
+				int b = pixels[pyx + 2] & 0xff;
+
+				r = Gfx.noise16x16(x, y, r, error);
+				g = Gfx.noise16x16(x, y, g, error);
+				b = Gfx.noise16x16(x, y, b, error);
+
+				final int color = Gfx.getColorIndex(colorAlg, palette, r, g, b);
+
+				pixels[pyx] = (byte) palette[color][0];
+				pixels[pyx + 1] = (byte) palette[color][1];
+				pixels[pyx + 2] = (byte) palette[color][2];
+			}
+		}
+	}
+
+	public static void noise8x8(final int pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
+			final int width, final int height, final int error) {
+
+		for (int y = 0; y < height; y++) {
+			final int width3 = width * 3;
+
+			for (int x = 0; x < width; x++) {
+				final int pyx = y * width3 + x * 3;
+
+				int r = pixels[pyx];
+				int g = pixels[pyx + 1];
+				int b = pixels[pyx + 2];
+
+				r = Gfx.noise8x8(x, y, r, error);
+				g = Gfx.noise8x8(x, y, g, error);
+				b = Gfx.noise8x8(x, y, b, error);
+
+				final int color = Gfx.getColorIndex(colorAlg, palette, r, g, b);
+
+				pixels[pyx] = (byte) palette[color][0];
+				pixels[pyx + 1] = (byte) palette[color][1];
+				pixels[pyx + 2] = (byte) palette[color][2];
+			}
+		}
+	}
+
+	public static void noise8x8(final byte pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
+			final int width, final int height, final int error) {
+
+		for (int y = 0; y < height; y++) {
+			final int width3 = width * 3;
+
+			for (int x = 0; x < width; x++) {
+				final int pyx = y * width3 + x * 3;
+
+				int r = pixels[pyx] & 0xff;
+				int g = pixels[pyx + 1] & 0xff;
+				int b = pixels[pyx + 2] & 0xff;
+
+				r = Gfx.noise8x8(x, y, r, error);
+				g = Gfx.noise8x8(x, y, g, error);
+				b = Gfx.noise8x8(x, y, b, error);
+
+				final int color = Gfx.getColorIndex(colorAlg, palette, r, g, b);
+
+				pixels[pyx] = (byte) palette[color][0];
+				pixels[pyx + 1] = (byte) palette[color][1];
+				pixels[pyx + 2] = (byte) palette[color][2];
+			}
+		}
+	}
+
+	public static void lowpassFilter(final byte pixels[], final float gain) {
 		int r = pixels[0] & 0xff;
 		int g = pixels[1] & 0xff;
 		int b = pixels[2] & 0xff;
 
 		for (int i = 3; i < pixels.length; i += 3) {
-			r = (r + 2 * (pixels[i + 0] & 0xff)) / 3;
-			g = (g + 2 * (pixels[i + 1] & 0xff)) / 3;
-			b = (b + 2 * (pixels[i + 2] & 0xff)) / 3;
+			r = (int) ((gain * r + (pixels[i + 0] & 0xff)) / (gain + 1));
+			g = (int) ((gain * g + (pixels[i + 1] & 0xff)) / (gain + 1));
+			b = (int) ((gain * b + (pixels[i + 2] & 0xff)) / (gain + 1));
 
 			pixels[i + 0] = (byte) r;
 			pixels[i + 1] = (byte) g;
@@ -768,7 +921,7 @@ public class Gfx {
 			final int r1 = 1 + ((pixels1[i + 0] & 0xff)) / 255;
 			final int g1 = 1 + ((pixels1[i + 1] & 0xff)) / 255;
 			final int b1 = 1 + ((pixels1[i + 2] & 0xff)) / 255;
-			
+
 			final int r2 = pixels2[i + 0] & 0xff;
 			final int g2 = pixels2[i + 1] & 0xff;
 			final int b2 = pixels2[i + 2] & 0xff;
@@ -843,32 +996,6 @@ public class Gfx {
 		Gfx.filter(pixels, embossKernel, width, height);
 	}
 
-	public static void bayer(final int matrix[][], final byte pixels[], final int palette[][],
-			final NEAREST_COLOR colorAlg, final int width, final int height, final int bpp) {
-
-		for (int y = 0; y < height; y++) {
-			final int width3 = width * 3;
-
-			for (int x = 0; x < width; x++) {
-				final int pyx = y * width3 + x * 3;
-
-				int r = pixels[pyx] & 0xff;
-				int g = pixels[pyx + 1] & 0xff;
-				int b = pixels[pyx + 2] & 0xff;
-
-				r = Gfx.bayer(matrix, x, y, r, bpp);
-				g = Gfx.bayer(matrix, x, y, g, bpp);
-				b = Gfx.bayer(matrix, x, y, b, bpp);
-
-				final int color = Gfx.getColorIndex(colorAlg, palette, r, g, b);
-
-				pixels[pyx] = (byte) palette[color][0];
-				pixels[pyx + 1] = (byte) palette[color][1];
-				pixels[pyx + 2] = (byte) palette[color][2];
-			}
-		}
-	}
-
 	public final static int bayer2x2(final int x0, final int y0, final int c, final int f, final int b) {
 		return c < M2x2[x0 % 2][y0 % 2] ? b : f;
 	}
@@ -877,38 +1004,42 @@ public class Gfx {
 		return getLuma(r, g, b) < M2x2[x0 % 2][y0 % 2] ? 0 : 1;
 	}
 
-	public static final int bayer(final int matrix[][], final int x0, final int y0, final int c, final float bpp) {
-		final int mody = matrix.length;
-		final int modx = matrix[0].length;
+	public static final int bayer(final int matrix[][], final int x0, final int y0, final int c, final int colors) {
+		final int mod = matrix.length;
+		final float r = 255f / colors;
 
-		final float divider = 255 / bpp;
-		final float e = matrix[y0 % mody][x0 % modx] / bpp;
-
-		float i = (c + e) / divider;
-		if (i == 0)
-			return 0;
-
-		if (i > bpp)
-			i = bpp;
-		i *= divider;
-
-		return (int) (i > 255f ? 255 : i);
+		final float cp = c + r * (matrix[y0 % mod][x0 % mod] / (mod * mod * 1f) - 0.5f);
+		return (int) (cp > 255f ? 255 : cp < 0 ? 0 : cp);
 	}
 
-	public static final int bayer2x2(final int x0, final int y0, final int c, final float bpp) {
-		return bayer(M2x2, x0, y0, c, bpp);
+	public static final int noise16x16(final int x0, final int y0, final int c, final float colors) {
+		final float r = 255f / colors;
+		final float cp = c + r * (NOISE16x16[y0 % 16][x0 % 16] / 64f - 0.5f);
+
+		return (int) (cp > 255f ? 255 : cp < 0 ? 0 : cp);
 	}
 
-	public static final int bayer4x4(final int x0, final int y0, final int c, final float bpp) {
-		return bayer(M4x4, x0, y0, c, bpp);
+	public static final int noise8x8(final int x0, final int y0, final int c, final float colors) {
+		final float r = 255f / colors;
+		final float cp = c + r * (NOISE8x8[y0 % 8][x0 % 8] / 16f - 0.5f);
+
+		return (int) (cp > 255f ? 255 : cp < 0 ? 0 : cp);
 	}
 
-	public static final int bayer8x8(final int x0, final int y0, final int c, final float bpp) {
-		return bayer(M8x8, x0, y0, c, bpp);
+	public static final int bayer2x2(final int x0, final int y0, final int c, final int colors) {
+		return bayer(M2x2, x0, y0, c, colors);
 	}
 
-	public static final int bayer16x16(final int x0, final int y0, final int c, final float bpp) {
-		return bayer(M16x16, x0, y0, c, bpp);
+	public static final int bayer4x4(final int x0, final int y0, final int c, final int colors) {
+		return bayer(M4x4, x0, y0, c, colors);
+	}
+
+	public static final int bayer8x8(final int x0, final int y0, final int c, final int colors) {
+		return bayer(M8x8, x0, y0, c, colors);
+	}
+
+	public static final int bayer16x16(final int x0, final int y0, final int c, final int colors) {
+		return bayer(M16x16, x0, y0, c, colors);
 	}
 
 	public static BufferedImage byteArrayToBGRImage(final byte[] data, final int width, final int height) {

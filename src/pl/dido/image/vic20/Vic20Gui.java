@@ -58,20 +58,20 @@ public class Vic20Gui {
 		
 		vic20Panel.add(modesList);
 
-		final JLabel lblConvertLabel = new JLabel("Detection threshold:");
+		final JLabel lblConvertLabel = new JLabel("lowpass threshold:");
 		lblConvertLabel.setFont(GuiUtils.bold);
 		lblConvertLabel.setBounds(20, 136, 169, 14);
 		vic20Panel.add(lblConvertLabel);
 		
-		final JSlider sldDetect = new JSlider(JSlider.HORIZONTAL, 0, 15, config.nn_threshold);
-		sldDetect.setBounds(40, 156, 200, 35);
+		final JSlider sldDetect = new JSlider(JSlider.HORIZONTAL, 0, 4, (int)config.lowpass_gain);
+		sldDetect.setBounds(40, 156, 100, 35);
 		sldDetect.setFont(GuiUtils.std);
 		sldDetect.addChangeListener(new ChangeListener() {
 			public void stateChanged(final ChangeEvent e) {
 				final JSlider source = (JSlider) e.getSource();
 
 				if (!source.getValueIsAdjusting())
-					config.nn_threshold = source.getValue();
+					config.lowpass_gain = 1.2f * source.getValue();
 			}
 		});
 		

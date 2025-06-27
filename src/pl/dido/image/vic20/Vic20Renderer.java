@@ -105,7 +105,7 @@ public class Vic20Renderer extends AbstractRenderer {
 				dataset.addAll(item);
 
 			charset = som.train(dataset);
-			neural = new HL1SoftmaxNetwork(64, 20, 256);
+			neural = new HL1SoftmaxNetwork(64, 32, 256);
 
 			final Vector<Dataset> samples = NNUtils.loadData8x8(new ByteArrayInputStream(charset));
 			neural.train(samples);
@@ -122,7 +122,7 @@ public class Vic20Renderer extends AbstractRenderer {
 				dataset.addAll(item);
 
 			charset = som.train(dataset);
-			neural = new HL1SoftmaxNetwork(32, 20, 256);
+			neural = new HL1SoftmaxNetwork(32, 32, 256);
 			
 			final Vector<Dataset> samples = NNUtils.loadData4x8(new ByteArrayInputStream(charset));
 			neural.train(samples);
@@ -148,7 +148,7 @@ public class Vic20Renderer extends AbstractRenderer {
 		final int occurrence[] = new int[16];
 
 		for (int i = 0; i < pixels.length; i += 3) {
-			nr = pixels[i] & 0xff;
+			nr = pixels[i + 0] & 0xff;
 			ng = pixels[i + 1] & 0xff;
 			nb = pixels[i + 2] & 0xff;
 
@@ -180,14 +180,14 @@ public class Vic20Renderer extends AbstractRenderer {
 				final int offset = p + x * 3;
 
 				int index = 0, f = 0;
-				float max_distance = 0;
+				float maxDistance = 0;
 
 				// pickup brightest color in 8x8 tile
 				for (int y0 = 0; y0 < 8; y0++) {
 					for (int x0 = 0; x0 < 24; x0 += 3) {
 						final int position = offset + y0 * 176 * 3 + x0;
 
-						final int r = pixels[position] & 0xff;
+						final int r = pixels[position + 0] & 0xff;
 						final int g = pixels[position + 1] & 0xff;
 						final int b = pixels[position + 2] & 0xff;
 
@@ -196,8 +196,8 @@ public class Vic20Renderer extends AbstractRenderer {
 						work[index++] = b;
 
 						final float distance = Math.abs(Gfx.getLuma(r, g, b) - backLuma);
-						if (max_distance < distance) {
-							max_distance = distance;
+						if (maxDistance < distance) {
+							maxDistance = distance;
 							f = Gfx.getColorIndex(colorAlg, foregroundPalette, r, g, b);
 						}
 					}
@@ -293,7 +293,7 @@ public class Vic20Renderer extends AbstractRenderer {
 						work[index++] = g;
 						work[index++] = b;
 
-						final float distance = Gfx.getLuma(r, g, b) - backLuma;
+						final float distance = Math.abs(Gfx.getLuma(r, g, b) - backLuma);
 						if (maxDistance < distance) {
 							maxDistance = distance;
 							f = Gfx.getColorIndex(colorAlg, foregroundPalette, r, g, b);
@@ -302,7 +302,7 @@ public class Vic20Renderer extends AbstractRenderer {
 				}
 
 				// foreground color
-				final int cf[] = palette[f];
+				final int cf[] = foregroundPalette[f];
 				final int fr = cf[0];
 				final int fg = cf[1];
 				final int fb = cf[2];
@@ -327,18 +327,6 @@ public class Vic20Renderer extends AbstractRenderer {
 				neural.forward(tile);
 				final float[] result = neural.getResult();
 				
-				float avg = 0f;
-				for (int i = 0; i < 256; i++) 					
-					avg += result[i];
-				
-				avg /= 256;
-				
-				float sum = 0f;
-				for (int i = 0; i < 256; i++) 
-					sum += (result[i] - avg) * (result[i] - avg);
-				
-				final float std = (float) Math.sqrt(sum / 256);
-				
 				int code = 32;
 				float value = result[32];
 				
@@ -350,9 +338,6 @@ public class Vic20Renderer extends AbstractRenderer {
 						value = d;
 					}
 				}
-				
-				if (value <= ((Vic20Config)config).nn_threshold * (avg + std))
-					code = 32;
 				
 				// colors
 				final int address = (y >> 3) * 22 + (x >> 3);
@@ -563,5 +548,15 @@ public class Vic20Renderer extends AbstractRenderer {
 					}
 				}
 			}
+	}
+
+	@Override
+	protected int getGraphicModeColorsNumber(final Config config) {
+		switch (config.dither_alg) {
+		case NOISE16x16, NOISE8x8:
+			return 64;
+		default:
+			return 8;
+		} 
 	}
 }

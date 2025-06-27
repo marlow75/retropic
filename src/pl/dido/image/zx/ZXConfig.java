@@ -10,9 +10,8 @@ public class ZXConfig extends Config {
 		dither_alg = DITHERING.BAYER2x2;
 		
 		high_contrast = HIGH_CONTRAST.SWAHE;
-		window_size = 20;
+		window_size = 30;
 		
-		error_threshold = 5;
 		allow_luminance = false;
 	}
 

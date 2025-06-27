@@ -17,7 +17,7 @@ public class CPCConfig extends Config {
 	public boolean replace_white;
 	
 	public CPCConfig() {	
-		dither_alg = DITHERING.BAYER4x4;
+		dither_alg = DITHERING.BAYER2x2;
 		high_contrast = HIGH_CONTRAST.SWAHE;
 		
 		screen_mode = SCREEN_MODE.MODE1;
@@ -25,8 +25,6 @@ public class CPCConfig extends Config {
 		
 		replace_white = false;
 		color_alg = NEAREST_COLOR.PERCEPTED;
-		
-		error_threshold = 3;
 	}
 	
 	@Override

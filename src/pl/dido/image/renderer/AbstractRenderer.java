@@ -39,6 +39,8 @@ public abstract class AbstractRenderer {
 		colorAlg = config.color_alg;
 	}
 
+	protected abstract int getGraphicModeColorsNumber(final Config config);
+
 	public AbstractRenderer(final Config config) {
 		initialize(config);
 	}
@@ -72,7 +74,7 @@ public abstract class AbstractRenderer {
 			Gfx.emboss(pixels, screenWidth, screenHeight);
 			break;
 		case LOWPASS:
-			Gfx.lowpassFilter(pixels);
+			Gfx.lowpassFilter(pixels, config.lowpass_gain);
 			break;
 		case SHARPEN:
 			Gfx.sharpen(pixels, screenWidth, screenHeight);
@@ -85,8 +87,9 @@ public abstract class AbstractRenderer {
 		setupPalette();
 
 		imageDithering();
-		imagePostproces();
+		//runner.showImage();
 		
+		imagePostproces();
 		if (config.pal_view)
 			emuPAL();
 	}
@@ -124,30 +127,43 @@ public abstract class AbstractRenderer {
 
 	protected void imageDithering() {
 		switch (config.dither_alg) {
-		case BAYER2x2, BAYER4x4, BAYER8x8, BAYER16x16:
+		case BAYER2x2, BAYER4x4, BAYER8x8, BAYER16x16, NOISE8x8, NOISE16x16:
 			bayerDithering();
+		break;
 		default:
 			Gfx.dithering(pixels, palette, config);
 		}
 	}
 
 	protected void bayerDithering() {
+		final int colors = (int) (getGraphicModeColorsNumber(config) + (- config.error_threshold) * 0.15f * getGraphicModeColorsNumber(config));
+		
 		switch (config.dither_alg) {
 		case BAYER2x2:
-			Gfx.bayer2x2(pixels, palette, colorAlg, screenWidth, screenHeight, config.error_threshold);
+			Gfx.bayer2x2(pixels, palette, colorAlg, screenWidth, screenHeight, colors);
 			break;
 		case BAYER4x4:
-			Gfx.bayer4x4(pixels, palette, colorAlg, screenWidth, screenHeight, config.error_threshold);
+			Gfx.bayer4x4(pixels, palette, colorAlg, screenWidth, screenHeight, colors);
 			break;
 		case BAYER8x8:
-			Gfx.bayer8x8(pixels, palette, colorAlg, screenWidth, screenHeight, config.error_threshold);
+			Gfx.bayer8x8(pixels, palette, colorAlg, screenWidth, screenHeight, colors);
 			break;
 		case BAYER16x16:
-			Gfx.bayer16x16(pixels, palette, colorAlg, screenWidth, screenHeight, config.error_threshold);
+			Gfx.bayer16x16(pixels, palette, colorAlg, screenWidth, screenHeight, colors);
+			break;
+		case NOISE8x8:
+			Gfx.noise8x8(pixels, palette, colorAlg, screenWidth, screenHeight, colors);
+			break;
+		case NOISE16x16:
+			Gfx.noise16x16(pixels, palette, colorAlg, screenWidth, screenHeight, colors);
 			break;
 		default:
 			break;
 		}
+	}
+
+	protected int getUsedColors() {
+		return palette.length;
 	}
 
 	protected final int getColorIndex(final int r, final int g, final int b) {

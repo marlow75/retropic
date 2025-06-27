@@ -3,8 +3,6 @@ package pl.dido.image.petscii;
 import pl.dido.image.utils.Config;
 
 public class PetsciiConfig extends Config {
-	public int nn_threshold;
-		
 	public PetsciiConfig() {
 		super();
 		
@@ -12,10 +10,9 @@ public class PetsciiConfig extends Config {
 		dither_alg = DITHERING.NONE;
 		
 		high_contrast = HIGH_CONTRAST.NONE;
-		error_threshold = 3;
+		filter = FILTER.NONE;
 		
-		this.filter = FILTER.NONE;
-		nn_threshold = 0;
+		filter = FILTER.LOWPASS;
 	}
 	
 	@Override

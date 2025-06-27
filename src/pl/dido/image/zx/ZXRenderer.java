@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 
 import pl.dido.image.renderer.AbstractRenderer;
 import pl.dido.image.utils.Gfx;
+import pl.dido.image.utils.Config;
 import pl.dido.image.utils.Config.DITHERING;
 
 public class ZXRenderer extends AbstractRenderer {
@@ -305,5 +306,15 @@ public class ZXRenderer extends AbstractRenderer {
 		}
 
 		return zx_address;
+	}
+
+	@Override
+	protected int getGraphicModeColorsNumber(final Config config) {
+		switch (config.dither_alg) {
+		case BAYER2x2:
+			return 8;
+		default:
+			return 32;
+		}
 	}
 }

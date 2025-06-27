@@ -71,11 +71,11 @@ public class Amiga1200Config extends AmigaConfig {
 
 	@Override
 	public int getWindowWidth() {
-		return 480;
+		return 640;
 	}
 
 	@Override
 	public int getWindowHeight() {
-		return 384;
+		return 512;
 	}
 }

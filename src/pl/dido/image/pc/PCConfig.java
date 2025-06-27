@@ -16,9 +16,9 @@ public class PCConfig extends PetsciiConfig {
 		dither_alg = DITHERING.NONE;
 		
 		high_contrast = HIGH_CONTRAST.NONE;
-		error_threshold = 3;
-		
 		video_mode = VIDEO_MODE.CGA_TEXT;
+		
+		filter = FILTER.LOWPASS;
 	}
 	
 	@Override

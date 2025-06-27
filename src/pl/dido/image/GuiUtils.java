@@ -36,10 +36,10 @@ public class GuiUtils {
 		lblDitherLabel.setBounds(20, 8, 200, 20);
 		panel.add(lblDitherLabel);
 
-		final JSlider sldError = new JSlider(JSlider.HORIZONTAL, 1, 5, config.error_threshold);
-
+		final JSlider sldError = new JSlider(JSlider.HORIZONTAL, 0, 4, config.error_threshold);
 		final JComboBox<String> cmbDithering = new JComboBox<String>(
-				new String[] { "none", "floyds", "apple", "bayer2x2", "bayer4x4", "bayer8x8", "bayer16x16" });
+				new String[] { "none", "floyds", "apple", "bayer2x2", "bayer4x4", "bayer8x8", "bayer16x16", "noise8x8", "noise16x16" });
+		
 		cmbDithering.setToolTipText("Dithering options");
 		cmbDithering.setFont(std);
 		cmbDithering.setBounds(46, 28, 100, 20);
@@ -69,6 +69,12 @@ public class GuiUtils {
 					break;
 				case 6:
 					config.dither_alg = DITHERING.BAYER16x16;
+					break;
+				case 7:
+					config.dither_alg = DITHERING.NOISE8x8;
+					break;
+				case 8:
+					config.dither_alg = DITHERING.NOISE16x16;
 					break;
 				}
 			}

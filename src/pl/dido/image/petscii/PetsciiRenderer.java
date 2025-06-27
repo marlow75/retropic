@@ -171,18 +171,6 @@ public class PetsciiRenderer extends AbstractRenderer {
 				neural.forward(tile);
 				final float[] result = neural.getResult();
 				
-				float avg = 0f;
-				for (int i = 0; i < 256; i++) 					
-					avg += result[i];
-				
-				avg /= 256;
-				
-				float sum = 0f;
-				for (int i = 0; i < 256; i++) 
-					sum += (result[i] - avg) * (result[i] - avg);
-				
-				final float std = (float) Math.sqrt(sum / 256);
-				
 				int code = 160;
 				float value = result[160];
 				
@@ -194,9 +182,6 @@ public class PetsciiRenderer extends AbstractRenderer {
 						value = d;
 					}
 				}
-				
-				if (value <= ((PetsciiConfig)config).nn_threshold * (avg + std))
-					code = 160;
 
 				// colors
 				final int address = (y >> 3) * 40 + (x >> 3);
@@ -225,5 +210,10 @@ public class PetsciiRenderer extends AbstractRenderer {
 				}
 			}
 		}
+	}
+
+	@Override
+	protected int getGraphicModeColorsNumber(final Config config) {
+		return 3;
 	}
 }

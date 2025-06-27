@@ -69,28 +69,28 @@ public class ZXGui {
 		
 		panelZX.add(rdbtnNoDitherButton);
 
-		final JRadioButton rdbtnBayerButton = new JRadioButton("bayer");
-		rdbtnBayerButton.setToolTipText("Enables bayer ordered dithering");
+		final JRadioButton rdbtnBayerButton = new JRadioButton("noise");
+		rdbtnBayerButton.setToolTipText("Enables blue noise ordered dithering");
 		rdbtnBayerButton.setFont(GuiUtils.std);
 		rdbtnBayerButton.setBounds(90, 100, 70, 20);
-		rdbtnBayerButton.setSelected(config.dither_alg == DITHERING.BAYER2x2);
+		rdbtnBayerButton.setSelected(config.dither_alg == DITHERING.NOISE8x8);
 		
 		rdbtnBayerButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				config.dither_alg = DITHERING.BAYER2x2;
+				config.dither_alg = DITHERING.NOISE8x8;
 			}});
 		
 		panelZX.add(rdbtnBayerButton);
 		
-		final JRadioButton rdbtnAtkinsonButton = new JRadioButton("apple");
-		rdbtnAtkinsonButton.setToolTipText("Enables atkinson dithering");
+		final JRadioButton rdbtnAtkinsonButton = new JRadioButton("bayer");
+		rdbtnAtkinsonButton.setToolTipText("Enables bayer2x2 dithering");
 		rdbtnAtkinsonButton.setFont(GuiUtils.std);
 		rdbtnAtkinsonButton.setBounds(160, 100, 70, 20);
-		rdbtnAtkinsonButton.setSelected(config.dither_alg == DITHERING.ATKINSON);
+		rdbtnAtkinsonButton.setSelected(config.dither_alg == DITHERING.BAYER2x2);
 		
 		rdbtnAtkinsonButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				config.dither_alg = DITHERING.ATKINSON;
+				config.dither_alg = DITHERING.BAYER2x2;
 			}});
 		
 		panelZX.add(rdbtnAtkinsonButton);

@@ -39,15 +39,22 @@ public class CPCGui {
 
 		cpcPanel.add(rdbtnNoDitherButton);
 
-		final JRadioButton rdbtnBayerButton = new JRadioButton("bayer");
-		rdbtnBayerButton.setToolTipText("Bayer ordered dithering");
+		final JRadioButton rdbtnBayerButton = new JRadioButton("ordered");
+		rdbtnBayerButton.setToolTipText("Bayer/Noise ordered dithering");
 		rdbtnBayerButton.setFont(GuiUtils.std);
 		rdbtnBayerButton.setBounds(90, 33, 60, 20);
-		rdbtnBayerButton.setSelected(config.dither_alg == DITHERING.BAYER4x4);
+		rdbtnBayerButton.setSelected(config.dither_alg == DITHERING.BAYER2x2 || config.dither_alg == DITHERING.NOISE8x8);
 
 		rdbtnBayerButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				config.dither_alg = DITHERING.BAYER4x4;
+				switch (config.screen_mode) {
+				case MODE0:
+					config.dither_alg = DITHERING.NOISE8x8;
+					break;
+				default:
+					config.dither_alg = DITHERING.BAYER2x2;
+					break;
+				}
 			}
 		});
 
@@ -146,6 +153,7 @@ public class CPCGui {
 		rdbtnHiresButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				config.screen_mode = CPCConfig.SCREEN_MODE.MODE1;
+				config.dither_alg = DITHERING.BAYER4x4;
 			}
 		});
 
@@ -159,6 +167,7 @@ public class CPCGui {
 		rdbtnMulticolorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				config.screen_mode = CPCConfig.SCREEN_MODE.MODE0;
+				config.dither_alg = DITHERING.NOISE8x8;
 			}
 		});
 

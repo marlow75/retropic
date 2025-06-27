@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 
 import pl.dido.image.renderer.AbstractRenderer;
 import pl.dido.image.utils.C64PaletteCalculator;
+import pl.dido.image.utils.Config;
 import pl.dido.image.utils.Config.DITHERING;
 import pl.dido.image.utils.Gfx;
 
@@ -30,10 +31,7 @@ public class C64Renderer extends AbstractRenderer {
 		switch (((C64Config) config).screen_mode) {
 		case HIRES:
 			switch (config.dither_alg) {
-			case BAYER2x2:
-			case BAYER4x4:
-			case BAYER8x8:
-			case BAYER16x16:
+			case BAYER2x2, BAYER4x4, BAYER8x8, BAYER16x16, NOISE8x8, NOISE16x16: 
 				hiresBayer();
 				break;
 			default:
@@ -44,10 +42,7 @@ public class C64Renderer extends AbstractRenderer {
 			break;
 		case MULTICOLOR:
 			switch (config.dither_alg) {
-			case BAYER2x2:
-			case BAYER4x4:
-			case BAYER8x8:
-			case BAYER16x16:
+			case BAYER2x2, BAYER4x4, BAYER8x8, BAYER16x16, NOISE8x8, NOISE16x16: 
 				lowresBayer();
 				break;
 			default:
@@ -823,5 +818,15 @@ public class C64Renderer extends AbstractRenderer {
 					}
 			}
 		}
+	}
+
+	@Override
+	protected int getGraphicModeColorsNumber(final Config config) {
+		switch (config.dither_alg) {
+		case NOISE16x16, NOISE8x8:
+			return 64;
+		default:
+			return 16;
+		} 
 	}
 }
