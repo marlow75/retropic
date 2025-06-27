@@ -24,3 +24,11 @@ Color aproximation for hires interlaced
 Flickering for multicolor interlaced (MCI) - eliminate picture flashing.
 
 luma threshold - how far apart can be the brightness of used colors.
+
+![Plus4Extra](Plus4Extra.png)
+
+Hires interlaced
+
+![Plus4ExtraMCI](Plus4ExtraMCI.png)
+
+MCI
