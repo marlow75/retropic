@@ -8,12 +8,12 @@
 
 Use lowpass filter with threshold to reduce details. Exports to executable PRG.
 
-![VIC20-txt](vic20txt.png)
+![VIC20txt](vic20txt.png)
 
 Pseudographic hires mode - regenerated charset 
 
-![VIC20-gen](vic20gfx.png)
+![VIC20gfx](vic20gfx.png)
 
 Pseudographic lowres mode - regenerated charset 
 
-![VIC20-gen](vic20low.png)
+![VIC20low](vic20low.png)

@@ -75,4 +75,4 @@ More info for all machines in following hyper links
 ![ST](assets/st.md)
 ![Amiga](assets/amiga.md)
 ![PC](assets/pc.md)
-![VIC20](assets/vic.md)
+![VIC20](assets/vic20.md)
