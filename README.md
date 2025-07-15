@@ -9,6 +9,7 @@ Requirements: JRE16 installed.
 
 ## Versions
 
+* 1.15  - Autoencoder denoiser for characterset modes, reworked neural net matchers, disabled unproductive dither modes for particular machines  
 * 1.14  - Bug fixes, blue noise dithering for all machines
 * 1.12b - Minor bug fixes
 * 1.12  - Kernel, combined filters: lowpass, sharpen, emboss, edge (HE), parametrized faster neuro char matcher 
