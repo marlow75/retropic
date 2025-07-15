@@ -11,6 +11,10 @@ Exports to executable PRG.
 
 ### Plus4 extra
 
+Trick modes, you need to experiment with setting to produce decent picture. Noise dithering works very well with MCI, bayer with Interlaced Hires.
+
+MCI try to avoid pictures with big empty areas.
+
 Converter mode
 
 * Hires interlaced - 3 colors in a cell 8x8
