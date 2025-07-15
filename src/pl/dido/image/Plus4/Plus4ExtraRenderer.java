@@ -21,8 +21,8 @@ public class Plus4ExtraRenderer extends AbstractRenderer {
 	protected final int bitmap2[] = new int[40 * 200];
 	protected final int screen2[] = new int[1000];
 
-	protected final int nibble1[] = new int[1000];
-	protected final int nibble2[] = new int[1000];
+	protected final int nibbles1[] = new int[1000];
+	protected final int nibbles2[] = new int[1000];
 
 	protected int blend[][];
 	protected int machinePalette[][];
@@ -114,11 +114,80 @@ public class Plus4ExtraRenderer extends AbstractRenderer {
 			break;
 		case MULTI_COLOR_INTERLACED:
 			multicolor();
+			multicolorFilter();
 			verifyMCI();
 			break;
 		}
 	}
+	
+	protected void multicolorFilter() {
+		final int screenBuf[] = new int[1000];
+		
+		for (int y = 0; y < 25; y++) {
+			final int p = y * 40;
+			
+			screenBuf[p] = screen1[p];
+			screenBuf[p + 39] = screen1[p + 39];
+		
+			for (int x = 1; x < 39; x++) {
+				int a1 = p + x - 1;
+				int a2 = p + x;
+				int a3 = p + x + 1;
+				
+				int q1 = screen1[a1] >> 4;
+				int q2 = screen1[a1] & 0xf;
 
+				int l2 = nibbles1[a1] >> 4;
+				int l1 = nibbles1[a1] & 0xf;
+
+				int c001 = q1 + (l1 << 4);
+				int c010 = q2 + (l2 << 4);
+				
+				q1 = screen1[a2] >> 4;
+				q2 = screen1[a2] & 0xf;
+
+				l2 = nibbles1[a2] >> 4;
+				l1 = nibbles1[a2] & 0xf;
+				
+				int c101 = q1 + (l1 << 4);
+				int c110 = q2 + (l2 << 4);
+
+				q1 = screen1[a3] >> 4;
+				q2 = screen1[a3] & 0xf;
+
+				l2 = nibbles1[a3] >> 4;
+				l1 = nibbles1[a3] & 0xf;
+				
+				int c201 = q1 + (l1 << 4);
+				int c210 = q2 + (l2 << 4);
+				
+				int r = (machinePalette[c001][0] + machinePalette[c101][0] + machinePalette[c201][0]) / 3;
+				int g = (machinePalette[c001][1] + machinePalette[c101][1] + machinePalette[c201][1]) / 3;
+				int b = (machinePalette[c001][2] + machinePalette[c101][2] + machinePalette[c201][2]) / 3;
+				
+				int newc01 = Gfx.getColorIndex(colorAlg, machinePalette, r, g, b);
+				
+				r = (machinePalette[c010][0] + machinePalette[c110][0] + machinePalette[c210][0]) / 3;
+				g = (machinePalette[c010][1] + machinePalette[c110][1] + machinePalette[c210][1]) / 3;
+				b = (machinePalette[c010][2] + machinePalette[c110][2] + machinePalette[c210][2]) / 3;
+				
+				int newc10 = Gfx.getColorIndex(colorAlg, machinePalette, r, g, b);
+				
+				l1 = newc01 / 16;
+				l2 = newc10 / 16;
+
+				q1 = newc01 - l1 * 16;
+				q2 = newc10 - l2 * 16;
+
+				// change only color definition
+				screenBuf[a2] = ((q1 & 0xf) << 4) | (q2 & 0xf);
+			}
+		}
+		
+		System.arraycopy(screenBuf, 0, screen1, 0, 1000);
+		System.arraycopy(screenBuf, 0, screen2, 0, 1000);
+	}
+	
 	protected int getBlendedColorIndex(final int tilePalette[][], final int tileColors[], final int r, final int g,
 			final int b, final int prevColorIndex) {
 		float min = Float.MAX_VALUE;
@@ -218,8 +287,8 @@ public class Plus4ExtraRenderer extends AbstractRenderer {
 				screen1[address] = ((pf & 0xf) << 4) | (pn & 0xf); // f
 				screen2[address] = ((pn & 0xf) << 4) | (pf & 0xf);
 
-				nibble1[address] = ((ln & 0xf) << 4) | (lf & 0xf);
-				nibble2[address] = ((lf & 0xf) << 4) | (ln & 0xf);
+				nibbles1[address] = ((ln & 0xf) << 4) | (lf & 0xf);
+				nibbles2[address] = ((lf & 0xf) << 4) | (ln & 0xf);
 
 				int value1 = 0, value2 = 0, bitcount = 0;
 
@@ -314,8 +383,8 @@ public class Plus4ExtraRenderer extends AbstractRenderer {
 				final int q1 = screen1[address] >> 4;
 				final int q2 = screen1[address] & 0xf;
 
-				final int l2 = nibble1[address] >> 4;
-				final int l1 = nibble1[address] & 0xf;
+				final int l2 = nibbles1[address] >> 4;
+				final int l1 = nibbles1[address] & 0xf;
 
 				int c01 = q1 + (l1 << 4);
 				int c10 = q2 + (l2 << 4);
@@ -615,8 +684,8 @@ public class Plus4ExtraRenderer extends AbstractRenderer {
 				screen1[address] = ((q1 & 0xf) << 4) | (q2 & 0xf);
 				screen2[address] = screen1[address];
 
-				nibble1[address] = ((l2 & 0xf) << 4) | (l1 & 0xf);
-				nibble2[address] = nibble1[address];
+				nibbles1[address] = ((l2 & 0xf) << 4) | (l1 & 0xf);
+				nibbles2[address] = nibbles1[address];
 			}
 		}
 	}

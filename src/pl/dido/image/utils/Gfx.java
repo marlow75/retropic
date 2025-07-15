@@ -187,7 +187,7 @@ public class Gfx {
 		final float w = a < b ? a : b;
 		return w < c ? w : c;
 	}
-
+	
 	public static final BufferedImage scaleWithStretching(final BufferedImage image, final int maxX, final int maxY) {
 		final int x = image.getWidth();
 		final int y = image.getHeight();
@@ -1118,8 +1118,8 @@ public class Gfx {
 
 		for (int i = 1; i < palette.length; i++) { // distance
 			color = palette[i];
+			
 			final float distance = perceptedDistance(r, g, b, color[0], color[1], color[2]);
-
 			if (distance < min) {
 				min = distance;
 				index = i;
@@ -1147,14 +1147,6 @@ public class Gfx {
 		}
 
 		return index;
-	}
-
-	public static final void colorScale(final float r, final float g, final float b, final int pixels[]) {
-		for (int i = 0; i < pixels.length; i += 3) {
-			pixels[i] = saturate((int) (pixels[i] + pixels[i] * r));
-			pixels[i + 1] = saturate((int) (pixels[i + 1] + pixels[i + 1] * g));
-			pixels[i + 2] = saturate((int) (pixels[i + 2] + pixels[i + 2] * b));
-		}
 	}
 
 	public static final BufferedImage grey2BGR(final BufferedImage image) {

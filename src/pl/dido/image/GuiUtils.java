@@ -11,14 +11,13 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSlider;
-import javax.swing.JComboBox;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import pl.dido.image.utils.Config;
-import pl.dido.image.utils.Config.DITHERING;
 import pl.dido.image.utils.Config.FILTER;
 import pl.dido.image.utils.Config.NEAREST_COLOR;
+import pl.dido.image.utils.DitheringComboBox;
 
 public class GuiUtils {
 
@@ -27,18 +26,21 @@ public class GuiUtils {
 	public final static Font bold = new Font("Tahoma", Font.BOLD, 10);
 
 	public static final JPanel addDASControls(final JPanel panel, final Config config) {
-		return addDASControls(panel, config, true);
+		return addDASControls(panel, config, null, true);
+	}
+	
+	public static final JPanel addDASControls(final JPanel panel, final Config config, final boolean ditherOptions[]) {
+		return addDASControls(panel, config, ditherOptions, true);
 	}
 
-	public static final JPanel addDASControls(final JPanel panel, final Config config, final boolean scan) {
+	public static final JPanel addDASControls(final JPanel panel, final Config config, final boolean ditherOptions[], final boolean pal) {
 		final JLabel lblDitherLabel = new JLabel("Dithering & aspect & pal & bw:");
 		lblDitherLabel.setFont(bold);
 		lblDitherLabel.setBounds(20, 8, 200, 20);
 		panel.add(lblDitherLabel);
 
 		final JSlider sldError = new JSlider(JSlider.HORIZONTAL, 0, 4, config.error_threshold);
-		final JComboBox<String> cmbDithering = new JComboBox<String>(
-				new String[] { "none", "floyds", "apple", "bayer2x2", "bayer4x4", "bayer8x8", "bayer16x16", "noise8x8", "noise16x16" });
+		final DitheringComboBox cmbDithering = ditherOptions != null ? new DitheringComboBox(config, ditherOptions) : new DitheringComboBox(config);
 		
 		cmbDithering.setToolTipText("Dithering options");
 		cmbDithering.setFont(std);
@@ -47,36 +49,6 @@ public class GuiUtils {
 		cmbDithering.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				sldError.setEnabled(cmbDithering.getSelectedIndex() > 2);
-
-				switch (cmbDithering.getSelectedIndex()) {
-				case 0:
-					config.dither_alg = DITHERING.NONE;
-					break;
-				case 1:
-					config.dither_alg = DITHERING.FLOYDS;
-					break;
-				case 2:
-					config.dither_alg = DITHERING.ATKINSON;
-					break;
-				case 3:
-					config.dither_alg = DITHERING.BAYER2x2;
-					break;
-				case 4:
-					config.dither_alg = DITHERING.BAYER4x4;
-					break;
-				case 5:
-					config.dither_alg = DITHERING.BAYER8x8;
-					break;
-				case 6:
-					config.dither_alg = DITHERING.BAYER16x16;
-					break;
-				case 7:
-					config.dither_alg = DITHERING.NOISE8x8;
-					break;
-				case 8:
-					config.dither_alg = DITHERING.NOISE16x16;
-					break;
-				}
 			}
 		});
 
@@ -117,7 +89,7 @@ public class GuiUtils {
 
 		panel.add(chckbxAspectCheckBox);
 
-		if (scan) {
+		if (pal) {
 			final JCheckBox chckbxBWCheckBox = new JCheckBox("bw");
 			chckbxBWCheckBox.setToolTipText("Black/White PAL");
 			chckbxBWCheckBox.setFont(GuiUtils.std);

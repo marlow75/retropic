@@ -5,6 +5,8 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Toolkit;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferStrategy;
@@ -66,6 +68,13 @@ public abstract class AbstractRendererRunner implements Runnable {
 
 		canvas.createBufferStrategy(2);
 		bufferStrategy = canvas.getBufferStrategy();
+		
+		frame.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentMoved(final ComponentEvent e) {
+                frame.repaint();
+            }
+        });
 	}
 
 	protected void showImage() {

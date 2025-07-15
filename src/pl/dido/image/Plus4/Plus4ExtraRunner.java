@@ -56,8 +56,8 @@ public class Plus4ExtraRunner extends AbstractRendererRunner {
 				out.write(0x80);
 			
 			// luma $1800
-			for (int i = 0; i < plus4Extra.nibble1.length; i++)
-				out.write(plus4Extra.nibble1[i] & 0xff);
+			for (int i = 0; i < plus4Extra.nibbles1.length; i++)
+				out.write(plus4Extra.nibbles1[i] & 0xff);
 			
 			for (int i = 0; i < 24; i++)
 				out.write(0x80);
@@ -84,8 +84,8 @@ public class Plus4ExtraRunner extends AbstractRendererRunner {
 				out.write(0x80);
 			
 			// luma $6000
-			for (int i = 0; i < plus4Extra.nibble2.length; i++)
-				out.write(plus4Extra.nibble2[i] & 0xff);
+			for (int i = 0; i < plus4Extra.nibbles2.length; i++)
+				out.write(plus4Extra.nibbles2[i] & 0xff);
 			
 			for (int i = 0; i < 24; i++)
 				out.write(0x80);
@@ -133,8 +133,8 @@ public class Plus4ExtraRunner extends AbstractRendererRunner {
 			out.write(plus4Extra.backgroundColor2 & 0xff);
 			
 			// luma $1800
-			for (int i = 0; i < plus4Extra.nibble1.length; i++)
-				out.write(plus4Extra.nibble1[i] & 0xff);
+			for (int i = 0; i < plus4Extra.nibbles1.length; i++)
+				out.write(plus4Extra.nibbles1[i] & 0xff);
 			
 			for (int i = 0; i < 24; i++)
 				out.write(0x80);
@@ -161,8 +161,8 @@ public class Plus4ExtraRunner extends AbstractRendererRunner {
 				out.write(0x80);
 			
 			// luma $6000
-			for (int i = 0; i < plus4Extra.nibble2.length; i++)
-				out.write(plus4Extra.nibble2[i] & 0xff);
+			for (int i = 0; i < plus4Extra.nibbles2.length; i++)
+				out.write(plus4Extra.nibbles2[i] & 0xff);
 			
 			for (int i = 0; i < 24; i++)
 				out.write(0x80);

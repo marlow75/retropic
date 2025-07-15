@@ -1,8 +1,8 @@
 package pl.dido.image.pc;
 
-import pl.dido.image.petscii.PetsciiConfig;
+import pl.dido.image.utils.Config;
 
-public class PCConfig extends PetsciiConfig {	
+public class PCConfig extends Config {	
 	public enum VIDEO_MODE {
 		CGA_TEXT, VESA_TEXT
 	};
@@ -18,6 +18,7 @@ public class PCConfig extends PetsciiConfig {
 		high_contrast = HIGH_CONTRAST.NONE;
 		video_mode = VIDEO_MODE.CGA_TEXT;
 		
+		pal_view = false;
 		filter = FILTER.LOWPASS;
 	}
 	

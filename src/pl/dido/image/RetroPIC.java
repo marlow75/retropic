@@ -18,6 +18,8 @@ import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -219,6 +221,13 @@ public class RetroPIC {
 				System.exit(0);
 			}
 		});
+		
+		frame.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentMoved(final ComponentEvent e) {
+                frame.repaint();
+            }
+        });
 
 		new DropTarget(frame, new DropTargetListener() {
 			@Override
@@ -228,9 +237,8 @@ public class RetroPIC {
 				final Transferable transferable = event.getTransferable();
 				final DataFlavor[] flavors = transferable.getTransferDataFlavors();
 
-				// Loop through the flavors - dragged objects
+				// loop through the flavors - dragged objects
 				for (final DataFlavor flavor : flavors) {
-
 					try {
 						if (flavor.isFlavorJavaFileListType()) {
 							@SuppressWarnings("unchecked")

@@ -92,9 +92,9 @@ public class C64ExtraGui {
 		c64Logo.setBounds(381, 7, 100, 96);
 		panelC64Extra.add(c64Logo);
 		
-		final JLabel approxLabel = new JLabel("color approximation");
+		final JLabel approxLabel = new JLabel("Color approximation:");
 		approxLabel.setFont(GuiUtils.bold);
-		approxLabel.setBounds(25, 120, 120, 20);
+		approxLabel.setBounds(20, 120, 120, 20);
 		panelC64Extra.add(approxLabel);
 		
 		rdbtnLinearButton.setToolTipText(

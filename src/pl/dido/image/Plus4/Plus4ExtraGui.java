@@ -76,9 +76,9 @@ public class Plus4ExtraGui {
 		plus4ExtraLogo.setBounds(381, 7, 100, 96);
 		panelPlus4Extra.add(plus4ExtraLogo);
 
-		final JLabel approxLabel = new JLabel("color approximation");
+		final JLabel approxLabel = new JLabel("Color approximation:");
 		approxLabel.setFont(GuiUtils.bold);
-		approxLabel.setBounds(25, 120, 120, 20);
+		approxLabel.setBounds(20, 120, 120, 20);
 		panelPlus4Extra.add(approxLabel);
 		
 		rdbtnLinearButton.setToolTipText(

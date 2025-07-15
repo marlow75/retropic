@@ -115,12 +115,131 @@ public class C64ExtraRenderer extends AbstractRenderer {
 		switch (((C64ExtraConfig) config).extra_mode) {
 		case HIRES_INTERLACED:
 			hires();
+			//hiresFilter();
 			break;
 		case MULTI_COLOR_INTERLACED:
 			multicolor();
 			verifyMCI();
 			break;
 		}
+	}
+
+	protected void hiresFilter() {
+		final int screen1buf[] = new int[1000];
+		final int screen2buf[] = new int[1000];
+		
+		for (int y = 0; y < 25; y++) {
+			final int p = y * 40;
+			
+			screen1buf[p] = screen1[p];
+			screen1buf[p + 39] = screen1[p + 39];
+			
+			screen2buf[p] = screen2[p];
+			screen2buf[p + 39] = screen2[p + 39];
+		
+			for (int x = 1; x < 39; x++) {
+				int a1 = p + x - 1;
+				int a2 = p + x;
+				int a3 = p + x + 1;
+				
+				int c1[] = machinePalette[screen1[a1] & 0xf];
+				int c2[] = machinePalette[screen1[a2] & 0xf];
+				int c3[] = machinePalette[screen1[a3] & 0xf];
+				
+				int r = (c1[0] + c2[0] + c3[0]) / 3;
+				int g = (c1[1] + c2[1] + c3[1]) / 3;
+				int b = (c1[2] + c2[2] + c3[2]) / 3;
+				
+				screen1buf[a2] = Gfx.getColorIndex(colorAlg, machinePalette, r, g, b);
+				
+				c1 = machinePalette[screen1[a1] >> 4];
+				c2 = machinePalette[screen1[a2] >> 4];
+				c3 = machinePalette[screen1[a3] >> 4];
+				
+				r = (c1[0] + c2[0] + c3[0]) / 3;
+				g = (c1[1] + c2[1] + c3[1]) / 3;
+				b = (c1[2] + c2[2] + c3[2]) / 3;
+				
+				screen1buf[a2] |= (Gfx.getColorIndex(colorAlg, machinePalette, r, g, b) << 4);
+				
+				c1 = machinePalette[screen2[a1] & 0xf];
+				c2 = machinePalette[screen2[a2] & 0xf];
+				c3 = machinePalette[screen2[a3] & 0xf];
+				
+				r = (c1[0] + c2[0] + c3[0]) / 3;
+				g = (c1[1] + c2[1] + c3[1]) / 3;
+				b = (c1[2] + c2[2] + c3[2]) / 3;
+				
+				screen2buf[a2] = Gfx.getColorIndex(colorAlg, machinePalette, r, g, b);
+				
+				c1 = machinePalette[screen2[a1] >> 4];
+				c2 = machinePalette[screen2[a2] >> 4];
+				c3 = machinePalette[screen2[a3] >> 4];
+				
+				r = (c1[0] + c2[0] + c3[0]) / 3;
+				g = (c1[1] + c2[1] + c3[1]) / 3;
+				b = (c1[2] + c2[2] + c3[2]) / 3;
+				
+				screen2buf[a2] |= (Gfx.getColorIndex(colorAlg, machinePalette, r, g, b) << 4);
+			}
+		}
+		
+		System.arraycopy(screen1buf, 0, screen1, 0, 1000);
+		System.arraycopy(screen2buf, 0, screen2, 0, 1000);
+	}
+	
+	protected void multicolorFilter() {
+		final int screen1buf[] = new int[1000];
+		final int screen2buf[] = new int[1000];
+		
+		for (int y = 0; y < 25; y++) {
+			final int p = y * 40;
+			
+			screen1buf[p] = screen1[p];
+			screen1buf[p + 39] = screen1[p + 39];
+			
+			screen2buf[p] = screen2[p];
+			screen2buf[p + 39] = screen2[p + 39];
+		
+			for (int x = 1; x < 39; x++) {
+				int a1 = p + x - 1;
+				int a2 = p + x;
+				int a3 = p + x + 1;
+				
+				int c1[] = machinePalette[screen1[a1] & 0xf];
+				int c2[] = machinePalette[screen1[a2] & 0xf];
+				int c3[] = machinePalette[screen1[a3] & 0xf];
+				
+				int r = (c1[0] + c2[0] + c3[0]) / 3;
+				int g = (c1[1] + c2[1] + c3[1]) / 3;
+				int b = (c1[2] + c2[2] + c3[2]) / 3;
+				
+				screen1buf[a2] = Gfx.getColorIndex(colorAlg, machinePalette, r, g, b);
+				
+				c1 = machinePalette[screen1[a1] >> 4];
+				c2 = machinePalette[screen1[a2] >> 4];
+				c3 = machinePalette[screen1[a3] >> 4];
+				
+				r = (c1[0] + c2[0] + c3[0]) / 3;
+				g = (c1[1] + c2[1] + c3[1]) / 3;
+				b = (c1[2] + c2[2] + c3[2]) / 3;
+				
+				screen1buf[a2] |= (Gfx.getColorIndex(colorAlg, machinePalette, r, g, b) << 4);
+				
+				c1 = machinePalette[nibbles[a1] & 0xf];
+				c2 = machinePalette[nibbles[a2] & 0xf];
+				c3 = machinePalette[nibbles[a3] & 0xf];
+				
+				r = (c1[0] + c2[0] + c3[0]) / 3;
+				g = (c1[1] + c2[1] + c3[1]) / 3;
+				b = (c1[2] + c2[2] + c3[2]) / 3;
+				
+				screen2buf[a2] = Gfx.getColorIndex(colorAlg, machinePalette, r, g, b);
+			}
+		}
+		
+		System.arraycopy(screen1buf, 0, screen1, 0, 1000);
+		System.arraycopy(screen2buf, 0, nibbles, 0, 1000);
 	}
 
 	protected int getBlendedColorIndex(final int tilePalette[][], final int tileColors[], final int r, final int g,

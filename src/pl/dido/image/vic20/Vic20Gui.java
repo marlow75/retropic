@@ -4,6 +4,7 @@ import java.awt.Canvas;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -25,7 +26,7 @@ public class Vic20Gui {
 	public static JPanel vic20Tab(final Vic20Config config) {
 		final JPanel vic20Panel = new JPanel();
 		vic20Panel.setLayout(null);
-		GuiUtils.addDASControls(vic20Panel, config);
+		GuiUtils.addDASControls(vic20Panel, config, new boolean[] { true, true, true, true, false, false, false, false, false });
 		
 		final JLabel lblModelLabel = new JLabel("Generation mode:");
 		lblModelLabel.setFont(GuiUtils.bold);
@@ -78,6 +79,20 @@ public class Vic20Gui {
 		sldDetect.setMajorTickSpacing(2);
 		sldDetect.setPaintLabels(true);
 		vic20Panel.add(sldDetect);
+
+		final JCheckBox chckbxDenoiseCheckBox = new JCheckBox("denoising filter");
+		chckbxDenoiseCheckBox.setToolTipText("Neural net denoise filter (autoencoder)");
+		chckbxDenoiseCheckBox.setFont(GuiUtils.std);
+		chckbxDenoiseCheckBox.setBounds(150, 156, 150, 20);
+		chckbxDenoiseCheckBox.setSelected(config.denoise);
+
+		chckbxDenoiseCheckBox.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				config.denoise = !config.denoise;
+			}
+		});
+
+		vic20Panel.add(chckbxDenoiseCheckBox);
 
 		final Canvas vic20Logo = new ImageCanvas("vic20.png");
 		vic20Logo.setBounds(335, 7, 150, 96);

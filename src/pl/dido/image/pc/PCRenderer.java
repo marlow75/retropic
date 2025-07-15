@@ -3,6 +3,7 @@ package pl.dido.image.pc;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
+import at.fhtw.ai.nn.utils.Autoencoder;
 import at.fhtw.ai.nn.utils.HL1SoftmaxNetwork;
 import at.fhtw.ai.nn.utils.Network;
 import pl.dido.image.renderer.AbstractRenderer;
@@ -21,25 +22,29 @@ public class PCRenderer extends AbstractRenderer {
 	private final static int power2[] = new int[] { 128, 64, 32, 16, 8, 4, 2, 1 };
 
 	protected final static String PCASCII_NETWORK_L1 = "cga.L1network";
+	protected final static String PCASCII_ENCODER = "cga.autoencoder";
+	
 	protected final static String PC_CHARSET = "cga.bin";
-
 	protected int screen[], color[];
 
-	protected Network neural; // matches pattern with petscii
+	protected Network neural, encoder; // matches pattern with petscii
 	protected byte charset[]; // charset 8x8 pixels per char
 
 	protected int background[][] = new int[8][3];
 
 	protected void initialize() {
 		palette = new int[16][3];
-		final String networkFile;
-
-		neural = new HL1SoftmaxNetwork(64, 20, 256);
-		networkFile = PCASCII_NETWORK_L1;
-
+		
 		try {
+			neural = new HL1SoftmaxNetwork(64, 16, 256);
+			
 			charset = Utils.loadCharset(Utils.getResourceAsStream(PC_CHARSET));
-			neural.load(Utils.getResourceAsStream(networkFile));
+			neural.load(Utils.getResourceAsStream(PCASCII_NETWORK_L1));
+			
+			if (config.denoise) {
+				encoder = new Autoencoder(64, 32, 64);
+				encoder.load(Utils.getResourceAsStream(PCASCII_ENCODER));	
+			} 
 		} catch (final IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -195,7 +200,12 @@ public class PCRenderer extends AbstractRenderer {
 					}
 
 				// pattern match character
-				neural.forward(tile);
+				if (config.denoise) {
+					encoder.forward(tile);
+					neural.forward(encoder.getResult());
+				} else
+					neural.forward(tile);
+
 				final float[] result = neural.getResult();
 				
 				int code = 0;

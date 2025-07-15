@@ -14,6 +14,8 @@ public class PetsciiRenderer extends AbstractRenderer {
 	private final static int power2[] = new int[] { 128, 64, 32, 16, 8, 4, 2, 1 };
 
 	protected final static String PETSCII_NETWORK_L1 = "petscii.L1network";
+	protected final static String PETSCII_ENCODER = "petscii.autoencoder";
+	
 	protected final static String PETSCII_CHARSET = "c64petscii.bin";
 
 	protected int screen[] = new int[1000];
@@ -21,65 +23,28 @@ public class PetsciiRenderer extends AbstractRenderer {
 
 	protected int backgroundColor = 0;
 
-	protected Network neural; // matches pattern with petscii
+	protected Network neural, encoder; // matches pattern with petscii
 	protected byte charset[]; // charset 8x8 pixels per char
 
 	protected void initialize() {
 		palette = new int[16][3];
-		final String networkFile;
-
-		neural = new HL1SoftmaxNetwork(64, 20, 256);
-		networkFile = PETSCII_NETWORK_L1;
-
+		
 		try {
+			neural = new HL1SoftmaxNetwork(64, 16, 256);
+			
 			charset = Utils.loadCharset(Utils.getResourceAsStream(PETSCII_CHARSET));
-			neural.load(Utils.getResourceAsStream(networkFile));
+			neural.load(Utils.getResourceAsStream(PETSCII_NETWORK_L1));
+			
+			if (config.denoise) {
+				encoder = new Autoencoder(64, 32, 64);
+				encoder.load(Utils.getResourceAsStream(PETSCII_ENCODER));	
+			} 
 		} catch (final IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	public int getBackgroundColor() {
-		return backgroundColor;
-	}
-
-	public int[] getScreen() {
-		return screen;
-	}
-
-	public int[] getNibble() {
-		return nibble;
-	}
-
-	public byte[] getCharset() {
-		return charset;
-	}
-
-	public void setBackgroundColor(final int backgroundColor) {
-		this.backgroundColor = backgroundColor;
-	}
-
-	public PetsciiRenderer(final Config config) {
-		super(config);
-		initialize();
-	}
-
-	public PetsciiRenderer(final BufferedImage image, final Config config) {
-		super(image, config);
-		initialize();
-	}
-
-	@Override
-	protected void setupPalette() {
-		palette = C64PaletteCalculator.getCalculatedPalette();
-	}
-
-	@Override
-	protected void imagePostproces() {
-		petscii();
-	}
-
-	protected void petscii() {
+	protected void draw() {
 		// tiles screen and pattern
 		final int work[] = new int[64 * 3];
 		final float tile[] = new float[64];
@@ -168,7 +133,12 @@ public class PetsciiRenderer extends AbstractRenderer {
 					}
 
 				// pattern match character
-				neural.forward(tile);
+				if (config.denoise) {
+					encoder.forward(tile);
+					neural.forward(encoder.getResult());
+				} else
+					neural.forward(tile);
+				
 				final float[] result = neural.getResult();
 				
 				int code = 160;
@@ -198,11 +168,11 @@ public class PetsciiRenderer extends AbstractRenderer {
 						final int screen_pos = offset + y0 * 320 * 3 + x0 * 3;
 
 						if ((charByte & bitValue) == bitValue) {
-							pixels[screen_pos] = (byte) fr;
+							pixels[screen_pos]     = (byte) fr;
 							pixels[screen_pos + 1] = (byte) fg;
 							pixels[screen_pos + 2] = (byte) fb;
 						} else {
-							pixels[screen_pos] = (byte) nr;
+							pixels[screen_pos]     = (byte) nr;
 							pixels[screen_pos + 1] = (byte) ng;
 							pixels[screen_pos + 2] = (byte) nb;
 						}
@@ -210,6 +180,46 @@ public class PetsciiRenderer extends AbstractRenderer {
 				}
 			}
 		}
+	}
+
+	public int getBackgroundColor() {
+		return backgroundColor;
+	}
+
+	public int[] getScreen() {
+		return screen;
+	}
+
+	public int[] getNibble() {
+		return nibble;
+	}
+
+	public byte[] getCharset() {
+		return charset;
+	}
+
+	public void setBackgroundColor(final int backgroundColor) {
+		this.backgroundColor = backgroundColor;
+	}
+
+	public PetsciiRenderer(final Config config) {
+		super(config);
+		initialize();
+	}
+
+	public PetsciiRenderer(final BufferedImage image, final Config config) {
+		super(image, config);
+		initialize();
+	}
+
+	@Override
+	protected void setupPalette() {
+		palette = C64PaletteCalculator.getCalculatedPalette();
+	}
+
+	@Override
+	protected void imagePostproces() {
+		draw();
 	}
 
 	@Override

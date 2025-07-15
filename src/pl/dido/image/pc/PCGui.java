@@ -4,6 +4,7 @@ import java.awt.Canvas;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -22,7 +23,7 @@ public class PCGui {
 	public static JPanel pcTab(final PCConfig config) {
 		final JPanel pcPanel = new JPanel();
 		pcPanel.setLayout(null);
-		GuiUtils.addDASControls(pcPanel, config);
+		GuiUtils.addDASControls(pcPanel, config, new boolean[] { true, true, true, true, false, false, false, false, false });
 
 		final JLabel lblModelLabel = new JLabel("Text mode:");
 		lblModelLabel.setFont(GuiUtils.bold);
@@ -58,7 +59,7 @@ public class PCGui {
 		pcPanel.add(lblConvertLabel);
 		
 		final JSlider sldDetect = new JSlider(JSlider.HORIZONTAL, 0, 4, (int)config.lowpass_gain);
-		sldDetect.setBounds(40, 146, 100, 35);
+		sldDetect.setBounds(40, 156, 100, 35);
 		sldDetect.setFont(GuiUtils.std);
 		sldDetect.addChangeListener(new ChangeListener() {
 			public void stateChanged(final ChangeEvent e) {
@@ -72,6 +73,20 @@ public class PCGui {
 		sldDetect.setMajorTickSpacing(2);
 		sldDetect.setPaintLabels(true);
 		pcPanel.add(sldDetect);
+		
+		final JCheckBox chckbxDenoiseCheckBox = new JCheckBox("denoising filter");
+		chckbxDenoiseCheckBox.setToolTipText("Neural net denoise filter (autoencoder)");
+		chckbxDenoiseCheckBox.setFont(GuiUtils.std);
+		chckbxDenoiseCheckBox.setBounds(150, 156, 150, 20);
+		chckbxDenoiseCheckBox.setSelected(config.denoise);
+
+		chckbxDenoiseCheckBox.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				config.denoise = !config.denoise;
+			}
+		});
+
+		pcPanel.add(chckbxDenoiseCheckBox);
 		
 		final Canvas c64Logo = new ImageCanvas("pc.png");
 		c64Logo.setBounds(381, 7, 100, 96);

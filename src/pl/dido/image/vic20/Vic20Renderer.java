@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Vector;
 
+import at.fhtw.ai.nn.utils.Autoencoder;
 import at.fhtw.ai.nn.utils.Dataset;
 import at.fhtw.ai.nn.utils.HL1SoftmaxNetwork;
 import at.fhtw.ai.nn.utils.Network;
@@ -28,6 +29,8 @@ public class Vic20Renderer extends AbstractRenderer {
 	protected final static int power22[] = new int[] { 192, 48, 12, 3 };
 
 	protected final static String PETSCII_NETWORK_L1 = "vic20.L1network";
+	protected final static String PETSCII_ENCODER = "vic20.autoencoder";
+	
 	protected final static String PETSCII_CHARSET = "vic20petscii.bin";
 
 	protected int screen[] = new int[22 * 23];
@@ -39,7 +42,7 @@ public class Vic20Renderer extends AbstractRenderer {
 	protected int borderColor;
 	protected int foregroundPalette[][];
 
-	protected Network neural; // matches pattern with petscii
+	protected Network neural, encoder; // matches pattern with petscii
 	protected byte charset[]; // charset 8x8 pixels per char
 
 	public String networkFile;
@@ -47,13 +50,17 @@ public class Vic20Renderer extends AbstractRenderer {
 	protected void initialize() {
 		foregroundPalette = new int[8][3];
 		palette = new int[16][3];
-
-		neural = new HL1SoftmaxNetwork(64, 20, 256);
-		networkFile = PETSCII_NETWORK_L1;
-
+		
 		try {
+			neural = new HL1SoftmaxNetwork(64, 16, 256);
+			
 			charset = Utils.loadCharset(Utils.getResourceAsStream(PETSCII_CHARSET));
-			neural.load(Utils.getResourceAsStream(networkFile));
+			neural.load(Utils.getResourceAsStream(PETSCII_NETWORK_L1));
+			
+			if (config.denoise) {
+				encoder = new Autoencoder(64, 32, 64);
+				encoder.load(Utils.getResourceAsStream(PETSCII_ENCODER));	
+			} 
 		} catch (final IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -324,7 +331,13 @@ public class Vic20Renderer extends AbstractRenderer {
 					}
 
 				// pattern match character
-				neural.forward(tile);
+				// pattern match character
+				if (config.denoise) {
+					encoder.forward(tile);
+					neural.forward(encoder.getResult());
+				} else
+					neural.forward(tile);
+
 				final float[] result = neural.getResult();
 				
 				int code = 32;

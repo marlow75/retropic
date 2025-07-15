@@ -1,7 +1,10 @@
 package pl.dido.image.petscii;
 
 import java.awt.Canvas;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
@@ -16,7 +19,7 @@ public class PetsciiGui {
 	public static JPanel petsciiTab(final PetsciiConfig config) {
 		final JPanel petsciiC64 = new JPanel();
 		petsciiC64.setLayout(null);
-		GuiUtils.addDASControls(petsciiC64, config);
+		GuiUtils.addDASControls(petsciiC64, config, new boolean[] { true, true, true, true, false, false, false, false, false });
 
 		final JLabel lblConvertLabel = new JLabel("lowpass threshold:");
 		lblConvertLabel.setFont(GuiUtils.bold);
@@ -38,6 +41,20 @@ public class PetsciiGui {
 		sldDetect.setMajorTickSpacing(2);
 		sldDetect.setPaintLabels(true);
 		petsciiC64.add(sldDetect);
+		
+		final JCheckBox chckbxDenoiseCheckBox = new JCheckBox("denoising filter");
+		chckbxDenoiseCheckBox.setToolTipText("Neural net denoise filter (autoencoder)");
+		chckbxDenoiseCheckBox.setFont(GuiUtils.std);
+		chckbxDenoiseCheckBox.setBounds(150, 156, 150, 20);
+		chckbxDenoiseCheckBox.setSelected(config.denoise);
+
+		chckbxDenoiseCheckBox.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				config.denoise = !config.denoise;
+			}
+		});
+
+		petsciiC64.add(chckbxDenoiseCheckBox);
 
 		final Canvas c64Logo = new ImageCanvas("c64.png");
 		c64Logo.setBounds(381, 7, 100, 96);

@@ -32,6 +32,7 @@ abstract public class Config implements Cloneable {
 	public FILTER filter;
 	
 	public float lowpass_gain;
+	public boolean denoise;
 	
 	public DITHERING dither_alg;
 	public NEAREST_COLOR color_alg;
@@ -58,7 +59,8 @@ abstract public class Config implements Cloneable {
 		error_threshold = 0;
 		allow_luminance = true;
 		
-		lowpass_gain = 1.2f;
+		lowpass_gain = 1.1f;
+		denoise = false;
 	}
 
 	public abstract int getScreenWidth();
@@ -138,7 +140,8 @@ abstract public class Config implements Cloneable {
 			configString += "sharpen ";
 			break;
 		}
-
+		
+		configString += denoise ? "denoiser " : "";
 		return configString;
 	}
 
