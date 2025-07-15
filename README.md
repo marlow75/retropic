@@ -67,7 +67,7 @@ Try all options available.
 * BW - renders monochrome PAL image, use with luminance distance to get more shades of grey.
 * Image filters - preprocess filters: none, low pass filter, sharpen kernel 3x3 filter, emboss kernel 3x3 filter, edge combined filter.
 
-More info for all machines in following hyper links
+## More info for all machines in following hyper links
 
 ![C64](assets/c64.md)
 ![Plus4](assets/plus4.md)
