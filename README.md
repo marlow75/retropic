@@ -80,4 +80,4 @@ Try all options available.
 ![Commodore Amiga](assets/amiga.md)
 ![PC XT](assets/pc.md)
 ![Commodore VIC20](assets/vic20.md)
-![Commodore C128](assets/c64.md)
+![Commodore C128](assets/c128.md)
