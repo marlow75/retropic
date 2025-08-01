@@ -52,9 +52,12 @@ public class Amiga1200Renderer extends AbstractPictureColorsRenderer {
 			case BAYER4x4:
 			case BAYER8x8:
 			case BAYER16x16:
-			case NOISE8x8:
-			case NOISE16x16:
+			case BLUE8x8:
+			case BLUE16x16:
 				bayer256();
+				break;
+			case NOISE:
+				Gfx.downsampling(pixels, 5, config.error_threshold);
 				break;
 			default:
 				standard256();
@@ -186,7 +189,7 @@ public class Amiga1200Renderer extends AbstractPictureColorsRenderer {
 		final int[] work = Gfx.copy2Int(pixels);
 		bitplanes = new int[(screenWidth >> 4) * screenHeight][8]; // 8 planes
 		
-		final int colors = (int) (getGraphicModeColorsNumber(config) + (- config.error_threshold) * 0.15f * getGraphicModeColorsNumber(config));
+		final int colors = (int) (getColorBitDepth() + (- config.error_threshold) * 0.15f * getColorBitDepth());
 		int r0, g0, b0;
 
 		final int width3 = screenWidth * 3;
@@ -223,15 +226,15 @@ public class Amiga1200Renderer extends AbstractPictureColorsRenderer {
 					g0 = Gfx.bayer16x16(x, y, g0, colors);
 					b0 = Gfx.bayer16x16(x, y, b0, colors);
 					break;
-				case NOISE8x8:
-					r0 = Gfx.noise8x8(x, y, r0, colors);
-					g0 = Gfx.noise8x8(x, y, g0, colors);
-					b0 = Gfx.noise8x8(x, y, b0, colors);
+				case BLUE8x8:
+					r0 = Gfx.blue8x8(x, y, r0, colors);
+					g0 = Gfx.blue8x8(x, y, g0, colors);
+					b0 = Gfx.blue8x8(x, y, b0, colors);
 					break;
-				case NOISE16x16:
-					r0 = Gfx.noise16x16(x, y, r0, colors);
-					g0 = Gfx.noise16x16(x, y, g0, colors);
-					b0 = Gfx.noise16x16(x, y, b0, colors);
+				case BLUE16x16:
+					r0 = Gfx.blue16x16(x, y, r0, colors);
+					g0 = Gfx.blue16x16(x, y, g0, colors);
+					b0 = Gfx.blue16x16(x, y, b0, colors);
 					break;
 				default:
 					break;
@@ -468,7 +471,7 @@ public class Amiga1200Renderer extends AbstractPictureColorsRenderer {
 	}
 
 	@Override
-	protected int getGraphicModeColorsNumber(final Config config) {
-		return 255;
+	protected int getColorBitDepth() {
+		return 8;
 	}
 }

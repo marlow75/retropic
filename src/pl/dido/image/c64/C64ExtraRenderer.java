@@ -6,7 +6,6 @@ import java.util.Arrays;
 import pl.dido.image.renderer.AbstractRenderer;
 import pl.dido.image.utils.C64PaletteCalculator;
 import pl.dido.image.utils.ColorBuffer;
-import pl.dido.image.utils.Config;
 import pl.dido.image.utils.Config.NEAREST_COLOR;
 import pl.dido.image.utils.Gfx;
 import pl.dido.image.utils.neural.SOMPalette;
@@ -29,16 +28,12 @@ public class C64ExtraRenderer extends AbstractRenderer {
 
 	protected int backgroundColor;
 	protected int lumaThreshold;
-	
-	protected float flickeringFactor;
 
 	public C64ExtraRenderer(final BufferedImage image, final C64ExtraConfig config) {
 		super(image, config);
 
 		lumas = C64PaletteCalculator.lumas;
 		lumaThreshold = ((C64ExtraConfig) config).luma_threshold;
-		
-		flickeringFactor = ((C64ExtraConfig) config).flickering_factor;
 	}
 
 	@Override
@@ -115,7 +110,6 @@ public class C64ExtraRenderer extends AbstractRenderer {
 		switch (((C64ExtraConfig) config).extra_mode) {
 		case HIRES_INTERLACED:
 			hires();
-			//hiresFilter();
 			break;
 		case MULTI_COLOR_INTERLACED:
 			multicolor();
@@ -127,151 +121,77 @@ public class C64ExtraRenderer extends AbstractRenderer {
 	protected void hiresFilter() {
 		final int screen1buf[] = new int[1000];
 		final int screen2buf[] = new int[1000];
-		
+
 		for (int y = 0; y < 25; y++) {
 			final int p = y * 40;
-			
+
 			screen1buf[p] = screen1[p];
 			screen1buf[p + 39] = screen1[p + 39];
-			
+
 			screen2buf[p] = screen2[p];
 			screen2buf[p + 39] = screen2[p + 39];
-		
+
 			for (int x = 1; x < 39; x++) {
 				int a1 = p + x - 1;
 				int a2 = p + x;
 				int a3 = p + x + 1;
-				
+
 				int c1[] = machinePalette[screen1[a1] & 0xf];
 				int c2[] = machinePalette[screen1[a2] & 0xf];
 				int c3[] = machinePalette[screen1[a3] & 0xf];
-				
+
 				int r = (c1[0] + c2[0] + c3[0]) / 3;
 				int g = (c1[1] + c2[1] + c3[1]) / 3;
 				int b = (c1[2] + c2[2] + c3[2]) / 3;
-				
+
 				screen1buf[a2] = Gfx.getColorIndex(colorAlg, machinePalette, r, g, b);
-				
+
 				c1 = machinePalette[screen1[a1] >> 4];
 				c2 = machinePalette[screen1[a2] >> 4];
 				c3 = machinePalette[screen1[a3] >> 4];
-				
+
 				r = (c1[0] + c2[0] + c3[0]) / 3;
 				g = (c1[1] + c2[1] + c3[1]) / 3;
 				b = (c1[2] + c2[2] + c3[2]) / 3;
-				
+
 				screen1buf[a2] |= (Gfx.getColorIndex(colorAlg, machinePalette, r, g, b) << 4);
-				
+
 				c1 = machinePalette[screen2[a1] & 0xf];
 				c2 = machinePalette[screen2[a2] & 0xf];
 				c3 = machinePalette[screen2[a3] & 0xf];
-				
+
 				r = (c1[0] + c2[0] + c3[0]) / 3;
 				g = (c1[1] + c2[1] + c3[1]) / 3;
 				b = (c1[2] + c2[2] + c3[2]) / 3;
-				
+
 				screen2buf[a2] = Gfx.getColorIndex(colorAlg, machinePalette, r, g, b);
-				
+
 				c1 = machinePalette[screen2[a1] >> 4];
 				c2 = machinePalette[screen2[a2] >> 4];
 				c3 = machinePalette[screen2[a3] >> 4];
-				
+
 				r = (c1[0] + c2[0] + c3[0]) / 3;
 				g = (c1[1] + c2[1] + c3[1]) / 3;
 				b = (c1[2] + c2[2] + c3[2]) / 3;
-				
+
 				screen2buf[a2] |= (Gfx.getColorIndex(colorAlg, machinePalette, r, g, b) << 4);
 			}
 		}
-		
+
 		System.arraycopy(screen1buf, 0, screen1, 0, 1000);
 		System.arraycopy(screen2buf, 0, screen2, 0, 1000);
 	}
 	
-	protected void multicolorFilter() {
-		final int screen1buf[] = new int[1000];
-		final int screen2buf[] = new int[1000];
-		
-		for (int y = 0; y < 25; y++) {
-			final int p = y * 40;
-			
-			screen1buf[p] = screen1[p];
-			screen1buf[p + 39] = screen1[p + 39];
-			
-			screen2buf[p] = screen2[p];
-			screen2buf[p + 39] = screen2[p + 39];
-		
-			for (int x = 1; x < 39; x++) {
-				int a1 = p + x - 1;
-				int a2 = p + x;
-				int a3 = p + x + 1;
-				
-				int c1[] = machinePalette[screen1[a1] & 0xf];
-				int c2[] = machinePalette[screen1[a2] & 0xf];
-				int c3[] = machinePalette[screen1[a3] & 0xf];
-				
-				int r = (c1[0] + c2[0] + c3[0]) / 3;
-				int g = (c1[1] + c2[1] + c3[1]) / 3;
-				int b = (c1[2] + c2[2] + c3[2]) / 3;
-				
-				screen1buf[a2] = Gfx.getColorIndex(colorAlg, machinePalette, r, g, b);
-				
-				c1 = machinePalette[screen1[a1] >> 4];
-				c2 = machinePalette[screen1[a2] >> 4];
-				c3 = machinePalette[screen1[a3] >> 4];
-				
-				r = (c1[0] + c2[0] + c3[0]) / 3;
-				g = (c1[1] + c2[1] + c3[1]) / 3;
-				b = (c1[2] + c2[2] + c3[2]) / 3;
-				
-				screen1buf[a2] |= (Gfx.getColorIndex(colorAlg, machinePalette, r, g, b) << 4);
-				
-				c1 = machinePalette[nibbles[a1] & 0xf];
-				c2 = machinePalette[nibbles[a2] & 0xf];
-				c3 = machinePalette[nibbles[a3] & 0xf];
-				
-				r = (c1[0] + c2[0] + c3[0]) / 3;
-				g = (c1[1] + c2[1] + c3[1]) / 3;
-				b = (c1[2] + c2[2] + c3[2]) / 3;
-				
-				screen2buf[a2] = Gfx.getColorIndex(colorAlg, machinePalette, r, g, b);
-			}
-		}
-		
-		System.arraycopy(screen1buf, 0, screen1, 0, 1000);
-		System.arraycopy(screen2buf, 0, nibbles, 0, 1000);
-	}
-
 	protected int getBlendedColorIndex(final int tilePalette[][], final int tileColors[], final int r, final int g,
 			final int b, final int prevColorIndex) {
-		float min = Float.MAX_VALUE;
-		int mp[] = machinePalette[prevColorIndex];
+		
+		final int m[] = machinePalette[prevColorIndex];
 
-		final int r0 = mp[0];
-		final int g0 = mp[1];
-		final int b0 = mp[2];
+		final int r0 = 2 * r - m[0];
+		final int g0 = 2 * g - m[1];
+		final int b0 = 2 * b - m[2];
 
-		int index = -1, len = tilePalette.length;
-
-		for (int i = 0; i < len; i++) {
-			final int color = tileColors[i];
-			final int c[] = machinePalette[color];
-
-			final int r1 = (c[0] + r0) >> 1;
-			final int g1 = (c[1] + g0) >> 1;
-			final int b1 = (c[2] + b0) >> 1;
-
-			final float dist = Gfx.euclideanDistance(r, g, b, r1, g1, b1);
-			if (dist < min) {
-				min = dist;
-				index = i;
-			}
-		}
-
-		if (index == -1)
-			return Gfx.getColorIndex(NEAREST_COLOR.EUCLIDEAN, tilePalette, r0, g0, b0);
-
-		return index;
+		return Gfx.getColorIndex(NEAREST_COLOR.EUCLIDEAN, tilePalette, r0, g0, b0);
 	}
 
 	protected void hires() {
@@ -470,13 +390,19 @@ public class C64ExtraRenderer extends AbstractRenderer {
 			}
 		}
 	}
-	
+
 	protected void multicolor() {
 		int bitmapIndex = 0;
 		final int work[] = Gfx.copy2Int(pixels);
 
-		int r = 0, g = 0, b = 0;
-
+		int r = work[0];
+		int g = work[1];
+		int b = work[2];
+		
+		int br = (int) (Math.random() * 256);
+		int bg = (int) (Math.random() * 256);
+		int bb = (int) (Math.random() * 256);
+		
 		// calculate average color
 		for (int y = 0; y < 200; y++) {
 			final int k = y * 320 * 3;
@@ -484,38 +410,38 @@ public class C64ExtraRenderer extends AbstractRenderer {
 			for (int x = 0; x < 320; x++) {
 				final int position = k + x * 3;
 
-				r += work[position];
-				g += work[position + 1];
-				b += work[position + 2];
+				r = work[position];
+				g = work[position + 1];
+				b = work[position + 2];
+				
+				br += (int)(0.6f * (r - br));
+				bg += (int)(0.6f * (g - bg));
+				bb += (int)(0.6f * (b - bb));
 			}
 		}
 
-		r /= 320 * 200;
-		g /= 320 * 200;
-		b /= 320 * 200;
-
 		// average as background - common color
-		backgroundColor = Gfx.getColorIndex(colorAlg, machinePalette, r, g, b);
+		backgroundColor = Gfx.getColorIndex(colorAlg, machinePalette, br, bg, bb);
 
-		final int br = machinePalette[backgroundColor][0];
-		final int bg = machinePalette[backgroundColor][1];
-		final int bb = machinePalette[backgroundColor][2];
+		br = machinePalette[backgroundColor][0];
+		bg = machinePalette[backgroundColor][1];
+		bb = machinePalette[backgroundColor][2];
 
 		final byte trainData1[] = new byte[64 * 3];
 		final byte trainData2[] = new byte[32 * 3];
 
 		final int prevColorIndex[] = new int[8];
 		final int tileColors[] = new int[4];
-
+		
 		// 8 pixels in a raw
 		final ColorBuffer buf[] = new ColorBuffer[8];
 		for (int i = 0; i < 8; i++)
 			buf[i] = new ColorBuffer(8);
-		
+
 		for (int y = 0; y < 200; y += 8) {
 			final int p = y * 320 * 3;
 			Arrays.fill(prevColorIndex, -1);
-			
+
 			// clear line buffer
 			for (int i = 0; i < 8; i++)
 				buf[i].clear();
@@ -531,19 +457,27 @@ public class C64ExtraRenderer extends AbstractRenderer {
 					for (int x0 = 0; x0 < 24; x0 += 3) {
 						final int position = k + x0;
 
-						trainData1[index++] = pixels[position];
-						trainData1[index++] = pixels[position + 1];
-						trainData1[index++] = pixels[position + 2];
+						r = pixels[position] & 0xff;
+						g = pixels[position + 1] & 0xff;
+						b = pixels[position + 2] & 0xff;
+
+						colorIndex = getColorIndex(r, g, b);
+						final int color[] = palette[colorIndex];
+
+						trainData1[index++] = (byte) color[0];
+						trainData1[index++] = (byte) color[1];
+						trainData1[index++] = (byte) color[2];
 					}
 				}
 
 				// map all 4 colors to extra palette
-				SOMPalette som = new SOMPalette(4, 4, 0.8f, 1f, 30);
-				int tilePalette[][] = som.train(trainData1);
+				final SOMPalette som44 = new SOMPalette(4, 4, 0.8f, 1f, 30);
+				int tilePalette[][] = som44.train(trainData1);
 
 				// get blend colors
 				for (int i = 0; i < 16; i++) {
 					final int c[] = tilePalette[i];
+					// get color from global palette
 					colorIndex = getColorIndex(c[0], c[1], c[2]);
 
 					int q[] = machinePalette[blend[colorIndex][0]];
@@ -560,8 +494,8 @@ public class C64ExtraRenderer extends AbstractRenderer {
 				}
 
 				// get machine colors
-				som = new SOMPalette(2, 2, 0.8f, 1f, 30);
-				tilePalette = som.train(trainData2);
+				final SOMPalette som22 = new SOMPalette(2, 2, 0.8f, 1f, 30);
+				tilePalette = som22.train(trainData2);
 
 				for (int i = 0; i < 4; i++) {
 					final int c[] = tilePalette[i];
@@ -577,22 +511,22 @@ public class C64ExtraRenderer extends AbstractRenderer {
 				// map background color to the nearest color tile palette
 				colorIndex = Gfx.getColorIndex(colorAlg, tilePalette, br, bg, bb);
 				if (colorIndex != 0) {
+					// swap first with chosen
 					tilePalette[colorIndex][0] = tilePalette[0][0]; // first entry = background color
 					tilePalette[colorIndex][1] = tilePalette[0][1];
 					tilePalette[colorIndex][2] = tilePalette[0][2];
 
-					tilePalette[0][0] = br; // background color
-					tilePalette[0][1] = bg;
-					tilePalette[0][2] = bb;
-
 					tileColors[colorIndex] = tileColors[0];
 				}
 
-				tileColors[0] = backgroundColor;
+				tilePalette[0][0] = br; // background color
+				tilePalette[0][1] = bg;
+				tilePalette[0][2] = bb;
 
+				tileColors[0] = backgroundColor;
 				for (int y0 = 0; y0 < 8; y0++) {
 					final int k = offset + y0 * 320 * 3;
-					
+
 					for (int x0 = 0; x0 < 24; x0 += 3) {
 						final int position = k + x0;
 
@@ -601,51 +535,32 @@ public class C64ExtraRenderer extends AbstractRenderer {
 						g = Gfx.saturate(work[position + 1]);
 						b = Gfx.saturate(work[position + 2]);
 
-						if (prevColorIndex[y0] != -1) // prevColorIndex is absolute, not local tilePalette index
+						if (prevColorIndex[y0] != -1) // prevColorIndex is absent - first pixel in a row
 							colorIndex = getBlendedColorIndex(tilePalette, tileColors, r, g, b, prevColorIndex[y0]);
 						else
 							colorIndex = Gfx.getColorIndex(colorAlg, tilePalette, r, g, b);
-						
+					
 						final int color = tileColors[colorIndex];
 						buf[y0].write(color);
 						prevColorIndex[y0] = color;
 					}
 				}
+
+//				if (checkColors(buf))
+//					System.out.println((y / 8) + ":" + (x / 8));
+				
+				if (((C64ExtraConfig)config).flickering_filter)
+					unflicker(buf);
 				
 				int even = 0, value1 = 0, value2 = 0, bitcount = 0;
 				for (int y0 = 0; y0 < 8; y0++) {
-					int flickered[] = buf[y0].getBuffer();
-					
-					if (flickeringFactor != 0f)
-						flickered = getUnflickered(flickered);
-					
+					final int line[] = buf[y0].getBuffer();
+
 					for (int x0 = 0; x0 < 8; x0++) {
-						colorIndex = flickered[x0];
-						
-						if (colorIndex < 0) {
-							colorIndex = -colorIndex - 1;
-							colorIndex = Gfx.getColorIndex(colorAlg, machinePalette, 
-									palette[colorIndex][0], 
-									palette[colorIndex][1], 
-									palette[colorIndex][2]);
-							
-							final int k = Gfx.getColorIndex(colorAlg, new int[][] { tilePalette[1], tilePalette[2], tilePalette[3] }, 
-									machinePalette[colorIndex][0],
-									machinePalette[colorIndex][1],
-									machinePalette[colorIndex][2]);
-							
-							tilePalette[k + 1][0] = machinePalette[colorIndex][0];
-							tilePalette[k + 1][1] = machinePalette[colorIndex][1];
-							tilePalette[k + 1][2] = machinePalette[colorIndex][2];
-							
-							tileColors[k + 1] = colorIndex;
-						}
-						
-						colorIndex = Gfx.getColorIndex(colorAlg, tilePalette, 
-							machinePalette[colorIndex][0], 
-							machinePalette[colorIndex][1], 
-							machinePalette[colorIndex][2]);
-					
+						colorIndex = line[x0];
+						colorIndex = Gfx.getColorIndex(colorAlg, tilePalette, machinePalette[colorIndex][0],
+								machinePalette[colorIndex][1], machinePalette[colorIndex][2]);
+
 						if (even == 0)
 							value1 = (value1 << 2) | (colorIndex & 0x3);
 						else
@@ -665,7 +580,7 @@ public class C64ExtraRenderer extends AbstractRenderer {
 						}
 					}
 				}
-				
+
 				final int address = (y >> 3) * 40 + (x >> 3);
 
 				// map tile colors to screen palette
@@ -678,87 +593,99 @@ public class C64ExtraRenderer extends AbstractRenderer {
 			}
 		}
 	}
-	
-	public int[] getUnflickered(final int buffer[]) {
-		final int p[] = new int[2];
-		p[0] = buffer[0];
-		p[1] = buffer[1];
 
-		int start = 0, len = 0;
-		int end = buffer.length;
+	public boolean checkColors(final ColorBuffer[] buffer) {
+		final int line0[] = buffer[0].getBuffer();
 
-		for (int i = 2; i < end; i += 2) {
-			final int x1 = buffer[i];
-			final int x2 = buffer[i + 1];
+		for (int y = 1; y < 8; y++) {
+			int line[] = buffer[y].getBuffer();
 
-			if (x1 == p[0] && x2 == p[1])
-				len++;
-			else {
-				if (len > 0) {
-					final int q1[] = machinePalette[p[0]];
-					final int q2[] = machinePalette[p[1]];
+			for (int x = 2; x < 8; x += 2) {
+				if (!colorEquals(line0[x + 1], line[x + 1]))
+					return false;
 
-					final float l1 = Gfx.getLuma(q1[0], q1[1], q1[2]);
-					final float l2 = Gfx.getLuma(q2[0], q2[1], q2[2]);
-
-					final float delta = Math.abs(l2 - l1);
-
-					if (delta > lumaThreshold)
-						if (delta < flickeringFactor * lumaThreshold) {
-							int even = 0;
-							for (int j = start; j < start + 2 * (len + 1); j += 2) {
-								buffer[j + 0] = p[even];
-								even ^= 1;
-								buffer[j + 1] = p[even];
-							}
-						} else {
-							final int color = Gfx.getColorIndex(colorAlg, palette, (q1[0] + q2[0]) / 2, (q1[1] + q2[1]) / 2, (q1[2] + q2[2]) / 2);
-							for (int j = start; j < start + 2 * (len + 1); j++)
-								buffer[j] = -color - 1;
-						}
-					len = 0;
-				}
-
-				start = i + 2;
-				p[0] = x1;
-				p[1] = x2;
+				if (!colorEquals(line0[x], line[x]))
+					return false;
 			}
 		}
 
-		if (len > 0) {
-			final int q1[] = machinePalette[p[0]];
-			final int q2[] = machinePalette[p[1]];
-
-			final float l1 = Gfx.getLuma(q1[0], q1[1], q1[2]);
-			final float l2 = Gfx.getLuma(q2[0], q2[1], q2[2]);
-
-			final float delta = Math.abs(l2 - l1);
-
-			if (delta > lumaThreshold)
-				if (delta < flickeringFactor * lumaThreshold) {
-					int even = 0;
-					for (int j = start; j < end; j += 2) {
-						buffer[j + 0] = p[even];
-						even ^= 1;
-						buffer[j + 1] = p[even];
-					}
-				} else {
-					final int color = Gfx.getColorIndex(colorAlg, palette, (q1[0] + q2[0]) / 2, (q1[1] + q2[1]) / 2, (q1[2] + q2[2]) / 2);
-					for (int j = start; j < end; j++) 
-						buffer[j] = -color - 1;
-				}
-		}
-
-		return buffer;
+		return true;
 	}
-	
+
+	private boolean colorEquals(final int c1, final int c2) {
+		for (int i = 0; i < 3; i++)
+			if (machinePalette[c1][i] != machinePalette[c2][i])
+				return false;
+
+		return true;
+	}
+
+	private void unflicker(final ColorBuffer buffer[]) {
+		int start = 0, len = 0;
+		
+		int x11 = 0, x12 = 0, x13, x14;
+		int x21, x22, x23, x24;
+		
+		for (int y = 0; y < 7; y++) {
+			final int line1[] = buffer[y].getBuffer();
+			final int line2[] = buffer[y + 1].getBuffer();
+
+			len = 0;
+			start = 0;
+
+			int x = 0;
+			while (x < 5) {
+				x11 = line1[x];
+				x12 = line1[x + 1];
+
+				x13 = line1[x + 2];
+				x14 = line1[x + 3];
+				
+				x21 = line2[x];
+				x22 = line2[x + 1];
+
+				x23 = line2[x + 2];
+				x24 = line2[x + 3];
+
+				if (x11 == x13 && x12 == x14 && x11 == x21 && x12 == x24 && x21 == x23 && x22 == x24) {
+					x += 4;
+					len++;
+				} else {
+					if (len > 0) {
+						int even = 0;
+						for (int z = start; z < start + 2 * len; z++) {
+							line2[z] = even == 0 ? x12 : x11;
+							even ^= 1;
+						}
+						
+						x += 2 * len; 
+					} else
+						x += 1;
+
+					len = 0;
+					start = x;
+				}
+			}
+
+			if (len > 0) {
+				int even = 0;
+				for (int z = start; z < 8; z++) {
+					line2[z] = even == 0 ? x12 : x11;
+					even ^= 1;
+				}
+			}
+		}
+	}
+
 	@Override
-	protected int getGraphicModeColorsNumber(final Config config) {
+	protected int getColorBitDepth() {
 		switch (config.dither_alg) {
-		case NOISE16x16, NOISE8x8:
+		case BLUE16x16, BLUE8x8:
 			return 32;
+		case NOISE:
+			return 4;
 		default:
 			return 8;
-		} 
+		}
 	}
 }

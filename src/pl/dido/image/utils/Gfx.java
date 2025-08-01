@@ -51,7 +51,7 @@ public class Gfx {
 			{ 42, 233, 26, 217, 38, 229, 22, 213, 41, 232, 25, 216, 37, 228, 21, 212 },
 			{ 169, 106, 153, 90, 165, 102, 149, 86, 168, 105, 152, 89, 164, 101, 148, 85 } };
 
-	public static final int NOISE16x16[][] = new int[][] {
+	public static final int BLUE16x16[][] = new int[][] {
 			{ 68, 158, 7, 145, 21, 253, 105, 81, 6, 153, 186, 130, 222, 149, 211, 25 },
 			{ 249, 200, 83, 227, 122, 40, 166, 213, 117, 205, 71, 17, 86, 167, 1, 94 },
 			{ 44, 133, 109, 176, 53, 187, 135, 63, 31, 174, 250, 108, 51, 238, 140, 188 },
@@ -69,7 +69,7 @@ public class Gfx {
 			{ 221, 129, 243, 60, 97, 233, 15, 127, 217, 143, 172, 14, 110, 196, 244, 79 },
 			{ 104, 38, 185, 208, 73, 156, 194, 56, 239, 45, 96, 235, 59, 33, 121, 175 } };
 
-	public static final int NOISE8x8[][] = new int[][] { { 53, 24, 12, 1, 17, 25, 4, 59 },
+	public static final int BLUE8x8[][] = new int[][] { { 53, 24, 12, 1, 17, 25, 4, 59 },
 			{ 40, 34, 50, 28, 56, 37, 47, 8 }, { 2, 21, 58, 9, 33, 52, 13, 31 }, { 16, 42, 46, 5, 18, 44, 22, 62 },
 			{ 55, 11, 27, 61, 39, 0, 26, 49 }, { 36, 32, 23, 54, 14, 35, 57, 6 }, { 19, 3, 48, 7, 30, 51, 10, 45 },
 			{ 15, 63, 38, 43, 60, 20, 41, 29 } };
@@ -600,8 +600,99 @@ public class Gfx {
 			}
 		}
 	}
+	
+	public static float triangularDistribution(final float a, final float c, final float b) {
+        final float u = (float) Math.random();
+        final float fc = (c - a) / (b - a);
 
-	public static void dithering(final byte pixels[], final int palette[][], final Config config) {
+        if (u < fc)
+            return a + (float)Math.sqrt(u * (b - a) * (c - a));
+        else
+            return b - (float)Math.sqrt((1 - u) * (b - a) * (b - c));
+    }
+	
+	public static void bayerDithering(final byte pixels[], final int palette[][], final int colorBitDepth, final Config config)  {
+		final int colors = (int) (colorBitDepth + (-config.error_threshold) * 0.15f * colorBitDepth);
+
+		final DITHERING dithering = config.dither_alg;
+		final NEAREST_COLOR colorAlg = config.color_alg;
+
+		final int screenWidth = config.getScreenWidth();
+		final int screenHeight = config.getScreenHeight();
+		
+		switch (dithering) {
+		case BAYER2x2:
+			Gfx.bayer2x2(pixels, palette, colorAlg, screenWidth, screenHeight, colors);
+			break;
+		case BAYER4x4:
+			Gfx.bayer4x4(pixels, palette, colorAlg, screenWidth, screenHeight, colors);
+			break;
+		case BAYER8x8:
+			Gfx.bayer8x8(pixels, palette, colorAlg, screenWidth, screenHeight, colors);
+			break;
+		case BAYER16x16:
+			Gfx.bayer16x16(pixels, palette, colorAlg, screenWidth, screenHeight, colors);
+			break;
+		case BLUE8x8:
+			Gfx.blue8x8(pixels, palette, colorAlg, screenWidth, screenHeight, colors);
+			break;
+		case BLUE16x16:
+			Gfx.blue16x16(pixels, palette, colorAlg, screenWidth, screenHeight, colors);
+			break;
+		default:
+			break;
+		}
+	}
+	
+	public static void downsampling(final byte pixels[], final int bitsPerColor, final int error) {
+		int x = 1 << bitsPerColor - 1;
+		final int y = 1 << (8 - bitsPerColor);
+		
+		float or = 0;
+		float og = 0;
+		float ob = 0;
+		
+		float er = 0;
+		float eg = 0;
+		float eb = 0;
+		
+		float prvr = 0, prvg = 0, prvb = 0;
+		
+		for (int i = 0; i < pixels.length; i += 3) {
+			or = (int) (pixels[i + 0] & 0xff);
+			og = (int) (pixels[i + 1] & 0xff);
+			ob = (int) (pixels[i + 2] & 0xff);
+			
+			// error feedback
+			int r0 = (int) (or - error * 0.05f * er);
+			int g0 = (int) (og - error * 0.05f * eg);
+			int b0 = (int) (ob - error * 0.05f * eb);
+			
+			float rnd = (float) (2 * Math.random() - 1);
+			final int r = Math.round(r0 + x * (rnd - prvr)) / y * y;
+			
+			er = r - or;
+			prvr = rnd;
+			
+			rnd = (float) (2 * Math.random() - 1);
+			final int g = Math.round(g0 + x * (rnd - prvg)) / y * y;
+			
+			eg = g - og;
+			prvg = rnd;
+			
+			rnd = (float) (2 * Math.random() - 1);
+			final int b = Math.round(b0 + x * (rnd - prvb)) / y * y;
+			
+			eb = b - ob;
+			prvb = rnd;
+			
+			pixels[i + 0] = (byte) (r < 0 ? 0 : r > 255 ? 255 : r);
+			pixels[i + 1] = (byte) (g < 0 ? 0 : g > 255 ? 255 : g);
+			pixels[i + 2] = (byte) (b < 0 ? 0 : b > 255 ? 255 : b);	
+		}
+	}
+
+	public static void errorDiffuseDithering(final byte pixels[], final int palette[][], final Config config) {
 		final int work[] = Gfx.copy2Int(pixels);
 
 		final int width = config.getScreenWidth();
@@ -796,7 +887,7 @@ public class Gfx {
 		}
 	}
 
-	public static void noise16x16(final int pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
+	public static void blue16x16(final int pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
 			final int width, final int height, final int error) {
 
 		for (int y = 0; y < height; y++) {
@@ -809,9 +900,9 @@ public class Gfx {
 				int g = pixels[pyx + 1];
 				int b = pixels[pyx + 2];
 
-				r = Gfx.noise16x16(x, y, r, error);
-				g = Gfx.noise16x16(x, y, g, error);
-				b = Gfx.noise16x16(x, y, b, error);
+				r = Gfx.bayer(BLUE16x16, x, y, r, error);
+				g = Gfx.bayer(BLUE16x16, x, y, g, error);
+				b = Gfx.bayer(BLUE16x16, x, y, b, error);
 
 				final int color = Gfx.getColorIndex(colorAlg, palette, r, g, b);
 
@@ -822,7 +913,7 @@ public class Gfx {
 		}
 	}
 
-	public static void noise16x16(final byte pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
+	public static void blue16x16(final byte pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
 			final int width, final int height, final int error) {
 
 		for (int y = 0; y < height; y++) {
@@ -835,9 +926,9 @@ public class Gfx {
 				int g = pixels[pyx + 1] & 0xff;
 				int b = pixels[pyx + 2] & 0xff;
 
-				r = Gfx.noise16x16(x, y, r, error);
-				g = Gfx.noise16x16(x, y, g, error);
-				b = Gfx.noise16x16(x, y, b, error);
+				r = Gfx.bayer(BLUE16x16, x, y, r, error);
+				g = Gfx.bayer(BLUE16x16, x, y, g, error);
+				b = Gfx.bayer(BLUE16x16, x, y, b, error);
 
 				final int color = Gfx.getColorIndex(colorAlg, palette, r, g, b);
 
@@ -848,7 +939,7 @@ public class Gfx {
 		}
 	}
 
-	public static void noise8x8(final int pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
+	public static void blue8x8(final int pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
 			final int width, final int height, final int error) {
 
 		for (int y = 0; y < height; y++) {
@@ -861,9 +952,9 @@ public class Gfx {
 				int g = pixels[pyx + 1];
 				int b = pixels[pyx + 2];
 
-				r = Gfx.noise8x8(x, y, r, error);
-				g = Gfx.noise8x8(x, y, g, error);
-				b = Gfx.noise8x8(x, y, b, error);
+				r = Gfx.bayer(BLUE8x8, x, y, r, error);
+				g = Gfx.bayer(BLUE8x8, x, y, g, error);
+				b = Gfx.bayer(BLUE8x8, x, y, b, error);
 
 				final int color = Gfx.getColorIndex(colorAlg, palette, r, g, b);
 
@@ -874,7 +965,7 @@ public class Gfx {
 		}
 	}
 
-	public static void noise8x8(final byte pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
+	public static void blue8x8(final byte pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
 			final int width, final int height, final int error) {
 
 		for (int y = 0; y < height; y++) {
@@ -887,9 +978,9 @@ public class Gfx {
 				int g = pixels[pyx + 1] & 0xff;
 				int b = pixels[pyx + 2] & 0xff;
 
-				r = Gfx.noise8x8(x, y, r, error);
-				g = Gfx.noise8x8(x, y, g, error);
-				b = Gfx.noise8x8(x, y, b, error);
+				r = Gfx.bayer(BLUE8x8, x, y, r, error);
+				g = Gfx.bayer(BLUE8x8, x, y, g, error);
+				b = Gfx.bayer(BLUE8x8, x, y, b, error);
 
 				final int color = Gfx.getColorIndex(colorAlg, palette, r, g, b);
 
@@ -918,17 +1009,17 @@ public class Gfx {
 
 	public static void blend(final byte pixels1[], final byte pixels2[]) {
 		for (int i = 0; i < pixels1.length; i += 3) {
-			final int r1 = 1 + ((pixels1[i + 0] & 0xff)) / 255;
-			final int g1 = 1 + ((pixels1[i + 1] & 0xff)) / 255;
-			final int b1 = 1 + ((pixels1[i + 2] & 0xff)) / 255;
+			final int r1 = pixels1[i + 0] & 0xff;
+			final int g1 = pixels1[i + 1] & 0xff;
+			final int b1 = pixels1[i + 2] & 0xff;
 
 			final int r2 = pixels2[i + 0] & 0xff;
 			final int g2 = pixels2[i + 1] & 0xff;
 			final int b2 = pixels2[i + 2] & 0xff;
 
-			pixels1[i + 0] = (byte) Gfx.saturate(r1 * r2);
-			pixels1[i + 1] = (byte) Gfx.saturate(g1 * g2);
-			pixels1[i + 2] = (byte) Gfx.saturate(b1 * b2);
+			pixels1[i + 0] = (byte) Gfx.saturate(r1 - r2 / 4);
+			pixels1[i + 1] = (byte) Gfx.saturate(g1 - g2 / 4);
+			pixels1[i + 2] = (byte) Gfx.saturate(b1 - b2 / 4);
 		}
 	}
 
@@ -1012,20 +1103,6 @@ public class Gfx {
 		return (int) (cp > 255f ? 255 : cp < 0 ? 0 : cp);
 	}
 
-	public static final int noise16x16(final int x0, final int y0, final int c, final float colors) {
-		final float r = 255f / colors;
-		final float cp = c + r * (NOISE16x16[y0 % 16][x0 % 16] / 64f - 0.5f);
-
-		return (int) (cp > 255f ? 255 : cp < 0 ? 0 : cp);
-	}
-
-	public static final int noise8x8(final int x0, final int y0, final int c, final float colors) {
-		final float r = 255f / colors;
-		final float cp = c + r * (NOISE8x8[y0 % 8][x0 % 8] / 16f - 0.5f);
-
-		return (int) (cp > 255f ? 255 : cp < 0 ? 0 : cp);
-	}
-
 	public static final int bayer2x2(final int x0, final int y0, final int c, final int colors) {
 		return bayer(M2x2, x0, y0, c, colors);
 	}
@@ -1040,6 +1117,14 @@ public class Gfx {
 
 	public static final int bayer16x16(final int x0, final int y0, final int c, final int colors) {
 		return bayer(M16x16, x0, y0, c, colors);
+	}
+	
+	public static final int blue8x8(final int x0, final int y0, final int c, final int colors) {
+		return bayer(BLUE8x8, x0, y0, c, colors);
+	}
+
+	public static final int blue16x16(final int x0, final int y0, final int c, final int colors) {
+		return bayer(BLUE16x16, x0, y0, c, colors);
 	}
 
 	public static BufferedImage byteArrayToBGRImage(final byte[] data, final int width, final int height) {
@@ -1322,5 +1407,21 @@ public class Gfx {
 			return sum / (float) (Math.sqrt(powA) * Math.sqrt(powB));
 		else
 			return -1f;
+	}
+
+	public static void mono(final byte[] pixels) {
+		for (int i = 0; i < pixels.length; i += 3) {
+			int r = pixels[i + 0] & 0xff;
+			int g = pixels[i + 1] & 0xff;
+			int b = pixels[i + 2] & 0xff;
+			
+			r = (int) Gfx.getLuma(b, g, r);
+			g = r;
+			b = r;
+			
+			pixels[i + 0] = (byte) r;
+			pixels[i + 1] = (byte) g;
+			pixels[i + 2] = (byte) b;
+		}
 	}
 }

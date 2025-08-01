@@ -185,16 +185,16 @@ public class C64ExtraRunner extends AbstractRendererRunner {
 			final BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(new File(fileName)), 8192);
 
 			// True Paint File Format
-			// $9C00 - $9FE7 Screen RAM 1
-			// $9FE8 Background
-			// $A000 - $BF3F Bitmap 1
-			// $C000 - $DF3F Bitmap 2
-			// $E000 - $E3E7 Screen RAM 2
-			// $E400 - $E7E7 Color RAM
+			// $0000 - $03E8 Screen RAM 1
+			// $03E9 - Background
+			// $0400 - $2340 Bitmap 1
+			// $2400 - $4340 Bitmap 2
+			// $4400 - $47E8 Screen RAM 2
+			// $4800 - $4BE8 Color RAM
 
 			// loading address
 			out.write(0x00);
-			out.write(0x9c);
+			out.write(0x00);
 
 			// attributes 1
 			for (int i = 0; i < 1000; i++)
@@ -227,7 +227,7 @@ public class C64ExtraRunner extends AbstractRendererRunner {
 				out.write(c64Extra.screen2[i] & 0xff);
 
 			// fill the gap
-			for (int i = 0; i < 24 + 3072; i++)
+			for (int i = 0; i < 24; i++)
 				out.write(0xff);
 
 			// nibbles

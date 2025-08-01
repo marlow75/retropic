@@ -251,7 +251,7 @@ public class PCRenderer extends AbstractRenderer {
 	}
 
 	@Override
-	protected int getGraphicModeColorsNumber(final Config config) {
+	protected int getColorBitDepth() {
 		return 3;
 	}
 }

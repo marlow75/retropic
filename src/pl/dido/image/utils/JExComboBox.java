@@ -27,7 +27,7 @@ public class JExComboBox extends JComboBox<String> {
 		super(items);
 
 		this.enabled = enabled;
-		this.setRenderer(new DefaultListCellRenderer() {
+		this.setRenderer(new JExDefaultListCellRenderer(this) {
 			/**
 			 * 
 			 */
@@ -36,8 +36,9 @@ public class JExComboBox extends JComboBox<String> {
 			@Override
 			public Component getListCellRendererComponent(final JList<?> list, Object value, int index,
 					boolean isSelected, boolean cellHasFocus) {
+				
 				final Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-				if (index >= 0 && !enabled[index])
+				if (index >= 0 && !this.comboBox.enabled[index])
 					c.setForeground(Color.GRAY);
 				else
 					c.setForeground(Color.BLACK);
@@ -45,6 +46,10 @@ public class JExComboBox extends JComboBox<String> {
 				return c;
 			}
 		});
+	}
+	
+	public void setEnablers(final boolean enabled[]) {
+		this.enabled = enabled;
 	}
 
 	@SuppressWarnings("deprecation")
@@ -63,11 +68,11 @@ public class JExComboBox extends JComboBox<String> {
 			ActionEvent e = null;
 			
 			// Guaranteed to return a non-null array
-			Object[] listeners = listenerList.getListenerList();
+			final Object[] listeners = listenerList.getListenerList();
 			long mostRecentEventTime = EventQueue.getMostRecentEventTime();
 			int modifiers = 0;
 			
-			AWTEvent currentEvent = EventQueue.getCurrentEvent();
+			final AWTEvent currentEvent = EventQueue.getCurrentEvent();
 			if (currentEvent instanceof InputEvent)
 				modifiers = ((InputEvent) currentEvent).getModifiers();
 			else if (currentEvent instanceof ActionEvent)
@@ -86,5 +91,18 @@ public class JExComboBox extends JComboBox<String> {
 				firingActionEvent = false;
 			}
 		}
+	}
+}
+
+class JExDefaultListCellRenderer extends DefaultListCellRenderer  {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -3205925998658428168L;
+	protected JExComboBox comboBox;
+	
+	public JExDefaultListCellRenderer(final JExComboBox comboBox) {
+		this.comboBox = comboBox;
 	}
 }

@@ -46,6 +46,10 @@ public class ColorBuffer {
 	}
 
 	public int[] getBuffer() {
-		return Arrays.copyOf(buffer, cursor + 1);
+		return buffer;
+	}
+	
+	public String toString() {
+		return Arrays.toString(buffer);
 	}
 }

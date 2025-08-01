@@ -2,58 +2,43 @@ package pl.dido.image.petscii;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import at.fhtw.ai.nn.utils.*;
 
-import pl.dido.image.renderer.AbstractRenderer;
+import at.fhtw.ai.nn.utils.HL1SoftmaxNetwork;
+import at.fhtw.ai.nn.utils.Network;
 import pl.dido.image.utils.C64PaletteCalculator;
 import pl.dido.image.utils.Config;
 import pl.dido.image.utils.Gfx;
 import pl.dido.image.utils.Utils;
 
-public class PetsciiRenderer extends AbstractRenderer {
-	protected final static int power2[] = new int[] { 128, 64, 32, 16, 8, 4, 2, 1 };
+public class PetsciiRenderer2 extends PetsciiRenderer {
 
-	protected final static String PETSCII_NETWORK_L1 = "petscii.L1network";
-	protected final static String PETSCII_ENCODER = "petscii.autoencoder";
-	
-	protected final static String PETSCII_CHARSET = "c64petscii.bin";
+	protected Network neural2; // matches pattern with petscii
+	protected byte charset2[]; // charset 8x8 pixels per char
 
-	protected int screen[] = new int[1000];
-	protected int nibble[] = new int[1000];
-
-	protected int backgroundColor = 0;
-
-	protected Network neural, encoder; // matches pattern with petscii
-	protected byte charset[]; // charset 8x8 pixels per char
-
-	public PetsciiRenderer(final Config config) {
+	public PetsciiRenderer2(final Config config) {
 		super(config);
 		initialize();
 	}
 
-	public PetsciiRenderer(final BufferedImage image, final Config config) {
+	public PetsciiRenderer2(final BufferedImage image, final Config config) {
 		super(image, config);
 		initialize();
 	}
 	
 	protected void initialize() {
-		palette = new int[16][3];
-		
+		super.initialize();
+
 		try {
-			neural = new HL1SoftmaxNetwork(64, 16, 256);
-			
-			charset = Utils.loadCharset(Utils.getResourceAsStream(PETSCII_CHARSET));
-			neural.load(Utils.getResourceAsStream(PETSCII_NETWORK_L1));
-			
-			if (config.denoise) {
-				encoder = new Autoencoder(64, 32, 64);
-				encoder.load(Utils.getResourceAsStream(PETSCII_ENCODER));	
-			} 
+			neural2 = new HL1SoftmaxNetwork(64, 16, 256);
+			charset2 = Utils.loadCharset(Utils.getResourceAsStream(PETSCII_CHARSET));
+
+			neural2.load(Utils.getResourceAsStream(PETSCII_NETWORK_L1));
 		} catch (final IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
+	@Override
 	protected void draw() {
 		// tiles screen and pattern
 		final int work[] = new int[64 * 3];
@@ -61,6 +46,8 @@ public class PetsciiRenderer extends AbstractRenderer {
 
 		int nr = 0, ng = 0, nb = 0, count = 0;
 		final int occurrence[] = new int[16];
+
+		byte charset[];
 
 		for (int i = 0; i < pixels.length; i += 3) {
 			nr = pixels[i] & 0xff;
@@ -142,18 +129,22 @@ public class PetsciiRenderer extends AbstractRenderer {
 						tile[(y0 << 3) + x0] = (df <= db) ? 1 : 0;
 					}
 
-				// pattern match character
-				if (config.denoise) {
-					encoder.forward(tile);
-					neural.forward(encoder.getResult());
-				} else
+				final float[] result;
+				if (y < 100) {
 					neural.forward(tile);
-				
-				final float[] result = neural.getResult();
-				
+					result = neural.getResult();
+
+					charset = this.charset;
+				} else {
+					neural2.forward(tile);
+					result = neural2.getResult();
+
+					charset = charset2;
+				}
+
 				int code = 160;
 				float value = result[160];
-				
+
 				// get code of character in charset
 				for (int i = 0; i < 256; i++) {
 					final float d = result[i];
@@ -178,11 +169,11 @@ public class PetsciiRenderer extends AbstractRenderer {
 						final int screen_pos = offset + y0 * 320 * 3 + x0 * 3;
 
 						if ((charByte & bitValue) == bitValue) {
-							pixels[screen_pos]     = (byte) fr;
+							pixels[screen_pos] = (byte) fr;
 							pixels[screen_pos + 1] = (byte) fg;
 							pixels[screen_pos + 2] = (byte) fb;
 						} else {
-							pixels[screen_pos]     = (byte) nr;
+							pixels[screen_pos] = (byte) nr;
 							pixels[screen_pos + 1] = (byte) ng;
 							pixels[screen_pos + 2] = (byte) nb;
 						}
@@ -204,8 +195,12 @@ public class PetsciiRenderer extends AbstractRenderer {
 		return nibble;
 	}
 
-	public byte[] getCharset() {
+	public byte[] getCharset1() {
 		return charset;
+	}
+
+	public byte[] getCharset2() {
+		return charset2;
 	}
 
 	public void setBackgroundColor(final int backgroundColor) {

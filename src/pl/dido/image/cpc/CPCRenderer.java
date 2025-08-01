@@ -4,7 +4,6 @@ import java.awt.image.BufferedImage;
 import java.util.HashSet;
 
 import pl.dido.image.renderer.AbstractRenderer;
-import pl.dido.image.utils.Config;
 import pl.dido.image.utils.Config.DITHERING;
 import pl.dido.image.utils.Gfx;
 import pl.dido.image.utils.neural.SOMFixedPalette;
@@ -52,6 +51,8 @@ public class CPCRenderer extends AbstractRenderer {
 			case BAYER4x4:
 			case BAYER8x8:
 			case BAYER16x16:
+			case BLUE8x8:
+			case BLUE16x16:
 				mode1Bayer();
 				break;
 			default:
@@ -65,6 +66,8 @@ public class CPCRenderer extends AbstractRenderer {
 			case BAYER4x4:
 			case BAYER8x8:
 			case BAYER16x16:
+			case BLUE8x8:
+			case BLUE16x16:
 				mode0Bayer();
 				break;
 			default:
@@ -81,12 +84,14 @@ public class CPCRenderer extends AbstractRenderer {
 
 		switch (mode) {
 		case MODE0:
-			som = new SOMWinnerFixedPalette(4, 4, 2);
+			//som = new SOMWinnerFixedPalette(4, 4, 2);
+			som = new SOMFixedPalette(4, 4, 2);
 			p = som.train(pixels);
 
 			break;
 		default:
-			som = new SOMWinnerFixedPalette(2, 2, 2);
+			//som = new SOMWinnerFixedPalette(2, 2, 2);
+			som = new SOMWinnerFixedPalette(2, 2, 3);
 			p = som.train(pixels);
 
 			break;
@@ -476,12 +481,14 @@ public class CPCRenderer extends AbstractRenderer {
 	}
 
 	@Override
-	protected int getGraphicModeColorsNumber(final Config config) {
-		switch (((CPCConfig) config).screen_mode) {
-		case MODE0:
-			return 48;
+	protected int getColorBitDepth() {
+		switch (((CPCConfig) config).dither_alg) {
+		case BLUE8x8, BLUE16x16:
+			return 16;
+		case NOISE:
+			return 2;
 		default:
-			return 12;
+			return 3;
 		}
 	}
 }

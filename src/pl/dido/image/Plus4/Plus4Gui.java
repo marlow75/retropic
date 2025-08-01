@@ -24,14 +24,14 @@ public class Plus4Gui {
 
 		final JLabel lblConvertLabel = new JLabel("Converter mode:");
 		lblConvertLabel.setFont(GuiUtils.bold);
-		lblConvertLabel.setBounds(20, 70, 169, 14);
+		lblConvertLabel.setBounds(20, 95, 169, 14);
 		panelPlus4.add(lblConvertLabel);
 
 		final JRadioButton rdbtnHiresButton = new JRadioButton("320x200 hires - highest/lowest luminance");
 		rdbtnHiresButton.setToolTipText(
 				"High resolution mode. Two colors, first with most luminance and second with lowest");
 		rdbtnHiresButton.setFont(GuiUtils.std);
-		rdbtnHiresButton.setBounds(46, 85, 331, 23);
+		rdbtnHiresButton.setBounds(46, 115, 331, 23);
 		rdbtnHiresButton.setSelected(config.screen_mode == SCREEN_MODE.HIRES);
 		rdbtnHiresButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
@@ -44,7 +44,7 @@ public class Plus4Gui {
 		rdbtnMulticolorButton.setToolTipText(
 				"Multicolour mode, colors are chosen by how frequently they apears");
 		rdbtnMulticolorButton.setFont(GuiUtils.std);
-		rdbtnMulticolorButton.setBounds(46, 143, 331, 23);
+		rdbtnMulticolorButton.setBounds(46, 173, 331, 23);
 		rdbtnMulticolorButton.setSelected(config.screen_mode == SCREEN_MODE.MULTICOLOR);
 		rdbtnMulticolorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
@@ -60,7 +60,7 @@ public class Plus4Gui {
 		final JRadioButton rdbtnOuterButton = new JRadioButton("8x8 outer pixels");
 		rdbtnOuterButton.setToolTipText("Gets luminance values at the edges");
 		rdbtnOuterButton.setFont(GuiUtils.bold);
-		rdbtnOuterButton.setBounds(148, 112, 139, 23);
+		rdbtnOuterButton.setBounds(148, 142, 139, 23);
 		rdbtnOuterButton.setSelected(config.luma_pixels == LUMA_PIXELS.OUTER);
 		rdbtnOuterButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
@@ -72,7 +72,7 @@ public class Plus4Gui {
 		final JRadioButton rdbtnInnerButton = new JRadioButton("8x8 even pixels");
 		rdbtnInnerButton.setToolTipText("Gets luminance values of even pixels");
 		rdbtnInnerButton.setFont(GuiUtils.bold);
-		rdbtnInnerButton.setBounds(337, 112, 119, 23);
+		rdbtnInnerButton.setBounds(337, 142, 119, 23);
 		rdbtnInnerButton.setSelected(config.luma_pixels == LUMA_PIXELS.INNER);
 		rdbtnInnerButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
@@ -86,11 +86,11 @@ public class Plus4Gui {
 		groupLuminance.add(rdbtnInnerButton);
 
 		final Canvas mesh1 = new ImageCanvas("mesh1.png");
-		mesh1.setBounds(290, 95, 58, 57);
+		mesh1.setBounds(290, 125, 58, 57);
 		panelPlus4.add(mesh1);
 
 		final Canvas mesh2 = new ImageCanvas("mesh2.png");
-		mesh2.setBounds(102, 95, 59, 57);
+		mesh2.setBounds(102, 125, 59, 57);
 		panelPlus4.add(mesh2);
 
 		final Canvas c64Logo = new ImageCanvas("plus4.png");
@@ -98,7 +98,7 @@ public class Plus4Gui {
 		panelPlus4.add(c64Logo);
 		
 		final JRadioButton rdbtnAverageMergeButton = new JRadioButton("averge merge");
-		rdbtnAverageMergeButton.setBounds(111, 170, 113, 18);
+		rdbtnAverageMergeButton.setBounds(111, 200, 113, 18);
 		rdbtnAverageMergeButton.setFont(GuiUtils.bold);
 		rdbtnAverageMergeButton.setToolTipText("calculate average color");
 		rdbtnAverageMergeButton.setSelected(config.pixel_merge == PIXEL_MERGE.AVERAGE);
@@ -112,7 +112,7 @@ public class Plus4Gui {
 		final JRadioButton rdbtnBrightestMergeRadioButton = new JRadioButton("brightest merge");
 		rdbtnBrightestMergeRadioButton.setToolTipText("gets brightest pixel");
 		rdbtnBrightestMergeRadioButton.setFont(GuiUtils.bold);
-		rdbtnBrightestMergeRadioButton.setBounds(298, 170, 152, 18);
+		rdbtnBrightestMergeRadioButton.setBounds(298, 200, 152, 18);
 		rdbtnBrightestMergeRadioButton.setSelected(config.pixel_merge == PIXEL_MERGE.BRIGHTEST);
 		rdbtnBrightestMergeRadioButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {

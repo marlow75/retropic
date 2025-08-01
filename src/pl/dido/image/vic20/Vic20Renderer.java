@@ -564,12 +564,12 @@ public class Vic20Renderer extends AbstractRenderer {
 	}
 
 	@Override
-	protected int getGraphicModeColorsNumber(final Config config) {
+	protected int getColorBitDepth() {
 		switch (config.dither_alg) {
-		case NOISE16x16, NOISE8x8:
-			return 64;
+		case BLUE16x16, BLUE8x8:
+			return 3;
 		default:
-			return 8;
+			return 2;
 		} 
 	}
 }

@@ -128,7 +128,7 @@ public class C64Runner extends AbstractRendererRunner {
 
 			// color nibbles
 			for (int i = 0; i < 1000; i++)
-				out.write(c64.nibble[i] & 0xf);
+				out.write(c64.nibbles[i] & 0xf);
 
 			out.write(c64.backgroundColor & 0xff);
 
@@ -157,7 +157,7 @@ public class C64Runner extends AbstractRendererRunner {
 
 			// color nibbles
 			for (int i = 0; i < 1000; i++)
-				out.write(c64.nibble[i] & 0xf);
+				out.write(c64.nibbles[i] & 0xf);
 
 			out.write(c64.backgroundColor & 0xff);
 

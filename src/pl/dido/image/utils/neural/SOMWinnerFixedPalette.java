@@ -4,15 +4,15 @@ import pl.dido.image.utils.Gfx;
 
 public class SOMWinnerFixedPalette extends SOMFixedPalette {
 
-	public SOMWinnerFixedPalette(final int width, final int height, final float rate,
-			final int epoch, final int bits, final int skip) {
+	public SOMWinnerFixedPalette(final int width, final int height, final float rate, final int epoch, final int bits,
+			final int skip) {
 		super(width, height, rate, 0f, epoch, bits, skip);
 	}
-	
+
 	public SOMWinnerFixedPalette(final int width, final int height, final int bits) {
 		super(width, height, bits);
 	}
-	
+
 	public SOMWinnerFixedPalette(final int width, final int height, final int bits, final int skip) {
 		super(width, height, bits, skip);
 	}
@@ -25,7 +25,7 @@ public class SOMWinnerFixedPalette extends SOMFixedPalette {
 		bmu[1] += rate * (g - bmu[1]);
 		bmu[2] += rate * (b - bmu[2]);
 	}
-	
+
 	@Override
 	protected Position getBMU(final float red, final float green, final float blue) {
 		int bx = 0, by = 0;

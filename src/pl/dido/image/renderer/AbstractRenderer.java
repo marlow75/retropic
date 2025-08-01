@@ -39,7 +39,7 @@ public abstract class AbstractRenderer {
 		colorAlg = config.color_alg;
 	}
 
-	protected abstract int getGraphicModeColorsNumber(final Config config);
+	protected abstract int getColorBitDepth();
 
 	public AbstractRenderer(final Config config) {
 		initialize(config);
@@ -67,7 +67,9 @@ public abstract class AbstractRenderer {
 			final byte buffer[] = new byte[pixels.length];
 			System.arraycopy(pixels, 0, buffer, 0, pixels.length);
 			
-			Gfx.edge(pixels, screenWidth, screenHeight);
+			Gfx.mono(buffer);
+			Gfx.edge(buffer, screenWidth, screenHeight);
+			
 			Gfx.blend(pixels, buffer); // pixels as magnitude
 			break;
 		case EMBOSS:
@@ -82,16 +84,15 @@ public abstract class AbstractRenderer {
 		default:
 			break;
 		}
-		
+
 		processContrast();
 		setupPalette();
 
 		imageDithering();
-		//runner.showImage();
-		
+		runner.showImage();
+
 		imagePostproces();
-		if (config.pal_view)
-			emuPAL();
+		generatePALView();
 	}
 
 	protected void processContrast() {
@@ -111,54 +112,31 @@ public abstract class AbstractRenderer {
 		}
 	}
 
-	protected void emuPAL() {
-		final BufferedImage crt = new BufferedImage(PALcodec.WIDTH, PALcodec.HEIGHT, BufferedImage.TYPE_3BYTE_BGR);
-		final byte[] data = ((DataBufferByte) crt.getRaster().getDataBuffer()).getData();
+	protected void generatePALView() {
+		if (config.pal_view) {
+			final BufferedImage crt = new BufferedImage(PALcodec.WIDTH, PALcodec.HEIGHT, BufferedImage.TYPE_3BYTE_BGR);
+			final byte[] data = ((DataBufferByte) crt.getRaster().getDataBuffer()).getData();
 
-		PALcodec.encodeYC(image.getWidth(), image.getHeight(), pixels, config.black_white);
-		PALcodec.decodeYC(data, config.black_white);
+			PALcodec.encodeYC(image.getWidth(), image.getHeight(), pixels, config.black_white);
+			PALcodec.decodeYC(data, config.black_white);
 
-		image = Gfx.byteArrayToBGRImage(data, PALcodec.WIDTH, PALcodec.HEIGHT);
+			image = Gfx.byteArrayToBGRImage(data, PALcodec.WIDTH, PALcodec.HEIGHT);
+		}
 	}
 
 	protected abstract void imagePostproces();
-
 	protected abstract void setupPalette();
 
 	protected void imageDithering() {
 		switch (config.dither_alg) {
-		case BAYER2x2, BAYER4x4, BAYER8x8, BAYER16x16, NOISE8x8, NOISE16x16:
-			bayerDithering();
-		break;
-		default:
-			Gfx.dithering(pixels, palette, config);
-		}
-	}
-
-	protected void bayerDithering() {
-		final int colors = (int) (getGraphicModeColorsNumber(config) + (- config.error_threshold) * 0.15f * getGraphicModeColorsNumber(config));
-		
-		switch (config.dither_alg) {
-		case BAYER2x2:
-			Gfx.bayer2x2(pixels, palette, colorAlg, screenWidth, screenHeight, colors);
+		case BAYER2x2, BAYER4x4, BAYER8x8, BAYER16x16, BLUE8x8, BLUE16x16:
+			Gfx.bayerDithering(pixels, palette, getColorBitDepth(), config);
 			break;
-		case BAYER4x4:
-			Gfx.bayer4x4(pixels, palette, colorAlg, screenWidth, screenHeight, colors);
-			break;
-		case BAYER8x8:
-			Gfx.bayer8x8(pixels, palette, colorAlg, screenWidth, screenHeight, colors);
-			break;
-		case BAYER16x16:
-			Gfx.bayer16x16(pixels, palette, colorAlg, screenWidth, screenHeight, colors);
-			break;
-		case NOISE8x8:
-			Gfx.noise8x8(pixels, palette, colorAlg, screenWidth, screenHeight, colors);
-			break;
-		case NOISE16x16:
-			Gfx.noise16x16(pixels, palette, colorAlg, screenWidth, screenHeight, colors);
+		case NOISE:
+			Gfx.downsampling(pixels, getColorBitDepth(), config.error_threshold);
 			break;
 		default:
-			break;
+			Gfx.errorDiffuseDithering(pixels, palette, config);
 		}
 	}
 

@@ -29,6 +29,8 @@ public class C64Config extends Config {
 		
 		luma_pixels = LUMA_PIXELS.OUTER;		
 		pixel_merge = PIXEL_MERGE.AVERAGE;
+		
+		predithering = true;
 	}
 	
 	public String getColorsNumber() {

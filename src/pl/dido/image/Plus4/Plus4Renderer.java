@@ -4,7 +4,6 @@ import java.awt.image.BufferedImage;
 import java.util.Arrays;
 
 import pl.dido.image.renderer.AbstractRenderer;
-import pl.dido.image.utils.Config;
 import pl.dido.image.utils.Config.DITHERING;
 import pl.dido.image.utils.Gfx;
 
@@ -876,12 +875,12 @@ public class Plus4Renderer extends AbstractRenderer {
 	}
 
 	@Override
-	protected int getGraphicModeColorsNumber(final Config config) {
+	protected int getColorBitDepth() {
 		switch (config.dither_alg) {
-		case NOISE16x16, NOISE8x8:
-			return 32;
+		case BLUE16x16, BLUE8x8:
+			return 4;
 		default:
-			return 16;
+			return 3;
 		} 
 	}
 }

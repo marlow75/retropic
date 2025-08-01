@@ -5,139 +5,24 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.ButtonGroup;
-import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
 import pl.dido.image.GuiUtils;
-import pl.dido.image.utils.ImageCanvas;
 import pl.dido.image.utils.Config.DITHERING;
+import pl.dido.image.utils.ImageCanvas;
 
 public class CPCGui {
 
 	public static JPanel cpcTab(final CPCConfig config) {
 		final JPanel cpcPanel = new JPanel();
 		cpcPanel.setLayout(null);
-
-		final JLabel lblDitherLabel = new JLabel("Dithering & aspect & scanline:");
-		lblDitherLabel.setFont(GuiUtils.bold);
-		lblDitherLabel.setBounds(20, 10, 250, 20);
-		cpcPanel.add(lblDitherLabel);
-
-		final JRadioButton rdbtnNoDitherButton = new JRadioButton("none");
-		rdbtnNoDitherButton.setToolTipText("No dithering at all");
-		rdbtnNoDitherButton.setFont(GuiUtils.std);
-		rdbtnNoDitherButton.setBounds(20, 33, 50, 20);
-		rdbtnNoDitherButton.setSelected(config.dither_alg == DITHERING.NONE);
-
-		rdbtnNoDitherButton.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				config.dither_alg = DITHERING.NONE;
-			}
-		});
-
-		cpcPanel.add(rdbtnNoDitherButton);
-
-		final JRadioButton rdbtnBayerButton = new JRadioButton("ordered");
-		rdbtnBayerButton.setToolTipText("Bayer/Noise ordered dithering");
-		rdbtnBayerButton.setFont(GuiUtils.std);
-		rdbtnBayerButton.setBounds(90, 33, 60, 20);
-		rdbtnBayerButton.setSelected(config.dither_alg == DITHERING.BAYER2x2 || config.dither_alg == DITHERING.NOISE8x8);
-
-		rdbtnBayerButton.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				switch (config.screen_mode) {
-				case MODE0:
-					config.dither_alg = DITHERING.NOISE8x8;
-					break;
-				default:
-					config.dither_alg = DITHERING.BAYER2x2;
-					break;
-				}
-			}
-		});
-
-		cpcPanel.add(rdbtnBayerButton);
 		
-		final JRadioButton rdbtnAtkinsonButton = new JRadioButton("apple");
-		rdbtnAtkinsonButton.setToolTipText("Atkinson dithering, local color error");
-		rdbtnAtkinsonButton.setFont(GuiUtils.std);
-		rdbtnAtkinsonButton.setBounds(160, 33, 80, 20);
-		rdbtnAtkinsonButton.setSelected(config.dither_alg == DITHERING.ATKINSON);
-
-		rdbtnAtkinsonButton.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				config.dither_alg = DITHERING.ATKINSON;
-			}
-		});
-
-		cpcPanel.add(rdbtnAtkinsonButton);
-		
-		final ButtonGroup groupDither = new ButtonGroup();
-		groupDither.add(rdbtnNoDitherButton);
-		groupDither.add(rdbtnBayerButton);
-		groupDither.add(rdbtnAtkinsonButton);
-		
-		final JCheckBox chkReplaceBox = new JCheckBox("hi contrast");
-		chkReplaceBox.setToolTipText("Replaces brightest and dimmest with white nad black");
-		chkReplaceBox.setFont(GuiUtils.std);
-		chkReplaceBox.setBounds(20, 60, 80, 20);
-		chkReplaceBox.setSelected(config.replace_white);
-		chkReplaceBox.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				config.replace_white = !config.replace_white;
-			}
-		});
-
-		cpcPanel.add(chkReplaceBox);
-		
-		final JCheckBox chckbxAspectCheckBox = new JCheckBox("asp");
-		chckbxAspectCheckBox.setToolTipText("Preserve orginal image aspect ratio");
-		chckbxAspectCheckBox.setFont(GuiUtils.std);
-		chckbxAspectCheckBox.setBounds(100, 60, 50, 20);
-		chckbxAspectCheckBox.setSelected(config.preserve_aspect);
-
-		chckbxAspectCheckBox.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				config.preserve_aspect = !config.preserve_aspect;
-			}
-		});
-
-		cpcPanel.add(chckbxAspectCheckBox);
-
-		final JCheckBox chckbxBWCheckBox = new JCheckBox("bw");
-		chckbxBWCheckBox.setToolTipText("Black/White PAL");
-		chckbxBWCheckBox.setFont(GuiUtils.std);
-		chckbxBWCheckBox.setBounds(200, 60, 50, 20);
-		chckbxBWCheckBox.setSelected(config.black_white);
-
-		chckbxBWCheckBox.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				config.black_white = !config.black_white;
-			}
-		});
-
-		cpcPanel.add(chckbxBWCheckBox);
-		
-		final JCheckBox chckbxRasterCheckBox = new JCheckBox("pal");
-		chckbxRasterCheckBox.setToolTipText("Simple PAL emulation");
-		chckbxRasterCheckBox.setFont(GuiUtils.std);
-		chckbxRasterCheckBox.setBounds(150, 60, 50, 20);
-		chckbxRasterCheckBox.setSelected(config.pal_view);
-
-		chckbxRasterCheckBox.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				config.pal_view = !config.pal_view;
-			}
-		});
-
-		cpcPanel.add(chckbxRasterCheckBox);
-		
-		
+		GuiUtils.addDASControls(cpcPanel, config);
 
 		final Canvas cpcLogo = new ImageCanvas("amstrad.png");
-		cpcLogo.setBounds(290, 0, 200, 100);
+		cpcLogo.setBounds(310, 0, 200, 150);
 		cpcPanel.add(cpcLogo);
 
 		final JLabel lblConvertLabel = new JLabel("Converter mode:");
@@ -167,7 +52,7 @@ public class CPCGui {
 		rdbtnMulticolorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				config.screen_mode = CPCConfig.SCREEN_MODE.MODE0;
-				config.dither_alg = DITHERING.NOISE8x8;
+				config.dither_alg = DITHERING.BLUE8x8;
 			}
 		});
 

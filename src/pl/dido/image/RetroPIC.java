@@ -51,6 +51,10 @@ import pl.dido.image.atari.STConfig;
 import pl.dido.image.atari.STGui;
 import pl.dido.image.atari.STRenderer;
 import pl.dido.image.atari.STRunner;
+import pl.dido.image.c128.C128Config;
+import pl.dido.image.c128.C128Gui;
+import pl.dido.image.c128.C128Renderer;
+import pl.dido.image.c128.C128Runner;
 import pl.dido.image.c64.C64Config;
 import pl.dido.image.c64.C64ExtraConfig;
 import pl.dido.image.c64.C64ExtraGui;
@@ -63,10 +67,10 @@ import pl.dido.image.cpc.CPCConfig;
 import pl.dido.image.cpc.CPCGui;
 import pl.dido.image.cpc.CPCRenderer;
 import pl.dido.image.cpc.CPCRunner;
+import pl.dido.image.pc.PCConfig;
 import pl.dido.image.pc.PCGui;
 import pl.dido.image.pc.PCRenderer;
 import pl.dido.image.pc.PCRunner;
-import pl.dido.image.pc.PCConfig;
 import pl.dido.image.petscii.PetsciiConfig;
 import pl.dido.image.petscii.PetsciiGui;
 import pl.dido.image.petscii.PetsciiRenderer;
@@ -112,6 +116,8 @@ public class RetroPIC {
 
 	protected Amiga500Config amiga500Config;
 	protected Amiga1200Config amiga1200Config;
+	
+	protected C128Config c128Config;
 
 	public static void main(final String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -145,6 +151,8 @@ public class RetroPIC {
 		
 		cgaConfig = new PCConfig();
 		vic20Config = new Vic20Config();
+		
+		c128Config = new C128Config();
 
 		frame = new JFrame("RetroPIC");
 		frame.setIconImage(Toolkit.getDefaultToolkit().getImage(Utils.getResourceAsURL("retro.png")));
@@ -168,8 +176,9 @@ public class RetroPIC {
 		tabbedPane.addTab("Atari ST", null, STGui.stTab(stConfig), null);
 		tabbedPane.addTab("Amiga 500", null, Amiga500Gui.amigaTab(amiga500Config), null);
 		tabbedPane.addTab("Amiga 1200", null, Amiga1200Gui.amigaTab(amiga1200Config), null);
-		tabbedPane.addTab("Commodore 64 extra", null, C64ExtraGui.c64Extra(c64ExtraConfig), null);
-		tabbedPane.addTab("Commodore Plus4 extra", null, Plus4ExtraGui.plus4ExtraTab(plus4ExtraConfig), null);
+		tabbedPane.addTab("C64 extra", null, C64ExtraGui.c64Extra(c64ExtraConfig), null);
+		tabbedPane.addTab("Plus4 extra", null, Plus4ExtraGui.plus4ExtraTab(plus4ExtraConfig), null);
+		tabbedPane.addTab("C128 VDC", null, C128Gui.c128Tab(c128Config), null);
 		tabbedPane.addTab("PC ASCII", null, PCGui.pcTab(cgaConfig), null);
 		tabbedPane.addTab("About", null, AboutGui.aboutTab("aboutRetroPIC.htm"), null);
 
@@ -329,7 +338,10 @@ public class RetroPIC {
 			case 10:
 				new Thread(new Plus4ExtraRunner(new Plus4ExtraRenderer(image, plus4ExtraConfig), fileName)).start();
 				break;
-			case 11:
+			case 11: 
+				new Thread(new C128Runner(new C128Renderer(image, c128Config), fileName)).start();
+				break;
+			case 12:
 				new Thread(new PCRunner(new PCRenderer(image, cgaConfig), fileName)).start();
 				break;
 			}

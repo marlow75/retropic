@@ -70,14 +70,15 @@ public class ZXGui {
 		panelZX.add(rdbtnNoDitherButton);
 
 		final JRadioButton rdbtnBayerButton = new JRadioButton("noise");
-		rdbtnBayerButton.setToolTipText("Enables blue noise ordered dithering");
+		rdbtnBayerButton.setToolTipText("Enables noise dithering");
 		rdbtnBayerButton.setFont(GuiUtils.std);
 		rdbtnBayerButton.setBounds(90, 100, 70, 20);
-		rdbtnBayerButton.setSelected(config.dither_alg == DITHERING.NOISE8x8);
+		rdbtnBayerButton.setSelected(config.dither_alg == DITHERING.NOISE);
 		
 		rdbtnBayerButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				config.dither_alg = DITHERING.NOISE8x8;
+				config.dither_alg = DITHERING.NOISE;
+				config.error_threshold = 2;
 			}});
 		
 		panelZX.add(rdbtnBayerButton);
@@ -91,6 +92,7 @@ public class ZXGui {
 		rdbtnAtkinsonButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				config.dither_alg = DITHERING.BAYER2x2;
+				config.error_threshold = 1;
 			}});
 		
 		panelZX.add(rdbtnAtkinsonButton);

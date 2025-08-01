@@ -26,17 +26,17 @@ public class Vic20Gui {
 	public static JPanel vic20Tab(final Vic20Config config) {
 		final JPanel vic20Panel = new JPanel();
 		vic20Panel.setLayout(null);
-		GuiUtils.addDASControls(vic20Panel, config, new boolean[] { true, true, true, true, false, false, false, false, false });
+		GuiUtils.addDASControls(vic20Panel, config, new boolean[] { true, true, true, true, false, false, false, false, false, false });
 		
 		final JLabel lblModelLabel = new JLabel("Generation mode:");
 		lblModelLabel.setFont(GuiUtils.bold);
-		lblModelLabel.setBounds(20, 76, 169, 14);
+		lblModelLabel.setBounds(20, 86, 169, 14);
 		vic20Panel.add(lblModelLabel);
 		
 		final JComboBox<String> modesList = new JComboBox<String>(modesStrings);
 		modesList.setToolTipText("Choose charset mode");
 		modesList.setFont(GuiUtils.std);
-		modesList.setBounds(46, 100, 150, 20);
+		modesList.setBounds(46, 110, 150, 20);
 		modesList.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				
@@ -61,11 +61,11 @@ public class Vic20Gui {
 
 		final JLabel lblConvertLabel = new JLabel("lowpass threshold:");
 		lblConvertLabel.setFont(GuiUtils.bold);
-		lblConvertLabel.setBounds(20, 136, 169, 14);
+		lblConvertLabel.setBounds(20, 146, 169, 14);
 		vic20Panel.add(lblConvertLabel);
 		
 		final JSlider sldDetect = new JSlider(JSlider.HORIZONTAL, 0, 4, (int)config.lowpass_gain);
-		sldDetect.setBounds(40, 156, 100, 35);
+		sldDetect.setBounds(40, 166, 100, 35);
 		sldDetect.setFont(GuiUtils.std);
 		sldDetect.addChangeListener(new ChangeListener() {
 			public void stateChanged(final ChangeEvent e) {
@@ -83,7 +83,7 @@ public class Vic20Gui {
 		final JCheckBox chckbxDenoiseCheckBox = new JCheckBox("denoising filter");
 		chckbxDenoiseCheckBox.setToolTipText("Neural net denoise filter (autoencoder)");
 		chckbxDenoiseCheckBox.setFont(GuiUtils.std);
-		chckbxDenoiseCheckBox.setBounds(150, 156, 150, 20);
+		chckbxDenoiseCheckBox.setBounds(150, 166, 150, 20);
 		chckbxDenoiseCheckBox.setSelected(config.denoise);
 
 		chckbxDenoiseCheckBox.addActionListener(new ActionListener() {

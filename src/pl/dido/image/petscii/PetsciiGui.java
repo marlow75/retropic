@@ -19,7 +19,7 @@ public class PetsciiGui {
 	public static JPanel petsciiTab(final PetsciiConfig config) {
 		final JPanel petsciiC64 = new JPanel();
 		petsciiC64.setLayout(null);
-		GuiUtils.addDASControls(petsciiC64, config, new boolean[] { true, true, true, true, false, false, false, false, false });
+		GuiUtils.addDASControls(petsciiC64, config, new boolean[] { true, true, true, true, false, false, false, false, false, false });
 
 		final JLabel lblConvertLabel = new JLabel("lowpass threshold:");
 		lblConvertLabel.setFont(GuiUtils.bold);

@@ -3,9 +3,8 @@ package pl.dido.image.zx;
 import java.awt.image.BufferedImage;
 
 import pl.dido.image.renderer.AbstractRenderer;
-import pl.dido.image.utils.Gfx;
-import pl.dido.image.utils.Config;
 import pl.dido.image.utils.Config.DITHERING;
+import pl.dido.image.utils.Gfx;
 
 public class ZXRenderer extends AbstractRenderer {
 
@@ -35,10 +34,10 @@ public class ZXRenderer extends AbstractRenderer {
 
 	@Override
 	protected void imagePostproces() {
-		if (config.dither_alg == DITHERING.BAYER2x2)
+		//if (config.dither_alg == DITHERING.BAYER2x2)
 			hiresBayer();
-		else
-			hiresDithered();
+		//else
+		//	hiresDithered();
 	}
 
 	protected void hiresDithered() {
@@ -309,12 +308,12 @@ public class ZXRenderer extends AbstractRenderer {
 	}
 
 	@Override
-	protected int getGraphicModeColorsNumber(final Config config) {
+	protected int getColorBitDepth() {
 		switch (config.dither_alg) {
 		case BAYER2x2:
-			return 8;
+			return 3;
 		default:
-			return 32;
+			return 5;
 		}
 	}
 }

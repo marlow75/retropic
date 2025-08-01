@@ -9,6 +9,7 @@ Requirements: JRE16 installed.
 
 ## Versions
 
+* 1.16  - C128 VDC 640200 2colors in 8x2 tile (16 total), reworked MCI modes and edge filter
 * 1.15  - Autoencoder denoiser for characterset modes, reworked neural net matchers, disabled unproductive dither modes for particular machines  
 * 1.14  - Bug fixes, blue noise dithering for all machines
 * 1.12b - Minor bug fixes
@@ -39,13 +40,14 @@ Requirements: JRE16 installed.
 * Atari ST, 320x200 in 16 colors on screen from 512 palette colors.
 * Amiga 500/1000, PAL 320x256 and 320x512 in 32 colors or in HAM6 encoding, 4096 palette colors.
 * Amiga 1200/4000, PAL 320x256, 320x512, 640x512 in 256 colors or in HAM8 encoding, 16M palette colors.
-* PC CGA & VESA 10bh text modes
-* VIC-20 text (unexpanded) and hires 176x184, lowres 88x184 modes (8kB expanded) 
+* PC, CGA & VESA 10bh text modes
+* VIC-20, text (unexpanded) and hires 176x184, lowres 88x184 modes (8kB expanded).
+* C128, VDC 640x200 for 64kb in 16 colors.
 
 ## Graphics formats
 
 * executable PRG for TED machines
-* executable PRG for VIC-20 
+* executable PRG for VIC-20
 * executable PRG, Koala Paint, ArtStudio, TruePaint for C64
 * ZX SCR format
 * ArtStudio for CPC machines
@@ -53,6 +55,7 @@ Requirements: JRE16 installed.
 * IFF format for Delux Paint – Amiga (RLE option)
 * True Paint for MCI (experimental)
 * COM executable for CGA & VGA
+* executable PRG for C128
 
 ## Conversion options
 
@@ -69,11 +72,12 @@ Try all options available.
 
 ## More info for all machines in following hyper links
 
-![C64](assets/c64.md)
-![Plus4](assets/plus4.md)
-![ZX](assets/zx.md)
-![CPC](assets/cpc.md)
-![ST](assets/st.md)
-![Amiga](assets/amiga.md)
-![PC](assets/pc.md)
-![VIC20](assets/vic20.md)
+![Commodore 64](assets/c64.md)
+![Commodore Plus4](assets/plus4.md)
+![ZX Spectrum +/48](assets/zx.md)
+![Amstrad CPC](assets/cpc.md)
+![Atari ST](assets/st.md)
+![Commodore Amiga](assets/amiga.md)
+![PC XT](assets/pc.md)
+![Commodore VIC20](assets/vic20.md)
+![Commodore C128](assets/c64.md)

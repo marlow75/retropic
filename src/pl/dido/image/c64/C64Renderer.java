@@ -4,7 +4,6 @@ import java.awt.image.BufferedImage;
 
 import pl.dido.image.renderer.AbstractRenderer;
 import pl.dido.image.utils.C64PaletteCalculator;
-import pl.dido.image.utils.Config;
 import pl.dido.image.utils.Config.DITHERING;
 import pl.dido.image.utils.Gfx;
 
@@ -13,7 +12,7 @@ public class C64Renderer extends AbstractRenderer {
 	protected int bitmap[] = new int[40 * 200];
 	protected int screen[] = new int[1000];
 
-	protected int nibble[] = new int[1000];
+	protected int nibbles[] = new int[1000];
 	protected int backgroundColor = 0;
 
 	public C64Renderer(final BufferedImage image, final C64Config config) {
@@ -31,7 +30,7 @@ public class C64Renderer extends AbstractRenderer {
 		switch (((C64Config) config).screen_mode) {
 		case HIRES:
 			switch (config.dither_alg) {
-			case BAYER2x2, BAYER4x4, BAYER8x8, BAYER16x16, NOISE8x8, NOISE16x16: 
+			case BAYER2x2, BAYER4x4, BAYER8x8, BAYER16x16, BLUE8x8, BLUE16x16:
 				hiresBayer();
 				break;
 			default:
@@ -42,14 +41,14 @@ public class C64Renderer extends AbstractRenderer {
 			break;
 		case MULTICOLOR:
 			switch (config.dither_alg) {
-			case BAYER2x2, BAYER4x4, BAYER8x8, BAYER16x16, NOISE8x8, NOISE16x16: 
+			case BAYER2x2, BAYER4x4, BAYER8x8, BAYER16x16, BLUE8x8, BLUE16x16:
 				lowresBayer();
 				break;
 			default:
 				lowres();
 				break;
 			}
-			
+
 			break;
 		}
 	}
@@ -334,8 +333,11 @@ public class C64Renderer extends AbstractRenderer {
 	protected void lowres() {
 		final int[] newPixels = new int[160 * 200 * 3]; // 160x200
 		int bitmapIndex = 0;
-		int sr = 0, sg = 0, sb = 0;
-
+		
+		int br = (int) (Math.random() * 256);
+		int bg = (int) (Math.random() * 256);
+		int bb = (int) (Math.random() * 256);
+		
 		// shrinking 320x200 -> 160x200
 		for (int y = 0; y < 200; y += 8) {
 			final int p1 = y * 320 * 3;
@@ -381,9 +383,9 @@ public class C64Renderer extends AbstractRenderer {
 						}
 
 						final int i = getColorIndex(r, g, b);
-						sr += r;
-						sg += g;
-						sb += b;
+						br += (int)(0.6f * (r - br));
+						bg += (int)(0.6f * (g - bg));
+						bb += (int)(0.6f * (b - bb));
 
 						final int c[] = palette[i];
 						newPixels[pl] = c[0];
@@ -395,13 +397,10 @@ public class C64Renderer extends AbstractRenderer {
 		}
 
 		final int work[] = new int[32 * 3];
-		sr /= 160 * 200;
-		sg /= 160 * 200;
-		sb /= 160 * 200;
-
+		
 		// 4x8 tile palette
 		final int tilePalette[][] = new int[4][3];
-		backgroundColor = getColorIndex(sr, sg, sb);
+		backgroundColor = getColorIndex(br, bg, bb);
 
 		for (int y = 0; y < 200; y += 8) {
 			final int p1 = y * 160 * 3;
@@ -413,9 +412,9 @@ public class C64Renderer extends AbstractRenderer {
 				int index = 0;
 
 				// common color
-				tilePalette[0][0] = sr;
-				tilePalette[0][1] = sg;
-				tilePalette[0][2] = sb;
+				tilePalette[0][0] = br;
+				tilePalette[0][1] = bg;
+				tilePalette[0][2] = bb;
 
 				for (int y0 = 0; y0 < 8; y0++) {
 					for (int x0 = 0; x0 < 12; x0 += 3) {
@@ -483,7 +482,7 @@ public class C64Renderer extends AbstractRenderer {
 
 				int position = (y >> 3) * 40 + x;
 				screen[position] = ((i1 & 0xf) << 4) | (i2 & 0xf);
-				nibble[position] = i3;
+				nibbles[position] = i3;
 
 				int value = 0, bitcount = 0;
 				for (int y0 = 0; y0 < 8; y0++) {
@@ -764,7 +763,7 @@ public class C64Renderer extends AbstractRenderer {
 
 				int position = (y >> 3) * 40 + x;
 				screen[position] = ((i1 & 0xf) << 4) | (i2 & 0xf);
-				nibble[position] = i3;
+				nibbles[position] = i3;
 
 				int value = 0, bitcount = 0;
 				for (int y0 = 0; y0 < 8; y0++) {
@@ -821,12 +820,14 @@ public class C64Renderer extends AbstractRenderer {
 	}
 
 	@Override
-	protected int getGraphicModeColorsNumber(final Config config) {
+	protected int getColorBitDepth() {
 		switch (config.dither_alg) {
-		case NOISE16x16, NOISE8x8:
-			return 64;
-		default:
+		case BLUE16x16, BLUE8x8:
 			return 16;
-		} 
+		case NOISE:
+			return 5;
+		default:
+			return 8;
+		}
 	}
 }

@@ -25,6 +25,8 @@ public class CPCConfig extends Config {
 		
 		replace_white = false;
 		color_alg = NEAREST_COLOR.PERCEPTED;
+		
+		pal_view = false;
 	}
 	
 	@Override

@@ -16,7 +16,7 @@ public class C64ExtraConfig extends C64Config {
 	public EXTRA_MODE extra_mode;
 	
 	public boolean color_ramp;
-	public float flickering_factor; 
+	public boolean flickering_filter; 
 	
 	public C64ExtraConfig() {
 		super();
@@ -30,7 +30,7 @@ public class C64ExtraConfig extends C64Config {
 		error_threshold = 2;
 		
 		color_ramp = false;
-		flickering_factor = 0;
+		flickering_filter = false;
 	}
 	
 	@Override

@@ -4,8 +4,8 @@ import java.awt.image.BufferedImage;
 
 import pl.dido.image.renderer.AbstractPictureColorsRenderer;
 import pl.dido.image.utils.Config;
-import pl.dido.image.utils.Gfx;
 import pl.dido.image.utils.Config.DITHERING;
+import pl.dido.image.utils.Gfx;
 import pl.dido.image.utils.neural.SOMFixedPalette;
 
 public class STRenderer extends AbstractPictureColorsRenderer {
@@ -169,12 +169,14 @@ public class STRenderer extends AbstractPictureColorsRenderer {
 	}
 
 	@Override
-	protected int getGraphicModeColorsNumber(final Config config) {
+	protected int getColorBitDepth() {
 		switch (config.dither_alg) {
-		case NOISE16x16, NOISE8x8:
-			return 64;
-		default:
+		case BLUE16x16, BLUE8x8:
 			return 16;
+		case NOISE:
+			return 4;
+		default:
+			return 8;
 		} 
 	}
 }

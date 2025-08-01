@@ -44,12 +44,18 @@ public class Amiga500Renderer extends AbstractPictureColorsRenderer {
 	@Override
 	protected void imageDithering() {
 		switch (config.dither_alg) {
+		case BAYER2x2, BAYER4x4, BAYER8x8, BAYER16x16, BLUE8x8, BLUE16x16:
+			Gfx.bayerDithering(pixels, palette, 16, config);
+			break;
 		case ATKINSON, FLOYDS:
-			Gfx.dithering(pixels, palette, config);
+			Gfx.errorDiffuseDithering(pixels, palette, config);
+			break;
+		case NOISE:
+			Gfx.downsampling(pixels, 4, config.error_threshold);
 			break;
 		default:
 			break;
-		}	
+		}
 	}
 
 	@Override
@@ -203,7 +209,7 @@ public class Amiga500Renderer extends AbstractPictureColorsRenderer {
 		final int[] work = Gfx.copy2Int(pixels);
 		bitplanes = new int[(screenWidth >> 4) * screenHeight][5]; // 5 planes
 
-		final int colors = (int) (getGraphicModeColorsNumber(config) + (- config.error_threshold) * 0.15f * getGraphicModeColorsNumber(config));
+		final int colors = (int) (getColorBitDepth() + (-config.error_threshold) * 0.15f * getColorBitDepth());
 		int r0, g0, b0;
 
 		final int width3 = screenWidth * 3;
@@ -218,7 +224,7 @@ public class Amiga500Renderer extends AbstractPictureColorsRenderer {
 				r0 = work[pyx];
 				g0 = work[pyx + 1];
 				b0 = work[pyx + 2];
-				
+
 				switch (config.dither_alg) {
 				case BAYER2x2:
 					r0 = Gfx.bayer2x2(x, y, r0, colors);
@@ -240,15 +246,15 @@ public class Amiga500Renderer extends AbstractPictureColorsRenderer {
 					g0 = Gfx.bayer16x16(x, y, g0, colors);
 					b0 = Gfx.bayer16x16(x, y, b0, colors);
 					break;
-				case NOISE8x8:
-					r0 = Gfx.noise8x8(x, y, r0, colors);
-					g0 = Gfx.noise8x8(x, y, g0, colors);
-					b0 = Gfx.noise8x8(x, y, b0, colors);
+				case BLUE8x8:
+					r0 = Gfx.blue8x8(x, y, r0, colors);
+					g0 = Gfx.blue8x8(x, y, g0, colors);
+					b0 = Gfx.blue8x8(x, y, b0, colors);
 					break;
-				case NOISE16x16:
-					r0 = Gfx.noise16x16(x, y, r0, colors);
-					g0 = Gfx.noise16x16(x, y, g0, colors);
-					b0 = Gfx.noise16x16(x, y, b0, colors);
+				case BLUE16x16:
+					r0 = Gfx.blue16x16(x, y, r0, colors);
+					g0 = Gfx.blue16x16(x, y, g0, colors);
+					b0 = Gfx.blue16x16(x, y, b0, colors);
 				default:
 					break;
 				}
@@ -282,8 +288,6 @@ public class Amiga500Renderer extends AbstractPictureColorsRenderer {
 	}
 
 	protected void ham6Encoded() {
-		bayerDithering();
-		
 		final float[] work = Gfx.copy2float(pixels);
 		bitplanes = new int[(screenWidth >> 4) * screenHeight][6]; // 6 planes
 
@@ -485,10 +489,10 @@ public class Amiga500Renderer extends AbstractPictureColorsRenderer {
 	}
 
 	@Override
-	protected int getGraphicModeColorsNumber(final Config config) {
+	protected int getColorBitDepth() {
 		switch (config.dither_alg) {
-		case NOISE16x16, NOISE8x8:
-			return 66;
+		case BLUE16x16, BLUE8x8:
+			return 28;
 		default:
 			return 16;
 		}
