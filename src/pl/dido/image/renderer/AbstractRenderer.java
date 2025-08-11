@@ -11,7 +11,7 @@ import pl.dido.image.amiga.AmigaConfig;
 import pl.dido.image.utils.Config;
 import pl.dido.image.utils.Config.NEAREST_COLOR;
 import pl.dido.image.utils.Gfx;
-import pl.dido.image.utils.PALcodec;
+import pl.dido.image.utils.SimplePALcodec;
 
 public abstract class AbstractRenderer {
 
@@ -89,7 +89,7 @@ public abstract class AbstractRenderer {
 		setupPalette();
 
 		imageDithering();
-		runner.showImage();
+//		runner.showImage();
 
 		imagePostproces();
 		generatePALView();
@@ -114,13 +114,13 @@ public abstract class AbstractRenderer {
 
 	protected void generatePALView() {
 		if (config.pal_view) {
-			final BufferedImage crt = new BufferedImage(PALcodec.WIDTH, PALcodec.HEIGHT, BufferedImage.TYPE_3BYTE_BGR);
+			final BufferedImage crt = new BufferedImage(SimplePALcodec.WIDTH, SimplePALcodec.HEIGHT, BufferedImage.TYPE_3BYTE_BGR);
 			final byte[] data = ((DataBufferByte) crt.getRaster().getDataBuffer()).getData();
 
-			PALcodec.encodeYC(image.getWidth(), image.getHeight(), pixels, config.black_white);
-			PALcodec.decodeYC(data, config.black_white);
+			SimplePALcodec.encodeYC(image.getWidth(), image.getHeight(), pixels, config.black_white);
+			SimplePALcodec.decodeYC(data, config.black_white);
 
-			image = Gfx.byteArrayToBGRImage(data, PALcodec.WIDTH, PALcodec.HEIGHT);
+			image = Gfx.byteArrayToBGRImage(data, SimplePALcodec.WIDTH, SimplePALcodec.HEIGHT);
 		}
 	}
 

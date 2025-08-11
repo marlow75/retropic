@@ -879,6 +879,8 @@ public class Plus4Renderer extends AbstractRenderer {
 		switch (config.dither_alg) {
 		case BLUE16x16, BLUE8x8:
 			return 4;
+		case NOISE:
+			return 3;
 		default:
 			return 3;
 		} 

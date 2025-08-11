@@ -825,7 +825,7 @@ public class C64Renderer extends AbstractRenderer {
 		case BLUE16x16, BLUE8x8:
 			return 16;
 		case NOISE:
-			return 5;
+			return 3;
 		default:
 			return 8;
 		}

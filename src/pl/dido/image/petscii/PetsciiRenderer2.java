@@ -3,12 +3,12 @@ package pl.dido.image.petscii;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
-import at.fhtw.ai.nn.utils.HL1SoftmaxNetwork;
-import at.fhtw.ai.nn.utils.Network;
 import pl.dido.image.utils.C64PaletteCalculator;
 import pl.dido.image.utils.Config;
 import pl.dido.image.utils.Gfx;
 import pl.dido.image.utils.Utils;
+import pl.dido.image.utils.neural.FastClassifier;
+import pl.dido.image.utils.neural.Network;
 
 public class PetsciiRenderer2 extends PetsciiRenderer {
 
@@ -29,7 +29,7 @@ public class PetsciiRenderer2 extends PetsciiRenderer {
 		super.initialize();
 
 		try {
-			neural2 = new HL1SoftmaxNetwork(64, 16, 256);
+			neural2 = new FastClassifier(64, 16, 256);
 			charset2 = Utils.loadCharset(Utils.getResourceAsStream(PETSCII_CHARSET));
 
 			neural2.load(Utils.getResourceAsStream(PETSCII_NETWORK_L1));
@@ -39,7 +39,7 @@ public class PetsciiRenderer2 extends PetsciiRenderer {
 	}
 
 	@Override
-	protected void draw() {
+	protected void imagePostproces() {
 		// tiles screen and pattern
 		final int work[] = new int[64 * 3];
 		final float tile[] = new float[64];
@@ -210,11 +210,6 @@ public class PetsciiRenderer2 extends PetsciiRenderer {
 	@Override
 	protected void setupPalette() {
 		palette = C64PaletteCalculator.getCalculatedPalette();
-	}
-
-	@Override
-	protected void imagePostproces() {
-		draw();
 	}
 
 	@Override

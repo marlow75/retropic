@@ -9,6 +9,7 @@ Requirements: JRE16 installed.
 
 ## Versions
 
+* 1.17  - Reworked neural algorithms, faster and more robust, VIC 20 reworked charset modes, minor bug fixes, 3d party libs excluded 
 * 1.16  - C128 VDC 640200 2colors in 8x2 tile (16 total), reworked MCI modes and edge filter
 * 1.15  - Autoencoder denoiser for characterset modes, reworked neural net matchers, disabled unproductive dither modes for particular machines  
 * 1.14  - Bug fixes, blue noise dithering for all machines

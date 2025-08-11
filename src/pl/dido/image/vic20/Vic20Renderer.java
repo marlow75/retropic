@@ -1,27 +1,20 @@
 package pl.dido.image.vic20;
 
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Vector;
 
-import at.fhtw.ai.nn.utils.Autoencoder;
-import at.fhtw.ai.nn.utils.Dataset;
-import at.fhtw.ai.nn.utils.HL1SoftmaxNetwork;
-import at.fhtw.ai.nn.utils.Network;
 import pl.dido.image.renderer.AbstractRenderer;
 import pl.dido.image.utils.BitVector;
 import pl.dido.image.utils.Config;
 import pl.dido.image.utils.Gfx;
-import pl.dido.image.utils.Utils;
-import pl.dido.image.utils.neural.NNUtils;
+import pl.dido.image.utils.neural.NetworkProgressListener;
+import pl.dido.image.utils.neural.Position;
 import pl.dido.image.utils.neural.SOMCharsetNetwork;
 import pl.dido.image.utils.neural.SOMDataset;
 import pl.dido.image.utils.neural.SOMMulticolorCharsetNetwork;
 
-public class Vic20Renderer extends AbstractRenderer {
+public class Vic20Renderer extends AbstractRenderer implements NetworkProgressListener {
 	protected final static int colors[] = new int[] { 0x000000, 0xFFFFFF, 0xF00000, 0x00F0F0, 0x600060, 0x00A000,
 			0x0000F0, 0xD0D000, 0xC0A000, 0xFFA000, 0xF08080, 0x00FFFF, 0xFF00FF, 0x00FF00, 0x00A0FF, 0xFFFF00 };
 
@@ -30,7 +23,7 @@ public class Vic20Renderer extends AbstractRenderer {
 
 	protected final static String PETSCII_NETWORK_L1 = "vic20.L1network";
 	protected final static String PETSCII_ENCODER = "vic20.autoencoder";
-	
+
 	protected final static String PETSCII_CHARSET = "vic20petscii.bin";
 
 	protected int screen[] = new int[22 * 23];
@@ -38,32 +31,20 @@ public class Vic20Renderer extends AbstractRenderer {
 
 	protected int backgroundColor;
 	protected int auxiliaryColor;
-	
+
 	protected int borderColor;
 	protected int foregroundPalette[][];
 
-	protected Network neural, encoder; // matches pattern with petscii
 	protected byte charset[]; // charset 8x8 pixels per char
 
-	public String networkFile;
+	protected SOMCharsetNetwork som1;
+	protected SOMMulticolorCharsetNetwork som2;
+
+	// protected String networkFile;
 
 	protected void initialize() {
 		foregroundPalette = new int[8][3];
 		palette = new int[16][3];
-		
-		try {
-			neural = new HL1SoftmaxNetwork(64, 16, 256);
-			
-			charset = Utils.loadCharset(Utils.getResourceAsStream(PETSCII_CHARSET));
-			neural.load(Utils.getResourceAsStream(PETSCII_NETWORK_L1));
-			
-			if (config.denoise) {
-				encoder = new Autoencoder(64, 32, 64);
-				encoder.load(Utils.getResourceAsStream(PETSCII_ENCODER));	
-			} 
-		} catch (final IOException e) {
-			throw new RuntimeException(e);
-		}
 	}
 
 	public Vic20Renderer(final Config config) {
@@ -105,42 +86,30 @@ public class Vic20Renderer extends AbstractRenderer {
 		switch (((Vic20Config) config).mode) {
 		case HIRES: {
 			final SOMDataset<BitVector> dataset = new SOMDataset<BitVector>();
-			final SOMCharsetNetwork som = new SOMCharsetNetwork(16, 16);
+			som1 = new SOMCharsetNetwork(16, 16);
 
 			final SOMDataset<BitVector> item = getChargenHires();
 			for (int i = 0; i < 5; i++) // learn same 5 times
 				dataset.addAll(item);
 
-			charset = som.train(dataset);
-			neural = new HL1SoftmaxNetwork(64, 32, 256);
-
-			final Vector<Dataset> samples = NNUtils.loadData8x8(new ByteArrayInputStream(charset));
-			neural.train(samples);
-
+			charset = som1.train(dataset);
 			hires();
-		}
+
 			break;
-		case LOWRES: {
+		}
+		default: {
 			final SOMDataset<float[]> dataset = new SOMDataset<float[]>();
-			final SOMMulticolorCharsetNetwork som = new SOMMulticolorCharsetNetwork(16, 16);
+			som2 = new SOMMulticolorCharsetNetwork(16, 16);
 
 			final SOMDataset<float[]> item = getChargenLowres();
 			for (int i = 0; i < 5; i++) // learn same 5 times
 				dataset.addAll(item);
 
-			charset = som.train(dataset);
-			neural = new HL1SoftmaxNetwork(32, 32, 256);
-			
-			final Vector<Dataset> samples = NNUtils.loadData4x8(new ByteArrayInputStream(charset));
-			neural.train(samples);
-			
+			charset = som2.train(dataset);
 			lowres();
-		}
-			break;
-		case PETSCII:
 
-			hires();
 			break;
+		}
 		}
 	}
 
@@ -245,8 +214,7 @@ public class Vic20Renderer extends AbstractRenderer {
 	protected void hires() {
 		// tiles screen and pattern
 		final int work[] = new int[64 * 3];
-		final float tile[] = new float[64];
-		
+
 		int nr = 0, ng = 0, nb = 0, count = 0;
 		final int occurrence[] = new int[16];
 
@@ -277,6 +245,7 @@ public class Vic20Renderer extends AbstractRenderer {
 		nb = palette[k][2];
 
 		final float backLuma = Gfx.getLuma(nr, ng, nb);
+		final BitVector vec = new BitVector(64);
 
 		for (int y = 0; y < 184; y += 8) {
 			final int p = y * 176 * 3;
@@ -313,6 +282,8 @@ public class Vic20Renderer extends AbstractRenderer {
 				final int fr = cf[0];
 				final int fg = cf[1];
 				final int fb = cf[2];
+				
+				vec.clear();
 
 				for (int y0 = 0; y0 < 8; y0++)
 					for (int x0 = 0; x0 < 8; x0++) {
@@ -326,32 +297,13 @@ public class Vic20Renderer extends AbstractRenderer {
 						final float df = Gfx.getDistance(colorAlg, r, g, b, fr, fg, fb);
 						final float db = Gfx.getDistance(colorAlg, r, g, b, nr, ng, nb);
 
-						// ones as color of the bright pixels
-						tile[(y0 << 3) + x0] = (df <= db) ? 1f : 0f;
+						if (df <= db)
+							vec.set(y0 * 8 + x0);
 					}
 
-				// pattern match character
-				// pattern match character
-				if (config.denoise) {
-					encoder.forward(tile);
-					neural.forward(encoder.getResult());
-				} else
-					neural.forward(tile);
+				final Position pos = som1.getBMU(vec);
+				final int code = pos.y * 16 + pos.x;
 
-				final float[] result = neural.getResult();
-				
-				int code = 32;
-				float value = result[32];
-				
-				// get code of character in charset
-				for (int i = 0; i < 256; i++) {
-					final float d = result[i];
-					if (d > value) {
-						code = i;
-						value = d;
-					}
-				}
-				
 				// colors
 				final int address = (y >> 3) * 22 + (x >> 3);
 				nibble[address] = f;
@@ -418,11 +370,11 @@ public class Vic20Renderer extends AbstractRenderer {
 	protected SOMDataset<float[]> getChargenLowres() {
 		final SOMDataset<float[]> dataset = new SOMDataset<float[]>();
 		final int[] newPixels = new int[88 * 184 * 3]; // 88x184
-		
+
 		final int occurrence[] = new int[16];
 		shrink88(newPixels, occurrence);
 
-		final Integer indexes[] = new Integer[] { 0, 1, 2, 3, 4, 5, 6, 7 };		
+		final Integer indexes[] = new Integer[] { 0, 1, 2, 3, 4, 5, 6, 7 };
 		Arrays.sort(indexes, new Comparator<Integer>() {
 			public int compare(final Integer o1, final Integer o2) {
 				return -Integer.compare(occurrence[o1], occurrence[o2]);
@@ -433,16 +385,16 @@ public class Vic20Renderer extends AbstractRenderer {
 		final int c1 = indexes[1];
 		final int c2 = indexes[2];
 		final int c3 = indexes[3];
-		
+
 		backgroundColor = c0;
 		borderColor = c1;
 		auxiliaryColor = c3;
 
-		final int locPalette[][] = new int[][] { 
-			{ foregroundPalette[c0][0], foregroundPalette[c0][1], foregroundPalette[c0][2] },
-			{ foregroundPalette[c1][0], foregroundPalette[c1][1], foregroundPalette[c1][2] }, 
-			{ foregroundPalette[c2][0], foregroundPalette[c2][1], foregroundPalette[c2][2] },
-			{ foregroundPalette[c3][0], foregroundPalette[c3][1], foregroundPalette[c3][2] } };
+		final int locPalette[][] = new int[][] {
+				{ foregroundPalette[c0][0], foregroundPalette[c0][1], foregroundPalette[c0][2] },
+				{ foregroundPalette[c1][0], foregroundPalette[c1][1], foregroundPalette[c1][2] },
+				{ foregroundPalette[c2][0], foregroundPalette[c2][1], foregroundPalette[c2][2] },
+				{ foregroundPalette[c3][0], foregroundPalette[c3][1], foregroundPalette[c3][2] } };
 
 		for (int y = 0; y < 184; y += 8)
 			for (int x = 0; x < 88; x += 4) {
@@ -473,7 +425,7 @@ public class Vic20Renderer extends AbstractRenderer {
 
 		shrink88(newPixels, occurrence);
 		final Integer indexes[] = new Integer[] { 0, 1, 2, 3, 4, 5, 6, 7 };
-		
+
 		Arrays.sort(indexes, new Comparator<Integer>() {
 			public int compare(final Integer o1, final Integer o2) {
 				return -Integer.compare(occurrence[o1], occurrence[o2]);
@@ -484,18 +436,18 @@ public class Vic20Renderer extends AbstractRenderer {
 		final int c1 = indexes[1];
 		final int c2 = indexes[2];
 		final int c3 = indexes[3];
-		
+
 		backgroundColor = c0;
 		borderColor = c1;
 		auxiliaryColor = c3;
 
-		final int locPalette[][] = new int[][] { 
-			{ foregroundPalette[c0][0], foregroundPalette[c0][1], foregroundPalette[c0][2] },
-			{ foregroundPalette[c1][0], foregroundPalette[c1][1], foregroundPalette[c1][2] }, 
-			{ foregroundPalette[c2][0], foregroundPalette[c2][1], foregroundPalette[c2][2] },
-			{ foregroundPalette[c3][0], foregroundPalette[c3][1], foregroundPalette[c3][2] } };
-			
-		final float tile[] = new float[32];
+		final int locPalette[][] = new int[][] {
+				{ foregroundPalette[c0][0], foregroundPalette[c0][1], foregroundPalette[c0][2] },
+				{ foregroundPalette[c1][0], foregroundPalette[c1][1], foregroundPalette[c1][2] },
+				{ foregroundPalette[c2][0], foregroundPalette[c2][1], foregroundPalette[c2][2] },
+				{ foregroundPalette[c3][0], foregroundPalette[c3][1], foregroundPalette[c3][2] } };
+
+		final float vec[] = new float[32];
 		int index = 0;
 
 		for (int y = 0; y < 184; y += 8)
@@ -511,22 +463,11 @@ public class Vic20Renderer extends AbstractRenderer {
 						final int b = newPixels[py0x0 + 2];
 
 						final int color = Gfx.getColorIndex(colorAlg, locPalette, r, g, b);
-						tile[y0 * 4 + x0] = color & 0x3;
+						vec[y0 * 4 + x0] = color & 0x3;
 					}
 
-				// pattern match character
-				neural.forward(tile);
-				final float[] result = neural.getResult();
-
-				int code = 0;
-				float value = result[0];
-
-				// get code of character in char set
-				for (int i = 1; i < 256; i++)
-					if (result[i] > value) {
-						code = i;
-						value = result[i];
-					}
+				final Position pos = som2.getBMU(vec);
+				final int code = pos.y * 16 + pos.x;
 
 				nibble[index] = c2 + 8; // multicolor mode
 				screen[index] = code;
@@ -570,6 +511,11 @@ public class Vic20Renderer extends AbstractRenderer {
 			return 3;
 		default:
 			return 2;
-		} 
+		}
+	}
+
+	@Override
+	public void notifyProgress(final String msg) {
+		System.out.println(msg);
 	}
 }

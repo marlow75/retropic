@@ -18,12 +18,10 @@ public class Vic20Config extends PetsciiConfig {
 	@Override
 	public String getConfigString() {
 		switch (mode) {
-		case HIRES:
+		default:
 			return "176x184x2 ";
 		case LOWRES:
 			return "88x184x2 ";
-		default:
-			return "22x23x2 ";
 		}
 	}
 

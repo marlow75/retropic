@@ -387,6 +387,7 @@ public class Gfx {
 				yuv2RGB(cdfScale(cdf, yuv[3], max), yuv[3 + 1], yuv[3 + 2], pixels, wp);
 			}
 	}
+	
 
 	// CLAHE
 	public static final void CLAHE(final byte pixels[], final int window, int brightness, final int width,
@@ -645,51 +646,41 @@ public class Gfx {
 	}
 	
 	public static void downsampling(final byte pixels[], final int bitsPerColor, final int error) {
-		int x = 1 << bitsPerColor - 1;
-		final int y = 1 << (8 - bitsPerColor);
-		
-		float or = 0;
-		float og = 0;
-		float ob = 0;
-		
-		float er = 0;
-		float eg = 0;
-		float eb = 0;
-		
-		float prvr = 0, prvg = 0, prvb = 0;
-		
-		for (int i = 0; i < pixels.length; i += 3) {
-			or = (int) (pixels[i + 0] & 0xff);
-			og = (int) (pixels[i + 1] & 0xff);
-			ob = (int) (pixels[i + 2] & 0xff);
-			
-			// error feedback
-			int r0 = (int) (or - error * 0.05f * er);
-			int g0 = (int) (og - error * 0.05f * eg);
-			int b0 = (int) (ob - error * 0.05f * eb);
-			
-			float rnd = (float) (2 * Math.random() - 1);
-			final int r = Math.round(r0 + x * (rnd - prvr)) / y * y;
-			
-			er = r - or;
-			prvr = rnd;
-			
-			rnd = (float) (2 * Math.random() - 1);
-			final int g = Math.round(g0 + x * (rnd - prvg)) / y * y;
-			
-			eg = g - og;
-			prvg = rnd;
-			
-			rnd = (float) (2 * Math.random() - 1);
-			final int b = Math.round(b0 + x * (rnd - prvb)) / y * y;
-			
-			eb = b - ob;
-			prvb = rnd;
-			
-			pixels[i + 0] = (byte) (r < 0 ? 0 : r > 255 ? 255 : r);
-			pixels[i + 1] = (byte) (g < 0 ? 0 : g > 255 ? 255 : g);
-			pixels[i + 2] = (byte) (b < 0 ? 0 : b > 255 ? 255 : b);	
-		}
+	    final int quantBase = 1 << (8 - bitsPerColor);
+	    final int quantStep = quantBase / 2;
+
+	    float er = 0, eg = 0, eb = 0;
+	    float prvr = 0, prvg = 0, prvb = 0;
+
+	    for (int i = 0; i < pixels.length; i += 3) {
+	        float or = (pixels[i] & 0xff);
+	        float og = (pixels[i + 1] & 0xff);
+	        float ob = (pixels[i + 2] & 0xff);
+
+	        // error feedback
+	        float r0 = or - error * 0.05f * er;
+	        float g0 = og - error * 0.05f * eg;
+	        float b0 = ob - error * 0.05f * eb;
+
+	        float rnd = (float) (2 * Math.random() - 1);
+	        int r = Math.round((r0 + quantStep * (rnd - prvr)) / quantBase) * quantBase;
+	        er = r - or;
+	        prvr = rnd;
+
+	        rnd = (float) (2 * Math.random() - 1);
+	        int g = Math.round((g0 + quantStep * (rnd - prvg)) / quantBase) * quantBase;
+	        eg = g - og;
+	        prvg = rnd;
+
+	        rnd = (float) (2 * Math.random() - 1);
+	        int b = Math.round((b0 + quantStep * (rnd - prvb)) / quantBase) * quantBase;
+	        eb = b - ob;
+	        prvb = rnd;
+
+	        pixels[i] = (byte) Math.max(0, Math.min(255, r));
+	        pixels[i + 1] = (byte) Math.max(0, Math.min(255, g));
+	        pixels[i + 2] = (byte) Math.max(0, Math.min(255, b));
+	    }
 	}
 
 	public static void errorDiffuseDithering(final byte pixels[], final int palette[][], final Config config) {

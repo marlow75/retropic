@@ -52,7 +52,6 @@ public class CPCGui {
 		rdbtnMulticolorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				config.screen_mode = CPCConfig.SCREEN_MODE.MODE0;
-				config.dither_alg = DITHERING.BLUE8x8;
 			}
 		});
 

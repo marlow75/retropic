@@ -2,8 +2,6 @@ package pl.dido.image.utils.neural;
 
 import java.util.ArrayList;
 
-import at.fhtw.ai.nn.utils.NetworkProgressListener;
-
 public class SOMMulticolorCharsetNetwork {
 
 	protected MulticolorNeuron matrix[][];
@@ -130,7 +128,7 @@ public class SOMMulticolorCharsetNetwork {
 		return 2f * tp / (2f * tp + fp + fn);
 	}
 		
-	protected Position getBMU(final float sample[]) {
+	public Position getBMU(final float sample[]) {
 		float max = 0;
 		int bx = 0, by = 0;
 

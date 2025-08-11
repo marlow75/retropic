@@ -2,13 +2,15 @@ package pl.dido.image.petscii;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import at.fhtw.ai.nn.utils.*;
 
 import pl.dido.image.renderer.AbstractRenderer;
 import pl.dido.image.utils.C64PaletteCalculator;
 import pl.dido.image.utils.Config;
 import pl.dido.image.utils.Gfx;
 import pl.dido.image.utils.Utils;
+import pl.dido.image.utils.neural.FastAutoencoder;
+import pl.dido.image.utils.neural.FastClassifier;
+import pl.dido.image.utils.neural.Network;
 
 public class PetsciiRenderer extends AbstractRenderer {
 	protected final static int power2[] = new int[] { 128, 64, 32, 16, 8, 4, 2, 1 };
@@ -40,13 +42,12 @@ public class PetsciiRenderer extends AbstractRenderer {
 		palette = new int[16][3];
 		
 		try {
-			neural = new HL1SoftmaxNetwork(64, 16, 256);
-			
-			charset = Utils.loadCharset(Utils.getResourceAsStream(PETSCII_CHARSET));
+			neural = new FastClassifier(64, 16, 256);
 			neural.load(Utils.getResourceAsStream(PETSCII_NETWORK_L1));
 			
+			charset = Utils.loadCharset(Utils.getResourceAsStream(PETSCII_CHARSET));
 			if (config.denoise) {
-				encoder = new Autoencoder(64, 32, 64);
+				encoder = new FastAutoencoder(64, 32, 64);
 				encoder.load(Utils.getResourceAsStream(PETSCII_ENCODER));	
 			} 
 		} catch (final IOException e) {
@@ -54,7 +55,8 @@ public class PetsciiRenderer extends AbstractRenderer {
 		}
 	}
 
-	protected void draw() {
+	@Override
+	protected void imagePostproces() {
 		// tiles screen and pattern
 		final int work[] = new int[64 * 3];
 		final float tile[] = new float[64];
@@ -89,7 +91,6 @@ public class PetsciiRenderer extends AbstractRenderer {
 		nb = palette[k][2];
 
 		final float back_luma = Gfx.getLuma(nr, ng, nb);
-
 		for (int y = 0; y < 200; y += 8) {
 			final int p = y * 320 * 3;
 
@@ -125,7 +126,7 @@ public class PetsciiRenderer extends AbstractRenderer {
 				final int fr = cf[0];
 				final int fg = cf[1];
 				final int fb = cf[2];
-
+				
 				for (int y0 = 0; y0 < 8; y0++)
 					for (int x0 = 0; x0 < 8; x0++) {
 						final int pyx0 = y0 * 24 + x0 * 3;
@@ -215,11 +216,6 @@ public class PetsciiRenderer extends AbstractRenderer {
 	@Override
 	protected void setupPalette() {
 		palette = C64PaletteCalculator.getCalculatedPalette();
-	}
-
-	@Override
-	protected void imagePostproces() {
-		draw();
 	}
 
 	@Override

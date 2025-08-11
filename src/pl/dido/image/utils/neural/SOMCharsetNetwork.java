@@ -1,8 +1,6 @@
 package pl.dido.image.utils.neural;
 
 import java.util.ArrayList;
-
-import at.fhtw.ai.nn.utils.NetworkProgressListener;
 import pl.dido.image.utils.BitVector;
 
 public class SOMCharsetNetwork {
@@ -10,7 +8,7 @@ public class SOMCharsetNetwork {
 	protected Neuron matrix[][];
 	protected int width, height;
 
-	protected float radius = 0.4f;
+	protected float radius = 0.6f;
 	protected int epoch = 10;
 
 	protected ArrayList<NetworkProgressListener> listeners;
@@ -126,7 +124,7 @@ public class SOMCharsetNetwork {
 		return 2 * tp / (2 * tp + fp + fn);
 	}
 
-	protected Position getBMU(final BitVector sample) {
+	public Position getBMU(final BitVector sample) {
 		float max = 0;
 		int bx = 0, by = 0;
 
@@ -169,8 +167,9 @@ class Neuron {
 	}
 
 	public void add(final BitVector vec, final float gain) {
-		for (int i = 0; i < 64; i++)
+		for (int i = 0; i < 64; i++) {
 			counters[i] += vec.getQuick(i) ? gain : -gain;
+		}
 	}
 
 	public BitVector getVector() {

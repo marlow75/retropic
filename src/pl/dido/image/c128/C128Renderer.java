@@ -142,7 +142,7 @@ public class C128Renderer extends AbstractRenderer {
 		case BLUE16x16, BLUE8x8:
 			return 7;
 		case NOISE:
-			return 6;
+			return 3;
 		default:
 			return 8;
 		}

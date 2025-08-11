@@ -493,6 +493,8 @@ public class Amiga500Renderer extends AbstractPictureColorsRenderer {
 		switch (config.dither_alg) {
 		case BLUE16x16, BLUE8x8:
 			return 28;
+		case NOISE:
+			return 4;
 		default:
 			return 16;
 		}

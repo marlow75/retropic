@@ -23,7 +23,7 @@ public abstract class AbstractRendererRunner implements Runnable {
 	protected int windowWidth;
 	protected int windowHeight;
 
-	protected JFrame frame;
+	public JFrame frame;
 	protected Canvas canvas;
 
 	protected BufferStrategy bufferStrategy;

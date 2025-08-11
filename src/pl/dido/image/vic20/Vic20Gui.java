@@ -4,7 +4,6 @@ import java.awt.Canvas;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -17,11 +16,10 @@ import pl.dido.image.utils.ImageCanvas;
 import pl.dido.image.vic20.Vic20Config.VIDEO_MODE;
 
 public class Vic20Gui {
-	public static final String TEXT   = "Text 22x23x2";
 	public static final String HIRES  = "Hires 174x184x2";
 	public static final String LOWRES = "Lowres 88x184x4";
 	
-	final private static String[] modesStrings = { TEXT, HIRES, LOWRES };
+	final private static String[] modesStrings = { HIRES, LOWRES };
 	
 	public static JPanel vic20Tab(final Vic20Config config) {
 		final JPanel vic20Panel = new JPanel();
@@ -45,9 +43,6 @@ public class Vic20Gui {
 		        final String modeName = (String) cb.getSelectedItem();
 		        
 		        switch (modeName) {
-		        case TEXT:
-		        	config.mode = VIDEO_MODE.PETSCII; 
-		        	break;
 		        case HIRES:
 		        	config.mode = VIDEO_MODE.HIRES;
 		        	break;
@@ -79,20 +74,6 @@ public class Vic20Gui {
 		sldDetect.setMajorTickSpacing(2);
 		sldDetect.setPaintLabels(true);
 		vic20Panel.add(sldDetect);
-
-		final JCheckBox chckbxDenoiseCheckBox = new JCheckBox("denoising filter");
-		chckbxDenoiseCheckBox.setToolTipText("Neural net denoise filter (autoencoder)");
-		chckbxDenoiseCheckBox.setFont(GuiUtils.std);
-		chckbxDenoiseCheckBox.setBounds(150, 166, 150, 20);
-		chckbxDenoiseCheckBox.setSelected(config.denoise);
-
-		chckbxDenoiseCheckBox.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				config.denoise = !config.denoise;
-			}
-		});
-
-		vic20Panel.add(chckbxDenoiseCheckBox);
 
 		final Canvas vic20Logo = new ImageCanvas("vic20.png");
 		vic20Logo.setBounds(335, 7, 150, 96);

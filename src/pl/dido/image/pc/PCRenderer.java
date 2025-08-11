@@ -3,13 +3,13 @@ package pl.dido.image.pc;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
-import at.fhtw.ai.nn.utils.Autoencoder;
-import at.fhtw.ai.nn.utils.HL1SoftmaxNetwork;
-import at.fhtw.ai.nn.utils.Network;
 import pl.dido.image.renderer.AbstractRenderer;
 import pl.dido.image.utils.Config;
 import pl.dido.image.utils.Gfx;
 import pl.dido.image.utils.Utils;
+import pl.dido.image.utils.neural.FastAutoencoder;
+import pl.dido.image.utils.neural.FastClassifier;
+import pl.dido.image.utils.neural.Network;
 
 public class PCRenderer extends AbstractRenderer {
 	// CGA palette
@@ -23,33 +23,33 @@ public class PCRenderer extends AbstractRenderer {
 
 	protected final static String PCASCII_NETWORK_L1 = "cga.L1network";
 	protected final static String PCASCII_ENCODER = "cga.autoencoder";
-	
+
 	protected final static String PC_CHARSET = "cga.bin";
 	protected int screen[], color[];
 
-	protected Network neural, encoder; // matches pattern with petscii
+	protected Network neural, encoder; // matches pattern
 	protected byte charset[]; // charset 8x8 pixels per char
 
 	protected int background[][] = new int[8][3];
 
 	protected void initialize() {
 		palette = new int[16][3];
-		
+
 		try {
-			neural = new HL1SoftmaxNetwork(64, 16, 256);
-			
+			neural = new FastClassifier(64, 16, 256);
+
 			charset = Utils.loadCharset(Utils.getResourceAsStream(PC_CHARSET));
 			neural.load(Utils.getResourceAsStream(PCASCII_NETWORK_L1));
-			
+
 			if (config.denoise) {
-				encoder = new Autoencoder(64, 32, 64);
-				encoder.load(Utils.getResourceAsStream(PCASCII_ENCODER));	
-			} 
+				encoder = new FastAutoencoder(64, 32, 64);
+				encoder.load(Utils.getResourceAsStream(PCASCII_ENCODER));
+			}
 		} catch (final IOException e) {
 			throw new RuntimeException(e);
 		}
 
-		switch (((PCConfig)config).video_mode) {
+		switch (((PCConfig) config).video_mode) {
 		case CGA_TEXT:
 			screen = new int[2000];
 			color = new int[2000];
@@ -121,19 +121,14 @@ public class PCRenderer extends AbstractRenderer {
 
 	@Override
 	protected void imagePostproces() {
-		ascii();
-	}
-
-	protected void ascii() {
 		// tiles screen and pattern
 		final int work[] = new int[64 * 3];
 		final float tile[] = new float[64];
 
 		final int width = config.getScreenWidth();
 		final int height = config.getScreenHeight();
-		
-		final int txtWidth = width / 8;
 
+		final int txtWidth = width / 8;
 		for (int y = 0; y < height; y += 8) {
 			final int p = y * width * 3;
 
@@ -161,7 +156,7 @@ public class PCRenderer extends AbstractRenderer {
 							mf = luma;
 							f = Gfx.getColorIndex(colorAlg, palette, r, g, b);
 						}
-						
+
 						if (luma < mn) {
 							mn = luma;
 							n = Gfx.getColorIndex(colorAlg, background, r, g, b);
@@ -207,10 +202,10 @@ public class PCRenderer extends AbstractRenderer {
 					neural.forward(tile);
 
 				final float[] result = neural.getResult();
-				
+
 				int code = 0;
 				float value = result[0];
-				
+
 				// get code of character in charset
 				for (int i = 0; i < 256; i++) {
 					final float d = result[i];
@@ -222,7 +217,7 @@ public class PCRenderer extends AbstractRenderer {
 
 				// colors
 				final int address = (y >> 3) * txtWidth + (x >> 3);
-				
+
 				color[address] = f | (n << 4);
 				screen[address] = code;
 

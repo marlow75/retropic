@@ -313,7 +313,7 @@ public class ZXRenderer extends AbstractRenderer {
 		case BAYER2x2:
 			return 3;
 		default:
-			return 5;
+			return 4;
 		}
 	}
 }

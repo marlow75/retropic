@@ -709,7 +709,7 @@ public class Plus4ExtraRenderer extends AbstractRenderer {
 		case BLUE16x16, BLUE8x8:
 			return 32;
 		case NOISE:
-			return 5;
+			return 3;
 		default:
 			return 6;
 		}

@@ -484,9 +484,9 @@ public class CPCRenderer extends AbstractRenderer {
 	protected int getColorBitDepth() {
 		switch (((CPCConfig) config).dither_alg) {
 		case BLUE8x8, BLUE16x16:
-			return 16;
+			return 4;
 		case NOISE:
-			return 2;
+			return 3;
 		default:
 			return 3;
 		}
