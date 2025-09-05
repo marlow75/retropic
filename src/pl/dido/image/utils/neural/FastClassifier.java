@@ -101,6 +101,7 @@ public class FastClassifier implements Network {
         // early stopping - inicjalizacja
         bestWeightsInputHidden = new float[inputSize][hiddenSize];
         bestWeightsHiddenOutput = new float[hiddenSize][outputSize];
+        
         bestBiasHidden = new float[hiddenSize];
         bestBiasOutput = new float[outputSize];
 

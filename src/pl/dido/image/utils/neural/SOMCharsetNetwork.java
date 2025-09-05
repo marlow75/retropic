@@ -112,7 +112,7 @@ public class SOMCharsetNetwork {
 		return (float) Math.exp((-1f * (d * d)) / (2f * (r * r)));
 	}
 
-	protected final static float diceSimilarity(final BitVector a, final BitVector b) {
+	protected final static float binarySimilarity(final BitVector a, final BitVector b) {
 		float tp = 0, fn = 0, fp = 0;
 
 		for (int i = 0; i < 64; i++) {
@@ -133,7 +133,7 @@ public class SOMCharsetNetwork {
 
 			for (int x = 0; x < width; x++) {
 				final BitVector vec = line[x].getVector();
-				final float m = diceSimilarity(vec, sample);
+				final float m = binarySimilarity(vec, sample);
 				
 				if (m > max) {
 					max = m;

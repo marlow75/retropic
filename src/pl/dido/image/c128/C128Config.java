@@ -24,13 +24,5 @@ public class C128Config extends Config {
 	@Override
 	public int getScreenHeight() {
 		return 200;
-	}
-	
-	public int getWindowHeight() {
-		return 400;
-	}
-
-	public int getWindowWidth() {
-		return 640;
-	}
+	}	
 }

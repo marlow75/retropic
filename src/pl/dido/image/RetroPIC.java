@@ -252,6 +252,7 @@ public class RetroPIC {
 						if (flavor.isFlavorJavaFileListType()) {
 							@SuppressWarnings("unchecked")
 							final List<File> files = (List<File>) transferable.getTransferData(flavor);
+							
 							loadImage(files.get(0), tabbedPane.getSelectedIndex());
 							default_path = files.get(0).getAbsolutePath();
 						}

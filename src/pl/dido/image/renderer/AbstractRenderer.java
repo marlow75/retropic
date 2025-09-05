@@ -7,7 +7,6 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-import pl.dido.image.amiga.AmigaConfig;
 import pl.dido.image.utils.Config;
 import pl.dido.image.utils.Config.NEAREST_COLOR;
 import pl.dido.image.utils.Gfx;
@@ -89,7 +88,7 @@ public abstract class AbstractRenderer {
 		setupPalette();
 
 		imageDithering();
-//		runner.showImage();
+		//runner.showImage();
 
 		imagePostproces();
 		generatePALView();
@@ -102,7 +101,7 @@ public abstract class AbstractRenderer {
 			Gfx.HE(pixels);
 			break;
 		case CLAHE:
-			Gfx.CLAHE(pixels, config instanceof AmigaConfig ? 16 : 8, config.details, screenWidth, screenHeight);
+			Gfx.CLAHE(pixels, 8, config.details, screenWidth, screenHeight);
 			break;
 		case SWAHE:
 			Gfx.SWAHE(pixels, config.window_size, config.details, screenWidth, screenHeight);

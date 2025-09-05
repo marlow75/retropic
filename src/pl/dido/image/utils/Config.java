@@ -1,7 +1,7 @@
 package pl.dido.image.utils;
 
 abstract public class Config implements Cloneable {
-	
+
 	public enum FILTER {
 		NONE, LOWPASS, SHARPEN, EMBOSS, EDGES_BLEND;
 	}
@@ -11,8 +11,7 @@ abstract public class Config implements Cloneable {
 	}
 
 	public enum DITHERING {
-		NONE, FLOYDS, ATKINSON, NOISE, BAYER2x2, BAYER4x4, 
-		BAYER8x8, BAYER16x16, BLUE8x8, BLUE16x16
+		NONE, FLOYDS, ATKINSON, NOISE, BAYER2x2, BAYER4x4, BAYER8x8, BAYER16x16, BLUE8x8, BLUE16x16
 	};
 
 	public enum NEAREST_COLOR {
@@ -24,31 +23,31 @@ abstract public class Config implements Cloneable {
 
 	public HIGH_CONTRAST high_contrast;
 	public int window_size;
-	
+
 	public int details;
 	public int error_threshold;
-	
+
 	public static String export_path;
 	public FILTER filter;
-	
+
 	public float lowpass_gain;
 	public boolean denoise;
-	
+
 	public DITHERING dither_alg;
 	public NEAREST_COLOR color_alg;
-	
+
 	public boolean black_white;
 	public boolean allow_luminance;
-	
+
 	public boolean predithering;
-	
+
 	public Config() {
 		dither_alg = DITHERING.ATKINSON;
 		color_alg = NEAREST_COLOR.PERCEPTED;
 
 		preserve_aspect = false;
 		black_white = false;
-		
+
 		high_contrast = HIGH_CONTRAST.NONE;
 		window_size = 40;
 
@@ -57,10 +56,10 @@ abstract public class Config implements Cloneable {
 
 		pal_view = true;
 		filter = FILTER.NONE;
-		
+
 		error_threshold = 0;
 		allow_luminance = true;
-		
+
 		lowpass_gain = 1.1f;
 		denoise = false;
 	}
@@ -69,11 +68,11 @@ abstract public class Config implements Cloneable {
 	public abstract int getScreenHeight();
 
 	public int getWindowHeight() {
-		return 457;
+		return 450;
 	}
 
 	public int getWindowWidth() {
-		return 540;
+		return getWindowHeight() * 4 / 3;
 	}
 
 	public String getConfigString() {
@@ -89,7 +88,7 @@ abstract public class Config implements Cloneable {
 		case NOISE:
 			configString += "noise ";
 			break;
-		case BAYER2x2: 
+		case BAYER2x2:
 		case BAYER4x4:
 		case BAYER8x8:
 		case BAYER16x16:
@@ -102,7 +101,7 @@ abstract public class Config implements Cloneable {
 		default:
 			break;
 		}
-		
+
 		switch (high_contrast) {
 		case HE:
 			configString += "HE ";
@@ -144,7 +143,7 @@ abstract public class Config implements Cloneable {
 			configString += "sharpen ";
 			break;
 		}
-		
+
 		configString += denoise ? "denoiser " : "";
 		return configString;
 	}

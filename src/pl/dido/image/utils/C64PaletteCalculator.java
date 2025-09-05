@@ -28,7 +28,7 @@ public class C64PaletteCalculator {
 		// most common
 		lumas = new int[16];
 
-		lumas[0x6] = lumas[0x9] = 8; // Blue, Brown
+		lumas[0x6] = lumas[0x9] = 8;  // Blue, Brown
 		lumas[0xb] = lumas[0x2] = 10; // Dk.Grey, Red
 		lumas[0x4] = lumas[0x8] = 12; // Purple, Orange
 		lumas[0xc] = lumas[0xe] = 15; // Md.Grey, Lt.Blue

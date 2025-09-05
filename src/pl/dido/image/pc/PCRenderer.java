@@ -16,9 +16,6 @@ public class PCRenderer extends AbstractRenderer {
 	private final static int cgaColors[] = new int[] { 0x000000, 0x0000AA, 0x00AA00, 0x00AAAA, 0xAA0000, 0xAA00AA,
 			0xAA5500, 0xAAAAAA, 0x555555, 0x5555FF, 0x55FF55, 0x55FFFF, 0xFF5555, 0xFF55FF, 0xFFFF55, 0xFFFFFF };
 
-	private final static int vgaColors[] = new int[] { 0x000000, 0x0000aa, 0x00aa00, 0x00aaaa, 0xaa0000, 0xaa00aa,
-			0xaa5500, 0xaaaaaa, 0x555555, 0x5555ff, 0x55ff55, 0x55ffff, 0xff5555, 0xff55ff, 0xffff55, 0xffffff };
-
 	private final static int power2[] = new int[] { 128, 64, 32, 16, 8, 4, 2, 1 };
 
 	protected final static String PCASCII_NETWORK_L1 = "cga.L1network";
@@ -87,35 +84,16 @@ public class PCRenderer extends AbstractRenderer {
 
 	@Override
 	protected void setupPalette() {
-		switch (((PCConfig) config).video_mode) {
-		case CGA_TEXT:
-			for (int i = 0; i < cgaColors.length; i++) {
-				palette[i][0] = (cgaColors[i] & 0x0000ff); // blue
-				palette[i][1] = (cgaColors[i] & 0x00ff00) >> 8; // green
-				palette[i][2] = (cgaColors[i] & 0xff0000) >> 16; // red
-			}
+		for (int i = 0; i < cgaColors.length; i++) {
+			palette[i][0] = (cgaColors[i] & 0x0000ff); // blue
+			palette[i][1] = (cgaColors[i] & 0x00ff00) >> 8; // green
+			palette[i][2] = (cgaColors[i] & 0xff0000) >> 16; // red
+		}
 
-			for (int i = 0; i < cgaColors.length / 2; i++) {
-				background[i][0] = (cgaColors[i] & 0x0000ff); // blue
-				background[i][1] = (cgaColors[i] & 0x00ff00) >> 8; // green
-				background[i][2] = (cgaColors[i] & 0xff0000) >> 16; // red
-			}
-
-			break;
-		case VESA_TEXT:
-			for (int i = 0; i < vgaColors.length; i++) {
-				palette[i][0] = (vgaColors[i] & 0x0000ff); // blue
-				palette[i][1] = (vgaColors[i] & 0x00ff00) >> 8; // green
-				palette[i][2] = (vgaColors[i] & 0xff0000) >> 16; // red
-			}
-
-			for (int i = 0; i < vgaColors.length / 2; i++) {
-				background[i][0] = (vgaColors[i] & 0x0000ff); // blue
-				background[i][1] = (vgaColors[i] & 0x00ff00) >> 8; // green
-				background[i][2] = (vgaColors[i] & 0xff0000) >> 16; // red
-			}
-
-			break;
+		for (int i = 0; i < cgaColors.length / 2; i++) {
+			background[i][0] = (cgaColors[i] & 0x0000ff); // blue
+			background[i][1] = (cgaColors[i] & 0x00ff00) >> 8; // green
+			background[i][2] = (cgaColors[i] & 0xff0000) >> 16; // red
 		}
 	}
 
@@ -215,7 +193,7 @@ public class PCRenderer extends AbstractRenderer {
 					}
 				}
 
-				// colors
+				// address
 				final int address = (y >> 3) * txtWidth + (x >> 3);
 
 				color[address] = f | (n << 4);

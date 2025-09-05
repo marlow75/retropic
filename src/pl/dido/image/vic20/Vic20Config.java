@@ -10,7 +10,7 @@ public class Vic20Config extends PetsciiConfig {
 	public Vic20Config() {
 		super();
 		
-		mode = VIDEO_MODE.PETSCII;
+		mode = VIDEO_MODE.HIRES;
 		dither_alg = DITHERING.NONE;
 		filter = FILTER.LOWPASS;
 	}
@@ -21,7 +21,7 @@ public class Vic20Config extends PetsciiConfig {
 		default:
 			return "176x184x2 ";
 		case LOWRES:
-			return "88x184x2 ";
+			return "88x184x4 ";
 		}
 	}
 

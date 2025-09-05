@@ -40,8 +40,6 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 	protected SOMCharsetNetwork som1;
 	protected SOMMulticolorCharsetNetwork som2;
 
-	// protected String networkFile;
-
 	protected void initialize() {
 		foregroundPalette = new int[8][3];
 		palette = new int[16][3];
@@ -128,7 +126,6 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 			ng = pixels[i + 1] & 0xff;
 			nb = pixels[i + 2] & 0xff;
 
-			// dimmer better
 			occurrence[Gfx.getColorIndex(colorAlg, palette, nr, ng, nb)] += (255 - Gfx.getLuma(nr, ng, nb));
 		}
 
@@ -284,7 +281,6 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 				final int fb = cf[2];
 				
 				vec.clear();
-
 				for (int y0 = 0; y0 < 8; y0++)
 					for (int x0 = 0; x0 < 8; x0++) {
 						final int pyx0 = y0 * 24 + x0 * 3;
@@ -297,7 +293,7 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 						final float df = Gfx.getDistance(colorAlg, r, g, b, fr, fg, fb);
 						final float db = Gfx.getDistance(colorAlg, r, g, b, nr, ng, nb);
 
-						if (df <= db)
+						if (df < db)
 							vec.set(y0 * 8 + x0);
 					}
 
@@ -355,7 +351,7 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 				final int g = (g1 + g2) >> 1;
 				final int b = (b1 + b2) >> 1;
 
-				final int i = getColorIndex(r, g, b);
+				final int i = Gfx.getColorIndex(colorAlg, foregroundPalette, r, g, b);
 				final int c[] = palette[i];
 
 				newPixels[index++] = c[0];
@@ -371,7 +367,7 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 		final SOMDataset<float[]> dataset = new SOMDataset<float[]>();
 		final int[] newPixels = new int[88 * 184 * 3]; // 88x184
 
-		final int occurrence[] = new int[16];
+		final int occurrence[] = new int[8];
 		shrink88(newPixels, occurrence);
 
 		final Integer indexes[] = new Integer[] { 0, 1, 2, 3, 4, 5, 6, 7 };
@@ -421,7 +417,7 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 
 	protected void lowres() {
 		final int[] newPixels = new int[88 * 184 * 3]; // 88x184
-		final int occurrence[] = new int[16]; // tiles screen and pattern
+		final int occurrence[] = new int[8]; // tiles screen and pattern
 
 		shrink88(newPixels, occurrence);
 		final Integer indexes[] = new Integer[] { 0, 1, 2, 3, 4, 5, 6, 7 };

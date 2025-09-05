@@ -46,10 +46,9 @@ public class PetsciiRenderer extends AbstractRenderer {
 			neural.load(Utils.getResourceAsStream(PETSCII_NETWORK_L1));
 			
 			charset = Utils.loadCharset(Utils.getResourceAsStream(PETSCII_CHARSET));
-			if (config.denoise) {
-				encoder = new FastAutoencoder(64, 32, 64);
-				encoder.load(Utils.getResourceAsStream(PETSCII_ENCODER));	
-			} 
+
+			encoder = new FastAutoencoder(64, 32, 64);
+			encoder.load(Utils.getResourceAsStream(PETSCII_ENCODER));	
 		} catch (final IOException e) {
 			throw new RuntimeException(e);
 		}

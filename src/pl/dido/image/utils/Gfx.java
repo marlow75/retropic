@@ -3,13 +3,13 @@ package pl.dido.image.utils;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferInt;
 import java.awt.image.Raster;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import pl.dido.image.utils.Config.DITHERING;
 import pl.dido.image.utils.Config.NEAREST_COLOR;
@@ -187,19 +187,82 @@ public class Gfx {
 		final float w = a < b ? a : b;
 		return w < c ? w : c;
 	}
-	
-	public static final BufferedImage scaleWithStretching(final BufferedImage image, final int maxX, final int maxY) {
-		final int x = image.getWidth();
-		final int y = image.getHeight();
 
-		final float sx = maxX / (float) x;
-		final float sy = maxY / (float) y;
+	private static final Map<Float, Float> lanczosCache = new HashMap<>();
 
-		final BufferedImage scaled = new BufferedImage(maxX, maxY, image.getType());
-		final AffineTransform si = AffineTransform.getScaleInstance(sx, sy);
+	private final static float lanczos(final float x) {
+		if (lanczosCache.containsKey(x))
+			return lanczosCache.get(x);
 
-		final AffineTransformOp transform = new AffineTransformOp(si, AffineTransformOp.TYPE_BICUBIC);
-		transform.filter(image, scaled);
+		final float result;
+		if (x == 0f)
+			result = 1f;
+		else if (Math.abs(x) >= 2f)
+			result = 0f;
+		else {
+			final float pix = (float) (Math.PI * x);
+			result = (2f * (float) Math.sin(pix) * (float) Math.sin(pix / 2f)) / (pix * pix);
+		}
+
+		lanczosCache.put(x, result);
+		return result;
+	}
+
+	public static final BufferedImage scaleWithStretching(final BufferedImage src, final int maxX, final int maxY) {
+		final BufferedImage scaled = new BufferedImage(maxX, maxY, BufferedImage.TYPE_3BYTE_BGR);
+
+		final byte[] scaledPixels = ((DataBufferByte) scaled.getRaster().getDataBuffer()).getData();
+		final byte[] srcPixels = ((DataBufferByte) src.getRaster().getDataBuffer()).getData();
+
+		final int srcMaxX = src.getWidth();
+		final int srcMaxY = src.getHeight();
+
+		final float scaleX = (float) srcMaxX / maxX;
+		final float scaleY = (float) srcMaxY / maxY;
+
+		int index = 0;
+		for (int y = 0; y < maxY; y++) {
+			final float srcY = (y + 0.5f) * scaleY - 0.5f;
+
+			for (int x = 0; x < maxX; x++) {
+				final float srcX = (x + 0.5f) * scaleX - 0.5f;
+				float r = 0f, g = 0f, b = 0f, weightSum = 0f;
+
+				final int startJ = (int) (srcY - 2 + 1);
+				final int endJ = (int) (srcY + 2);
+
+				for (int j = startJ; j <= endJ; j++) {
+					if (j < 0 || j >= srcMaxY)
+						continue;
+
+					final float wy = lanczos(srcY - j);
+					final int jwidth = j * srcMaxX * 3;
+
+					final int startI = (int) (srcX - 2 + 1);
+					final int endI = (int) (srcX + 2);
+
+					for (int i = startI; i <= endI; i++) {
+						if (i < 0 || i >= srcMaxX)
+							continue;
+
+						final float wx = lanczos(srcX - i);
+						final float w = wx * wy;
+
+						final int address = jwidth + i * 3;
+
+						r += (srcPixels[address + 0] & 0xff) * w;
+						g += (srcPixels[address + 1] & 0xff) * w;
+						b += (srcPixels[address + 2] & 0xff) * w;
+
+						weightSum += w;
+					}
+				}
+
+				scaledPixels[index++] = (byte) saturate(Math.round(r / weightSum));
+				scaledPixels[index++] = (byte) saturate(Math.round(g / weightSum));
+				scaledPixels[index++] = (byte) saturate(Math.round(b / weightSum));
+			}
+		}
 
 		return scaled;
 	}
@@ -212,19 +275,18 @@ public class Gfx {
 		g.setPaint(new Color(0, 0, 0)); // black background
 		g.fillRect(0, 0, maxX, maxY);
 
-		final float x = image.getWidth();
-		final float y = image.getHeight();
+		float x = image.getWidth();
+		float y = image.getHeight();
 
 		final float ratio = Math.min(maxX / x, maxY / y);
 
-		final BufferedImage scaled = new BufferedImage(maxX, maxY, image.getType());
-		final AffineTransform si = AffineTransform.getScaleInstance(ratio, ratio);
+		x *= ratio;
+		y *= ratio;
 
-		final AffineTransformOp scale = new AffineTransformOp(si, AffineTransformOp.TYPE_BICUBIC);
-		scale.filter(image, scaled);
+		final BufferedImage scaled = scaleWithStretching(image, (int) x, (int) y);
 
-		final int px = (int) ((maxX - x * ratio) / 2);
-		final int py = (int) ((maxY - y * ratio) / 2);
+		final int px = (int) ((maxX - x) / 2);
+		final int py = (int) ((maxY - y) / 2);
 
 		g.drawImage(scaled, px, py, null);
 		return img;
@@ -267,7 +329,6 @@ public class Gfx {
 		}
 
 		calcCdf(cdf, histogram);
-
 		for (int i = 0; i < len; i += 3)
 			yuv2RGB(cdfScale(cdf, yuv[i], max), yuv[i + 1], yuv[i + 2], pixels, i);
 	}
@@ -387,7 +448,6 @@ public class Gfx {
 				yuv2RGB(cdfScale(cdf, yuv[3], max), yuv[3 + 1], yuv[3 + 2], pixels, wp);
 			}
 	}
-	
 
 	// CLAHE
 	public static final void CLAHE(final byte pixels[], final int window, int brightness, final int width,
@@ -601,18 +661,19 @@ public class Gfx {
 			}
 		}
 	}
-	
-	public static float triangularDistribution(final float a, final float c, final float b) {
-        final float u = (float) Math.random();
-        final float fc = (c - a) / (b - a);
 
-        if (u < fc)
-            return a + (float)Math.sqrt(u * (b - a) * (c - a));
-        else
-            return b - (float)Math.sqrt((1 - u) * (b - a) * (b - c));
-    }
-	
-	public static void bayerDithering(final byte pixels[], final int palette[][], final int colorBitDepth, final Config config)  {
+	public static float triangularDistribution(final float a, final float c, final float b) {
+		final float u = (float) Math.random();
+		final float fc = (c - a) / (b - a);
+
+		if (u < fc)
+			return a + (float) Math.sqrt(u * (b - a) * (c - a));
+		else
+			return b - (float) Math.sqrt((1 - u) * (b - a) * (b - c));
+	}
+
+	public static void bayerDithering(final byte pixels[], final int palette[][], final int colorBitDepth,
+			final Config config) {
 		final int colors = (int) (colorBitDepth + (-config.error_threshold) * 0.15f * colorBitDepth);
 
 		final DITHERING dithering = config.dither_alg;
@@ -620,7 +681,7 @@ public class Gfx {
 
 		final int screenWidth = config.getScreenWidth();
 		final int screenHeight = config.getScreenHeight();
-		
+
 		switch (dithering) {
 		case BAYER2x2:
 			Gfx.bayer2x2(pixels, palette, colorAlg, screenWidth, screenHeight, colors);
@@ -644,43 +705,43 @@ public class Gfx {
 			break;
 		}
 	}
-	
+
 	public static void downsampling(final byte pixels[], final int bitsPerColor, final int error) {
-	    final int quantBase = 1 << (8 - bitsPerColor);
-	    final int quantStep = quantBase / 2;
+		final int quantBase = 1 << (8 - bitsPerColor);
+		final int quantStep = quantBase / 2;
 
-	    float er = 0, eg = 0, eb = 0;
-	    float prvr = 0, prvg = 0, prvb = 0;
+		float er = 0, eg = 0, eb = 0;
+		float prvr = 0, prvg = 0, prvb = 0;
 
-	    for (int i = 0; i < pixels.length; i += 3) {
-	        float or = (pixels[i] & 0xff);
-	        float og = (pixels[i + 1] & 0xff);
-	        float ob = (pixels[i + 2] & 0xff);
+		for (int i = 0; i < pixels.length; i += 3) {
+			float or = (pixels[i] & 0xff);
+			float og = (pixels[i + 1] & 0xff);
+			float ob = (pixels[i + 2] & 0xff);
 
-	        // error feedback
-	        float r0 = or - error * 0.05f * er;
-	        float g0 = og - error * 0.05f * eg;
-	        float b0 = ob - error * 0.05f * eb;
+			// error feedback
+			float r0 = or - error * 0.05f * er;
+			float g0 = og - error * 0.05f * eg;
+			float b0 = ob - error * 0.05f * eb;
 
-	        float rnd = (float) (2 * Math.random() - 1);
-	        int r = Math.round((r0 + quantStep * (rnd - prvr)) / quantBase) * quantBase;
-	        er = r - or;
-	        prvr = rnd;
+			float rnd = (float) (2 * Math.random() - 1);
+			int r = Math.round((r0 + quantStep * (rnd - prvr)) / quantBase) * quantBase;
+			er = r - or;
+			prvr = rnd;
 
-	        rnd = (float) (2 * Math.random() - 1);
-	        int g = Math.round((g0 + quantStep * (rnd - prvg)) / quantBase) * quantBase;
-	        eg = g - og;
-	        prvg = rnd;
+			rnd = (float) (2 * Math.random() - 1);
+			int g = Math.round((g0 + quantStep * (rnd - prvg)) / quantBase) * quantBase;
+			eg = g - og;
+			prvg = rnd;
 
-	        rnd = (float) (2 * Math.random() - 1);
-	        int b = Math.round((b0 + quantStep * (rnd - prvb)) / quantBase) * quantBase;
-	        eb = b - ob;
-	        prvb = rnd;
+			rnd = (float) (2 * Math.random() - 1);
+			int b = Math.round((b0 + quantStep * (rnd - prvb)) / quantBase) * quantBase;
+			eb = b - ob;
+			prvb = rnd;
 
-	        pixels[i] = (byte) Math.max(0, Math.min(255, r));
-	        pixels[i + 1] = (byte) Math.max(0, Math.min(255, g));
-	        pixels[i + 2] = (byte) Math.max(0, Math.min(255, b));
-	    }
+			pixels[i] = (byte) Math.max(0, Math.min(255, r));
+			pixels[i + 1] = (byte) Math.max(0, Math.min(255, g));
+			pixels[i + 2] = (byte) Math.max(0, Math.min(255, b));
+		}
 	}
 
 	public static void errorDiffuseDithering(final byte pixels[], final int palette[][], final Config config) {
@@ -930,8 +991,8 @@ public class Gfx {
 		}
 	}
 
-	public static void blue8x8(final int pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
-			final int width, final int height, final int error) {
+	public static void blue8x8(final int pixels[], final int palette[][], final NEAREST_COLOR colorAlg, final int width,
+			final int height, final int error) {
 
 		for (int y = 0; y < height; y++) {
 			final int width3 = width * 3;
@@ -1109,7 +1170,7 @@ public class Gfx {
 	public static final int bayer16x16(final int x0, final int y0, final int c, final int colors) {
 		return bayer(M16x16, x0, y0, c, colors);
 	}
-	
+
 	public static final int blue8x8(final int x0, final int y0, final int c, final int colors) {
 		return bayer(BLUE8x8, x0, y0, c, colors);
 	}
@@ -1194,7 +1255,7 @@ public class Gfx {
 
 		for (int i = 1; i < palette.length; i++) { // distance
 			color = palette[i];
-			
+
 			final float distance = perceptedDistance(r, g, b, color[0], color[1], color[2]);
 			if (distance < min) {
 				min = distance;
@@ -1245,6 +1306,7 @@ public class Gfx {
 
 		for (int i = 0; i < pixels.length; i++) {
 			final int address = i * 3;
+
 			final int r = pixels[i] & 0xff0000;
 			final int g = pixels[i] & 0xff0000;
 			final int b = pixels[i] & 0xff0000;
@@ -1405,11 +1467,11 @@ public class Gfx {
 			int r = pixels[i + 0] & 0xff;
 			int g = pixels[i + 1] & 0xff;
 			int b = pixels[i + 2] & 0xff;
-			
+
 			r = (int) Gfx.getLuma(b, g, r);
 			g = r;
 			b = r;
-			
+
 			pixels[i + 0] = (byte) r;
 			pixels[i + 1] = (byte) g;
 			pixels[i + 2] = (byte) b;

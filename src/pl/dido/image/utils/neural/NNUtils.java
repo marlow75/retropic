@@ -6,14 +6,14 @@ import java.util.Vector;
 
 public class NNUtils {
 
-	public static Vector<Dataset> loadData8x16(final InputStream inputStream) {
+	public static Vector<Dataset> loadData8x16(final InputStream inputStream, final int charsetSize) {
 		int byteRead = -1;
 
 		try {
 			final Vector<Dataset> result = new Vector<Dataset>();
 
-			for (int i = 0; i < 256; i++) { // first 256 characters
-				final float[] answer = new float[256];
+			for (int i = 0; i < charsetSize; i++) { // first size characters
+				final float[] answer = new float[charsetSize];
 				final float[] input = new float[8 * 16];
 
 				answer[i] = 1f;
