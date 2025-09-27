@@ -12,7 +12,9 @@ public class Vic20Config extends PetsciiConfig {
 		
 		mode = VIDEO_MODE.HIRES;
 		dither_alg = DITHERING.NONE;
-		filter = FILTER.LOWPASS;
+		
+		filter = FILTER.SHARPEN;
+		high_contrast = HIGH_CONTRAST.SWAHE;
 	}
 		
 	@Override

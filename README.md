@@ -10,6 +10,7 @@
 
 ## Version History
 
+- **1.18b** – Reworked Lanchos scaling, minor bug fixes in charset generator, advanced PAL simulation with bloom, moire, scanlines, viniete
 - **1.18** – Added Lanchos scaling, minor bug fixes
 - **1.17** – Improved neural algorithms, faster and more robust; reworked VIC-20 charset modes; minor bug fixes; removed third-party libraries
 - **1.16** – New noise dithering; added C128 VDC machine (640x200, 2 colors in 8x2 tile mode); improved MCI modes and edge filter

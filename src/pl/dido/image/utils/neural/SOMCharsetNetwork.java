@@ -40,28 +40,30 @@ public class SOMCharsetNetwork {
 			for (int x = 0; x < width; x++) {
 				final Neuron loc = new Neuron();
 				line[x] = loc;
-				
+
 				final int bits = (int) (Math.random() * 64);
 				for (int i = 0; i < bits; i++)
-					loc.set((int)(Math.random() * 64));
+					loc.set((int) (Math.random() * 64));
 			}
 		}
 	}
 
 	public byte[] train(final SOMDataset<BitVector> dataset) {
 		matrixInit();
+		
 		final float delta_radius = radius / (epoch + 1);
+		float currentEpoch = epoch, currentRadius = radius;
 
-		while (epoch-- > 0) {
+		while (currentEpoch-- > 0) {
 			dataset.reset();
 
 			for (int i = 0; i < dataset.size(); i++) {
 				final BitVector sample = dataset.getNext();
-				learn(getBMU(sample), sample);
+				learn(getBMU(sample), sample, currentRadius);
 			}
 
-			radius -= delta_radius;
-			notifyListeners(String.valueOf(epoch));
+			currentRadius -= delta_radius;
+			notifyListeners(String.valueOf(currentEpoch));
 		}
 
 		final byte result[] = new byte[width * height * 8];
@@ -92,7 +94,7 @@ public class SOMCharsetNetwork {
 		return result;
 	}
 
-	protected void learn(final Position best, final BitVector sample) {
+	protected void learn(final Position best, final BitVector sample, final float radius) {
 		for (int y = 0; y < height; y++) {
 			final Neuron line[] = matrix[y];
 
@@ -112,16 +114,27 @@ public class SOMCharsetNetwork {
 		return (float) Math.exp((-1f * (d * d)) / (2f * (r * r)));
 	}
 
-	protected final static float binarySimilarity(final BitVector a, final BitVector b) {
-		float tp = 0, fn = 0, fp = 0;
-
-		for (int i = 0; i < 64; i++) {
-			tp += a.getQuick(i) == b.getQuick(i) ? 1 : 0;
-			fp += !a.getQuick(i) == b.getQuick(i) ? 1 : 0;
-			fn += a.getQuick(i) == !b.getQuick(i) ? 1 : 0;
+	protected static float binarySimilarity(final BitVector a, final BitVector b) {
+		int i = 0, sa = 0, sb = 0;
+		
+		for (int k = 0; k < 64; k++) {
+			final boolean va = a.getQuick(k);
+			final boolean vb = b.getQuick(k);
+			
+			if (va)
+				sa++;
+			
+			if (vb)
+				sb++;
+			
+			if (va && vb)
+				i++;
 		}
-
-		return 2 * tp / (2 * tp + fp + fn);
+		
+		if (sa + sb == 0)
+			return 1f;
+		
+		return 2f * i / (sa + sb);
 	}
 
 	public Position getBMU(final BitVector sample) {
@@ -134,7 +147,7 @@ public class SOMCharsetNetwork {
 			for (int x = 0; x < width; x++) {
 				final BitVector vec = line[x].getVector();
 				final float m = binarySimilarity(vec, sample);
-				
+
 				if (m > max) {
 					max = m;
 
@@ -149,6 +162,8 @@ public class SOMCharsetNetwork {
 }
 
 class Neuron {
+	private BitVector vec = new BitVector(64);
+	
 	private static int counter;
 	private int number;
 
@@ -167,19 +182,16 @@ class Neuron {
 	}
 
 	public void add(final BitVector vec, final float gain) {
-		for (int i = 0; i < 64; i++) {
+		for (int i = 0; i < 64; i++)
 			counters[i] += vec.getQuick(i) ? gain : -gain;
-		}
 	}
 
 	public BitVector getVector() {
-		final BitVector vec = new BitVector(64);
-
+		vec.clear();
+		
 		for (int i = 0; i < 64; i++)
 			if (counters[i] > 0)
 				vec.set(i);
-			else
-				vec.clear(i);
 
 		return vec;
 	}

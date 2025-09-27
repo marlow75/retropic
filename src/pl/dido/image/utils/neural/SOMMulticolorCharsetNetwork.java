@@ -1,6 +1,7 @@
 package pl.dido.image.utils.neural;
 
 import java.util.ArrayList;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class SOMMulticolorCharsetNetwork {
 
@@ -30,39 +31,56 @@ public class SOMMulticolorCharsetNetwork {
 				listener.notifyProgress(msg);
 	}
 
-	protected void matrixInit() {
+	protected void matrixInit(final SOMDataset<float[]> dataset) {
 		matrix = new MulticolorNeuron[height][width];
+		final ThreadLocalRandom rnd = ThreadLocalRandom.current();
 
+		final ArrayList<float[]> samples = new ArrayList<float[]>();
+		dataset.reset();
+		
+		for (int i = 0; i < dataset.size(); i++)
+			samples.add(dataset.getNext().clone());
+		
 		for (int y = 0; y < height; y++) {
-			final MulticolorNeuron line[] = matrix[y];
-
 			for (int x = 0; x < width; x++) {
 				final MulticolorNeuron loc = new MulticolorNeuron();
-				line[x] = loc;
+				final float[] sample = samples.get(rnd.nextInt(samples.size()));
 				
-				final int bits = (int) (Math.random() * 32);
-				for (int i = 0; i < bits; i++)
-					loc.set((int)(Math.random() * 32), (int)(Math.random() * 4));
+				for (int i = 0; i < 32; i++) {
+					// przypisujemy próbkê + lekki szum gaussowski
+					float val = sample[i] + (float) (rnd.nextGaussian() * 0.1);
+					if (val < 0f)
+						val = 0f;
+					
+					if (val > 3f)
+						val = 3f;
+					
+					loc.set(i, val);
+				}
+				
+				matrix[y][x] = loc;
 			}
 		}
 	}
 
 	public byte[] train(final SOMDataset<float[]> dataset) {
-		matrixInit();
+		matrixInit(dataset);
+		
 		final float delta_radius = radius / (epoch + 1);
+		float currentEpoch = epoch, currentRadius = radius;
 
-		while (epoch-- > 0) {
+		while (currentEpoch-- > 0) {
 			dataset.reset();
 
 			for (int i = 0; i < dataset.size(); i++) {
 				final float sample[] = dataset.getNext();
 				final Position p = getBMU(sample);
-				
-				learn(p, sample);
+
+				learn(p, sample, currentRadius);
 			}
 
-			radius -= delta_radius;
-			notifyListeners(String.valueOf(epoch));
+			currentRadius -= delta_radius;
+			notifyListeners(String.valueOf(currentEpoch));
 		}
 
 		final byte result[] = new byte[width * height * 8];
@@ -73,20 +91,20 @@ public class SOMMulticolorCharsetNetwork {
 
 			for (int x = 0; x < width; x++) {
 				final float vec[] = line[x].getVector();
-				
+
 				byte data = 0;
 				int j = 6;
-				
+
 				for (int i = 0; i < 32; i++) {
 					final int b = Math.round(vec[i]);
 					data |= b << j;
-					
+
 					if (j == 0) {
 						result[index++] = data;
 						data = 0;
-						
+
 						j = 6;
-					} else 
+					} else
 						j -= 2;
 				}
 			}
@@ -95,7 +113,7 @@ public class SOMMulticolorCharsetNetwork {
 		return result;
 	}
 
-	protected void learn(final Position best, final float sample[]) {
+	protected void learn(final Position best, final float sample[], final float radius) {
 		for (int y = 0; y < height; y++) {
 			final MulticolorNeuron line[] = matrix[y];
 
@@ -114,20 +132,23 @@ public class SOMMulticolorCharsetNetwork {
 	protected static final float neighbourhood(final float d, final float r) {
 		return (float) Math.exp((-1f * (d * d)) / (2f * (r * r)));
 	}
-	
+
 	protected final static float diceSimilarity(final float[] a, final float[] b) {
-		float tp = 0f, fn = 0, fp = 0f;
+		float tp = 0f, fn = 0f, fp = 0f;
 
 		for (int color = 0; color < 4; color++)
 			for (int i = 0; i < 32; i++) {
-				tp += (Math.round(a[i]) == color) && (Math.round(b[i]) == color) ? 1f : 0f;
-				fp += (Math.round(a[i]) != color) && (Math.round(b[i]) == color) ? 1f : 0f;
-				fn += (Math.round(a[i]) == color) && (Math.round(b[i]) != color) ? 1f : 0f;
+				final float ap = Math.round(a[i]);
+				final float bp = Math.round(b[i]);
+				
+				tp += (ap == color) && (bp == color) ? 1f : 0f;
+				fp += (ap != color) && (bp == color) ? 1f : 0f;
+				fn += (ap == color) && (bp != color) ? 1f : 0f;
 			}
 
 		return 2f * tp / (2f * tp + fp + fn);
 	}
-		
+
 	public Position getBMU(final float sample[]) {
 		float max = 0;
 		int bx = 0, by = 0;
@@ -138,7 +159,7 @@ public class SOMMulticolorCharsetNetwork {
 			for (int x = 0; x < width; x++) {
 				final float vec[] = line[x].getVector();
 				final float m = diceSimilarity(vec, sample);
-				
+
 				if (m > max) {
 					max = m;
 
@@ -153,12 +174,13 @@ public class SOMMulticolorCharsetNetwork {
 }
 
 class MulticolorNeuron {
+	private float vec[] = new float[32];
 	private final float[] counters = new float[32];
 
 	public void set(final int position, final float value) {
 		counters[position] = value;
 	}
-	
+
 	public void set(final int position) {
 		counters[position]++;
 	}
@@ -175,13 +197,11 @@ class MulticolorNeuron {
 	}
 
 	public float[] getVector() {
-		final float vec[] = new float[32];
-
 		for (int i = 0; i < 32; i++) {
 			final float a = Math.round(counters[i]);
 			vec[i] = a < 0f ? 0f : a > 3f ? 3f : a;
 		}
-		
+
 		return vec;
 	}
 }

@@ -18,7 +18,9 @@ public class SOMWinnerFixedPalette extends SOMFixedPalette {
 	}
 
 	@Override
-	protected void learn(final Position best, final float r, final float g, final float b) {
+	protected void learn(final Position best, final float r, final float g, final float b, final float currentRate,
+			final float radius) {
+		
 		final float bmu[] = matrix[best.y][best.x];
 
 		bmu[0] += rate * (r - bmu[0]);

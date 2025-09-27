@@ -105,6 +105,10 @@ public class Gfx {
 	public static final int saturate(final int i, final int value) {
 		return i > value ? value : i < -value ? -value : i;
 	}
+	
+	public static final int saturate(final int i, final int min, final int max) {
+		return i > max ? max : i < min ? min : i;
+	}
 
 	public static final int[] copy2Int(final byte[] pixels) {
 		final int len = pixels.length;

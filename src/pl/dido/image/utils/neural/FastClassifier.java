@@ -278,7 +278,7 @@ public class FastClassifier implements Network {
     public float calculateAccuracy(Vector<Dataset> validationSet) {
         int correct = 0;
         
-        for (Dataset data : validationSet) {
+        for (final Dataset data : validationSet) {
             forward(data.input);
             
             int predicted = getPredictedClass();

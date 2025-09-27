@@ -10,7 +10,7 @@ import javax.imageio.ImageIO;
 import pl.dido.image.utils.Config;
 import pl.dido.image.utils.Config.NEAREST_COLOR;
 import pl.dido.image.utils.Gfx;
-import pl.dido.image.utils.SimplePALcodec;
+import pl.dido.image.utils.PALcodec;
 
 public abstract class AbstractRenderer {
 
@@ -113,15 +113,27 @@ public abstract class AbstractRenderer {
 
 	protected void generatePALView() {
 		if (config.pal_view) {
-			final BufferedImage crt = new BufferedImage(SimplePALcodec.WIDTH, SimplePALcodec.HEIGHT, BufferedImage.TYPE_3BYTE_BGR);
+			final BufferedImage crt = new BufferedImage(PALcodec.WIDTH, PALcodec.HEIGHT, BufferedImage.TYPE_3BYTE_BGR);
 			final byte[] data = ((DataBufferByte) crt.getRaster().getDataBuffer()).getData();
 
-			SimplePALcodec.encodeYC(image.getWidth(), image.getHeight(), pixels, config.black_white);
-			SimplePALcodec.decodeYC(data, config.black_white);
+			PALcodec.encodeYC(image.getWidth(), image.getHeight(), pixels, config.black_white);
+			PALcodec.decodeYC(data, config.black_white);
 
-			image = Gfx.byteArrayToBGRImage(data, SimplePALcodec.WIDTH, SimplePALcodec.HEIGHT);
+			image = Gfx.byteArrayToBGRImage(data, PALcodec.WIDTH, PALcodec.HEIGHT);
 		}
 	}
+	
+//	protected void generatePALView() {
+//		if (config.pal_view) {
+//			final BufferedImage crt = new BufferedImage(SimplePALcodec.WIDTH, SimplePALcodec.HEIGHT, BufferedImage.TYPE_3BYTE_BGR);
+//			final byte[] data = ((DataBufferByte) crt.getRaster().getDataBuffer()).getData();
+//
+//			SimplePALcodec.encodeYC(image.getWidth(), image.getHeight(), pixels, config.black_white);
+//			SimplePALcodec.decodeYC(data, config.black_white);
+//
+//			image = Gfx.byteArrayToBGRImage(data, SimplePALcodec.WIDTH, SimplePALcodec.HEIGHT);
+//		}
+//	}
 
 	protected abstract void imagePostproces();
 	protected abstract void setupPalette();
