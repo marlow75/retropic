@@ -71,7 +71,7 @@
 
 Explore all available options to get the best results:
 
-- **Dithering:** Choose from Bayer, Blue Noise, Floyd-Steinberg, or Atkinson algorithms
+- **Dithering:** Choose from Bayer, Blue Noise, Floyd-Steinberg, Noise, or Atkinson algorithms
 - **Error:** Set error tolerance for algorithms
 - **Color Distance:** Select how color distance is measured (Euclidean, Redmean, or nearest luminance)
 - **Contrast Processing:** Experimental luma histogram equalizer for 8-bit machines (HE for global, CLAHE & SWAHE for local contrast)
