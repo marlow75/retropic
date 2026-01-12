@@ -94,6 +94,14 @@ public class Gfx {
 		pixels[i + 0] = (byte) (b > 0 ? (b > 255 ? 255 : b) : 0);
 	}
 
+	public static final float[] rgbToYcbcr(final int b, final int g, final int r) {
+		final float y = Gfx.getLuma(b, g, r);
+		final float cb = 128 - 0.168736f * r - 0.331264f * g + 0.5f * b;
+		final float cr = 128 + 0.5f * r - 0.418688f * g - 0.081312f * b;
+
+		return new float[] { y, cb, cr };
+	}
+
 	public static final int saturate(final int i) {
 		return i > 255 ? 255 : i < 0 ? 0 : i;
 	}
@@ -105,7 +113,7 @@ public class Gfx {
 	public static final int saturate(final int i, final int value) {
 		return i > value ? value : i < -value ? -value : i;
 	}
-	
+
 	public static final int saturate(final int i, final int min, final int max) {
 		return i > max ? max : i < min ? min : i;
 	}
@@ -117,6 +125,7 @@ public class Gfx {
 		for (int i = 0; i < len; i += 4) {
 			array[i] = pixels[i] & 0xff;
 			array[i + 1] = pixels[i + 1] & 0xff;
+
 			array[i + 2] = pixels[i + 2] & 0xff;
 			array[i + 3] = pixels[i + 3] & 0xff;
 		}
@@ -131,6 +140,7 @@ public class Gfx {
 		for (int i = 0; i < len; i += 4) {
 			array[i] = pixels[i] & 0xff;
 			array[i + 1] = pixels[i + 1] & 0xff;
+
 			array[i + 2] = pixels[i + 2] & 0xff;
 			array[i + 3] = pixels[i + 3] & 0xff;
 		}
@@ -145,6 +155,19 @@ public class Gfx {
 		final int bpb = b - pb;
 
 		return (rpr * rpr) + (gpg * gpg) + (bpb * bpb);
+	}
+
+	public static final float chromaDistance(final int b, final int g, final int r, final int pb, final int pg,
+			final int pr) {
+
+		final float ycbcr1[] = rgbToYcbcr(b, g, r);
+		final float ycbcr2[] = rgbToYcbcr(pb, pg, pr);
+
+		final float v0 = ycbcr2[0] - ycbcr1[0];
+		final float v1 = ycbcr2[1] - ycbcr1[1];
+		final float v2 = ycbcr2[2] - ycbcr1[2];
+
+		return 0.75f * (v0 * v0 + v1 * v1) + 0.25f * v2 * v2;
 	}
 
 	public static final float perceptedDistance(final int b, final int g, final int r, final int pb, final int pg,
@@ -261,6 +284,9 @@ public class Gfx {
 						weightSum += w;
 					}
 				}
+
+				if (weightSum == 0)
+					weightSum = 1;
 
 				scaledPixels[index++] = (byte) saturate(Math.round(r / weightSum));
 				scaledPixels[index++] = (byte) saturate(Math.round(g / weightSum));
@@ -758,12 +784,15 @@ public class Gfx {
 		final NEAREST_COLOR colorAlg = config.color_alg;
 
 		final int width3 = width * 3;
+		final int rowEnd1 = (width - 1) * 3;
+		final int rowEnd2 = (width - 2) * 3;
 
 		int r0, g0, b0;
 		int r_error = 0, g_error = 0, b_error = 0;
 
 		for (int y = 0; y < height; y++) {
 			final int k = y * width3;
+
 			final int k1 = ((y + 1) * width3);
 			final int k2 = ((y + 2) * width3);
 
@@ -793,21 +822,23 @@ public class Gfx {
 
 				switch (dithering) {
 				case FLOYDS:
-					if (x < (width - 1) * 3) {
+					if (x < rowEnd1) {
 						work[pyx + 3] += (r_error * 7) / 16;
 						work[pyx + 3 + 1] += (g_error * 7) / 16;
 						work[pyx + 3 + 2] += (b_error * 7) / 16;
 					}
 					if (y < height - 1) {
-						work[py1x - 3] += (r_error * 3) / 16;
-						work[py1x - 3 + 1] += (g_error * 3) / 16;
-						work[py1x - 3 + 2] += (b_error * 3) / 16;
+						if (x > 0) {
+							work[py1x - 3] += (r_error * 3) / 16;
+							work[py1x - 3 + 1] += (g_error * 3) / 16;
+							work[py1x - 3 + 2] += (b_error * 3) / 16;
+						}
 
 						work[py1x] += (r_error * 5) / 16;
 						work[py1x + 1] += (g_error * 5) / 16;
 						work[py1x + 2] += (b_error * 5) / 16;
 
-						if (x < (width - 1) * 3) {
+						if (x < rowEnd1) {
 							work[py1x + 3] += r_error / 16;
 							work[py1x + 3 + 1] += g_error / 16;
 							work[py1x + 3 + 2] += b_error / 16;
@@ -815,27 +846,30 @@ public class Gfx {
 					}
 					break;
 				case ATKINSON:
-					if (x < (width - 1) * 3) {
+					if (x < rowEnd1) {
 						work[pyx + 3] += r_error >> 3;
 						work[pyx + 3 + 1] += g_error >> 3;
 						work[pyx + 3 + 2] += b_error >> 3;
 
-						if (x < (width - 2) * 3) {
+						if (x < rowEnd2) {
 							work[pyx + 6] += r_error >> 3;
 							work[pyx + 6 + 1] += g_error >> 3;
 							work[pyx + 6 + 2] += b_error >> 3;
 						}
 					}
+
 					if (y < height - 1) {
-						work[py1x - 3] += r_error >> 3;
-						work[py1x - 3 + 1] += g_error >> 3;
-						work[py1x - 3 + 2] += b_error >> 3;
+						if (x > 0) {
+							work[py1x - 3] += r_error >> 3;
+							work[py1x - 3 + 1] += g_error >> 3;
+							work[py1x - 3 + 2] += b_error >> 3;
+						}
 
 						work[py1x] += r_error >> 3;
 						work[py1x + 1] += g_error >> 3;
 						work[py1x + 2] += b_error >> 3;
 
-						if (x < (width - 1) * 3) {
+						if (x < rowEnd1) {
 							work[py1x + 3] += r_error >> 3;
 							work[py1x + 3 + 1] += g_error >> 3;
 							work[py1x + 3 + 2] += b_error >> 3;
@@ -873,7 +907,7 @@ public class Gfx {
 
 	public static void bayer4x4(final byte pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
 			final int width, final int height, final int bpp) {
-		bayerByte(M8x8, pixels, palette, colorAlg, width, height, bpp);
+		bayerByte(M4x4, pixels, palette, colorAlg, width, height, bpp);
 	}
 
 	public static void bayer2x2(final byte pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
@@ -1144,7 +1178,7 @@ public class Gfx {
 	}
 
 	public final static int bayer2x2(final int x0, final int y0, final int c, final int f, final int b) {
-		return c < M2x2[x0 % 2][y0 % 2] ? b : f;
+		return c < M2x2[y0 % 2][x0 % 2] ? b : f;
 	}
 
 	public final static int bayer2x2RGB(final int x0, final int y0, final int r, final int g, final int b) {
@@ -1208,11 +1242,13 @@ public class Gfx {
 			final int r1, final int g1, final int b1) {
 		switch (color) {
 		case EUCLIDEAN:
-			return Gfx.euclideanDistance(r0, g0, b0, r1, g1, b1);
+			return euclideanDistance(r0, g0, b0, r1, g1, b1);
 		case PERCEPTED:
-			return Gfx.perceptedDistance(b0, g0, r0, b1, g1, r1);
+			return perceptedDistance(b0, g0, r0, b1, g1, r1);
+		case CHROMA_WEIGHTED:
+			return chromaDistance(b0, g0, r0, b1, g1, r1);
 		default:
-			return Gfx.euclideanDistance(r0, g0, b0, r1, g1, b1);
+			return euclideanDistance(r0, g0, b0, r1, g1, b1);
 		}
 	}
 
@@ -1225,6 +1261,8 @@ public class Gfx {
 			return getPerceptedColorIndex(palette, r0, g0, b0);
 		case LUMA_WEIGHTED:
 			return getLumaColorIndex(palette, r0, g0, b0);
+		case CHROMA_WEIGHTED:
+			return getChromaColorIndex(palette, r0, g0, b0);
 		default:
 			return getEuclideanColorIndex(palette, r0, g0, b0);
 		}
@@ -1242,6 +1280,25 @@ public class Gfx {
 		for (int i = 1; i < palette.length; i++) { // euclidean distance
 			color = palette[i];
 			final float distance = Gfx.euclideanDistance(r, g, b, color[0], color[1], color[2]);
+
+			if (distance < min) {
+				min = distance;
+				index = i;
+			}
+		}
+
+		return index;
+	}
+
+	public static final int getMahalanobisColorIndex(final int palette[][], final float coefficients[], final int r,
+			final int g, final int b) {
+		int index = 0;
+		int color[] = palette[0];
+		float min = Gfx.getMahalanobisDistance(r, g, b, color[0], color[1], color[2], coefficients);
+
+		for (int i = 1; i < palette.length; i++) {
+			color = palette[i];
+			final float distance = Gfx.getMahalanobisDistance(r, g, b, color[0], color[1], color[2], coefficients);
 
 			if (distance < min) {
 				min = distance;
@@ -1270,14 +1327,31 @@ public class Gfx {
 		return index;
 	}
 
+	protected static int getChromaColorIndex(final int palette[][], final int r, final int g, final int b) {
+		int index = 0;
+		int color[] = palette[0];
+		float min = chromaDistance(r, g, b, color[0], color[1], color[2]);
+
+		for (int i = 1; i < palette.length; i++) { // distance
+			color = palette[i];
+
+			final float distance = chromaDistance(r, g, b, color[0], color[1], color[2]);
+			if (distance < min) {
+				min = distance;
+				index = i;
+			}
+		}
+
+		return index;
+	}
+
 	protected static int getLumaColorIndex(final int palette[][], final int r, final int g, final int b) {
 		int index = palette.length;
 		float min = Float.MAX_VALUE;
 
 		float y = getLuma(r, g, b);
-		final int len = index - 1;
 
-		for (int i = len; i-- > 0;) {
+		for (int i = 0; i < palette.length; i++) {
 			final int color[] = palette[i];
 			final float d = Math.abs(getLuma(color[0], color[1], color[2]) - y);
 
@@ -1480,5 +1554,123 @@ public class Gfx {
 			pixels[i + 1] = (byte) g;
 			pixels[i + 2] = (byte) b;
 		}
+	}
+
+	private static int toLin(final int c) {
+		final float s = c / 255f;
+		if (s <= 0.04045f)
+			return (int) (s / 12.92f);
+
+		return (int) Math.pow((s + 0.055f) / 1.055f, 2.4);
+	}
+
+	// dystans Mahalanobisa w BGR 0..255 (kwadrat odległości)
+	public static float getMahalanobisDistance(final int b0, final int g0, final int r0, final int b1, final int g1,
+			final int r1, final float c[]) {
+		final float dB = b0 - b1;
+		final float dG = g0 - g1;
+		final float dR = r0 - r1;
+
+		// gBB * dB * dB + gGG * dG * dG + gRR * dR * dR + 2 * (gBG * dB * dG + gBR * dB
+		// * dR + gGR * dG * dR);
+		return c[0] * dB * dB + c[1] * dG * dG + c[2] * dR * dR
+				+ 2 * (c[3] * dB * dG + c[4] * dB * dR + c[5] * dG * dR);
+	}
+
+	public static float[] buildPaletteMahalanobisMetric(final int[][] p) {
+		return buildPaletteMahalanobisMetric(p, false); // ustaw na true, jeśli chcesz linearyzację sRGB
+	}
+
+	public static float[] buildPaletteMahalanobisMetric(final int[][] p, boolean linearizeSRGB) {
+		final int n = p.length; // 16
+		
+		// 1) Przygotuj paletę w wybranej przestrzeni (float)
+		final float[] Bv = new float[n];
+		final float[] Gv = new float[n];
+		final float[] Rv = new float[n];
+		
+		if (linearizeSRGB) {
+			for (int i = 0; i < n; i++) {
+				Bv[i] = toLin(p[i][0]); // 0..1
+				Gv[i] = toLin(p[i][1]);
+				Rv[i] = toLin(p[i][2]);
+			}
+		} else {
+			for (int i = 0; i < n; i++) {
+				Bv[i] = p[i][0]; // 0..255
+				Gv[i] = p[i][1];
+				Rv[i] = p[i][2];
+			}
+		}
+
+		// 2) Średnie (double dla stabilności)
+		double meanB = 0, meanG = 0, meanR = 0;
+		for (int i = 0; i < n; i++) {
+			meanB += Bv[i];
+			meanG += Gv[i];
+			meanR += Rv[i];
+		}
+		
+		meanB /= n;
+		meanG /= n;
+		meanR /= n;
+
+		// 3) Kowariancja Σ (symetryczna)
+		double a = 0, d = 0, f = 0, b = 0, c = 0, e = 0; 
+		
+		// a=var(B), d=var(G), f=var(R), b=cov(B,G), c=cov(B,R), e=cov(G,R)
+		for (int i = 0; i < n; i++) {
+			final double dB = Bv[i] - meanB;
+			final double dG = Gv[i] - meanG;
+			final double dR = Rv[i] - meanR;
+			
+			a += dB * dB;
+			d += dG * dG;
+			f += dR * dR;
+			
+			b += dB * dG;
+			c += dB * dR;
+			e += dG * dR;
+		}
+		
+		final double invN = 1.0 / (n - 1.0);
+		a *= invN;
+		d *= invN;
+		f *= invN;
+		
+		b *= invN;
+		c *= invN;
+		e *= invN;
+
+		// 4) Regularizacja (relatywna do skali danych)
+		final double maxDiag = Math.max(Math.max(a, d), f);
+		final double eps = Math.max(1e-6, 1e-3 * maxDiag);
+		
+		a += eps;
+		d += eps;
+		f += eps;
+
+		// 5) Odwrócenie Σ
+		double det = a * (d * f - e * e) - b * (b * f - c * e) + c * (b * e - c * d);
+		if (Math.abs(det) < 1e-12) {
+			
+			final double add = 10 * eps;
+			a += add;
+			d += add;
+			
+			f += add;
+			det = a * (d * f - e * e) - b * (b * f - c * e) + c * (b * e - c * d);
+		}
+		
+		final double invDet = 1.0 / det;
+
+		final double gBB = (d * f - e * e) * invDet;
+		final double gGG = (a * f - c * c) * invDet;
+		final double gRR = (a * d - b * b) * invDet;
+		final double gBG = (c * e - b * f) * invDet;
+		final double gBR = (b * e - c * d) * invDet;
+		final double gGR = (b * c - a * e) * invDet;
+
+		return new float[] { (float) gBB, (float) gGG, (float) gRR, (float) gBG, (float) gBR, (float) gGR };
 	}
 }

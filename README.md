@@ -10,6 +10,7 @@
 
 ## Version History
 
+- **1.18c** - New Color distance - Mahalonobis (palette) metric for machines with arbitrary palette, minor bug fixes
 - **1.18b** – Reworked Lanchos scaling, minor bug fixes in charset generator, advanced PAL simulation with bloom, moire, scanlines, viniete
 - **1.18** – Added Lanchos scaling, minor bug fixes
 - **1.17** – Improved neural algorithms, faster and more robust; reworked VIC-20 charset modes; minor bug fixes; removed third-party libraries
@@ -56,12 +57,11 @@
 
 - Executable PRG for TED machines
 - Executable PRG for VIC-20
-- Executable PRG, Koala Paint, ArtStudio, TruePaint for C64
+- Executable PRG, Koala Paint, ArtStudio for C64
 - ZX SCR format for Spectrum
 - ArtStudio for CPC
 - DEGAS for Atari
 - IFF (Deluxe Paint – Amiga, RLE option)
-- True Paint for MCI (experimental)
 - COM executable for CGA & VGA
 - Executable PRG for C128
 
@@ -73,7 +73,7 @@ Explore all available options to get the best results:
 
 - **Dithering:** Choose from Bayer, Blue Noise, Floyd-Steinberg, or Atkinson algorithms
 - **Error:** Set error tolerance for algorithms
-- **Color Distance:** Select how color distance is measured (Euclidean, Redmean, or nearest luminance)
+- **Color Distance:** Select how color distance is measured (Euclidean, Redmean, Mahalonobis, or nearest luminance)
 - **Contrast Processing:** Experimental luma histogram equalizer for 8-bit machines (HE for global, CLAHE & SWAHE for local contrast)
 - **Aspect:** Preserve the original aspect ratio
 - **PAL:** Preview PAL-encoded output in S-Video quality (separate luma & chroma)

@@ -8,6 +8,7 @@ import pl.dido.image.renderer.AbstractRenderer;
 import pl.dido.image.utils.BitVector;
 import pl.dido.image.utils.Config;
 import pl.dido.image.utils.Gfx;
+import pl.dido.image.utils.Config.NEAREST_COLOR;
 import pl.dido.image.utils.neural.NetworkProgressListener;
 import pl.dido.image.utils.neural.Position;
 import pl.dido.image.utils.neural.SOMCharsetNetwork;
@@ -19,7 +20,6 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 			0x0000F0, 0xD0D000, 0xC0A000, 0xFFA000, 0xF08080, 0x00FFFF, 0xFF00FF, 0x00FF00, 0x00A0FF, 0xFFFF00 };
 
 	protected final static int power2[] = new int[] { 128, 64, 32, 16, 8, 4, 2, 1 };
-	protected final static int power22[] = new int[] { 192, 48, 12, 3 };
 
 	protected final static String PETSCII_NETWORK_L1 = "vic20.L1network";
 	protected final static String PETSCII_ENCODER = "vic20.autoencoder";
@@ -35,7 +35,13 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 	protected int borderColor;
 	protected int foregroundPalette[][];
 
+	protected int locPalette[][] = null;
 	protected byte charset[]; // charset 8x8 pixels per char
+
+	protected final int occurrence[] = new int[8];
+	protected final Integer indexes[] = new Integer[] { 0, 1, 2, 3, 4, 5, 6, 7 };
+
+	protected final int[] newPixels88 = new int[88 * 184 * 3]; // 88x184
 
 	protected SOMCharsetNetwork som1;
 	protected SOMMulticolorCharsetNetwork som2;
@@ -77,6 +83,8 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 			pixel[1] = (colors[i] & 0x00ff00) >> 8; // green
 			pixel[2] = (colors[i] & 0xff0000) >> 16; // red
 		}
+
+		super.setupPalette();
 	}
 
 	@Override
@@ -118,7 +126,7 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 		final int work[] = new int[64 * 3];
 
 		// calculate average
-		int nr = 0, ng = 0, nb = 0, count = 0;
+		int nr = 0, ng = 0, nb = 0;
 		final int occurrence[] = new int[16];
 
 		for (int i = 0; i < pixels.length; i += 3) {
@@ -126,19 +134,21 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 			ng = pixels[i + 1] & 0xff;
 			nb = pixels[i + 2] & 0xff;
 
-			occurrence[Gfx.getColorIndex(colorAlg, palette, nr, ng, nb)] += (255 - Gfx.getLuma(nr, ng, nb));
+			occurrence[getColorIndex(nr, ng, nb)]++;
 		}
 
 		// get background color with maximum occurrence
 		int k = 0;
-		for (int i = 0; i < 16; i++) {
-			final int o = occurrence[i];
+		float count = occurrence[0] * 256;
+		
+		for (int i = 1; i < 16; i++) {
+			final float o = occurrence[i] * (255f - Gfx.getLuma(palette[i][0], palette[i][1], palette[2][2]));
 			if (count < o) {
 				count = o;
 				k = i;
 			}
 		}
-
+		
 		// most occurrence color as background
 		nr = palette[k][0];
 		ng = palette[k][1];
@@ -155,7 +165,7 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 				int index = 0, f = 0;
 				float maxDistance = 0;
 
-				// pickup brightest color in 8x8 tile
+				// pickup most distant color in 8x8 tile
 				for (int y0 = 0; y0 < 8; y0++) {
 					for (int x0 = 0; x0 < 24; x0 += 3) {
 						final int position = offset + y0 * 176 * 3 + x0;
@@ -171,7 +181,11 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 						final float distance = Math.abs(Gfx.getLuma(r, g, b) - backLuma);
 						if (maxDistance < distance) {
 							maxDistance = distance;
-							f = Gfx.getColorIndex(colorAlg, foregroundPalette, r, g, b);
+
+							if (colorAlg == NEAREST_COLOR.MAHALANOBIS)
+								f = Gfx.getMahalanobisColorIndex(foregroundPalette, coefficients, r, g, b);
+							else
+								f = Gfx.getColorIndex(colorAlg, foregroundPalette, r, g, b);
 						}
 					}
 				}
@@ -192,9 +206,12 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 						final int g = work[pyx0 + 1];
 						final int b = work[pyx0 + 2];
 
+						final float df;
+						final float db;
+
 						// fore or background color?
-						final float df = Gfx.getDistance(colorAlg, r, g, b, fr, fg, fb);
-						final float db = Gfx.getDistance(colorAlg, r, g, b, nr, ng, nb);
+						df = getDistance(r, g, b, fr, fg, fb);
+						db = getDistance(r, g, b, nr, ng, nb);
 
 						// ones as color of the bright pixels
 						if (df <= db)
@@ -221,7 +238,7 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 			nb = pixels[i + 2] & 0xff;
 
 			// dimmer better
-			occurrence[Gfx.getColorIndex(colorAlg, palette, nr, ng, nb)] += (255 - Gfx.getLuma(nr, ng, nb));
+			occurrence[getColorIndex(nr, ng, nb)] += (int) Math.round(255f - Gfx.getLuma(nr, ng, nb));
 		}
 
 		// get background color with maximum occurrence
@@ -235,11 +252,11 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 		}
 
 		// most occurrence color as background
-		this.backgroundColor = k;
+		backgroundColor = k;
 
-		nr = palette[k][0];
-		ng = palette[k][1];
-		nb = palette[k][2];
+		nr = palette[backgroundColor][0];
+		ng = palette[backgroundColor][1];
+		nb = palette[backgroundColor][2];
 
 		final float backLuma = Gfx.getLuma(nr, ng, nb);
 		final BitVector vec = new BitVector(64);
@@ -269,7 +286,11 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 						final float distance = Math.abs(Gfx.getLuma(r, g, b) - backLuma);
 						if (maxDistance < distance) {
 							maxDistance = distance;
-							f = Gfx.getColorIndex(colorAlg, foregroundPalette, r, g, b);
+
+							if (colorAlg == NEAREST_COLOR.MAHALANOBIS)
+								f = Gfx.getMahalanobisColorIndex(foregroundPalette, coefficients, r, g, b);
+							else
+								f = Gfx.getColorIndex(colorAlg, foregroundPalette, r, g, b);
 						}
 					}
 				}
@@ -279,7 +300,7 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 				final int fr = cf[0];
 				final int fg = cf[1];
 				final int fb = cf[2];
-				
+
 				vec.clear();
 				for (int y0 = 0; y0 < 8; y0++)
 					for (int x0 = 0; x0 < 8; x0++) {
@@ -289,11 +310,13 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 						final int g = work[pyx0 + 1];
 						final int b = work[pyx0 + 2];
 
-						// fore or background color?
-						final float df = Gfx.getDistance(colorAlg, r, g, b, fr, fg, fb);
-						final float db = Gfx.getDistance(colorAlg, r, g, b, nr, ng, nb);
+						final float df;
+						final float db;
 
-						if (df < db)
+						df = getDistance(r, g, b, fr, fg, fb);
+						db = getDistance(r, g, b, nr, ng, nb);
+
+						if (df <= db)
 							vec.set(y0 * 8 + x0);
 					}
 
@@ -351,8 +374,13 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 				final int g = (g1 + g2) >> 1;
 				final int b = (b1 + b2) >> 1;
 
-				final int i = Gfx.getColorIndex(colorAlg, foregroundPalette, r, g, b);
-				final int c[] = palette[i];
+				final int i;
+				if (colorAlg == NEAREST_COLOR.MAHALANOBIS)
+					i = Gfx.getMahalanobisColorIndex(foregroundPalette, coefficients, r, g, b);
+				else
+					i = Gfx.getColorIndex(colorAlg, foregroundPalette, r, g, b);
+
+				final int c[] = foregroundPalette[i];
 
 				newPixels[index++] = c[0];
 				newPixels[index++] = c[1];
@@ -365,12 +393,10 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 
 	protected SOMDataset<float[]> getChargenLowres() {
 		final SOMDataset<float[]> dataset = new SOMDataset<float[]>();
-		final int[] newPixels = new int[88 * 184 * 3]; // 88x184
 
-		final int occurrence[] = new int[8];
-		shrink88(newPixels, occurrence);
+		Arrays.fill(occurrence, 0);
+		shrink88(newPixels88, occurrence);
 
-		final Integer indexes[] = new Integer[] { 0, 1, 2, 3, 4, 5, 6, 7 };
 		Arrays.sort(indexes, new Comparator<Integer>() {
 			public int compare(final Integer o1, final Integer o2) {
 				return -Integer.compare(occurrence[o1], occurrence[o2]);
@@ -386,8 +412,7 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 		borderColor = c1;
 		auxiliaryColor = c3;
 
-		final int locPalette[][] = new int[][] {
-				{ foregroundPalette[c0][0], foregroundPalette[c0][1], foregroundPalette[c0][2] },
+		locPalette = new int[][] { { foregroundPalette[c0][0], foregroundPalette[c0][1], foregroundPalette[c0][2] },
 				{ foregroundPalette[c1][0], foregroundPalette[c1][1], foregroundPalette[c1][2] },
 				{ foregroundPalette[c2][0], foregroundPalette[c2][1], foregroundPalette[c2][2] },
 				{ foregroundPalette[c3][0], foregroundPalette[c3][1], foregroundPalette[c3][2] } };
@@ -401,11 +426,17 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 					for (int x0 = 0; x0 < 4; x0++) {
 						final int py0x0 = offset + 3 * (y0 * 88 + x0);
 
-						final int r = newPixels[py0x0 + 0];
-						final int g = newPixels[py0x0 + 1];
-						final int b = newPixels[py0x0 + 2];
+						final int r = newPixels88[py0x0 + 0];
+						final int g = newPixels88[py0x0 + 1];
+						final int b = newPixels88[py0x0 + 2];
 
-						final int color = Gfx.getColorIndex(colorAlg, locPalette, r, g, b);
+						final int color;
+
+						if (colorAlg == NEAREST_COLOR.MAHALANOBIS)
+							color = Gfx.getMahalanobisColorIndex(locPalette, coefficients, r, g, b);
+						else
+							color = Gfx.getColorIndex(colorAlg, locPalette, r, g, b);
+
 						vec[y0 * 4 + x0] = color & 0x3;
 					}
 
@@ -416,18 +447,6 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 	}
 
 	protected void lowres() {
-		final int[] newPixels = new int[88 * 184 * 3]; // 88x184
-		final int occurrence[] = new int[8]; // tiles screen and pattern
-
-		shrink88(newPixels, occurrence);
-		final Integer indexes[] = new Integer[] { 0, 1, 2, 3, 4, 5, 6, 7 };
-
-		Arrays.sort(indexes, new Comparator<Integer>() {
-			public int compare(final Integer o1, final Integer o2) {
-				return -Integer.compare(occurrence[o1], occurrence[o2]);
-			}
-		});
-
 		final int c0 = indexes[0];
 		final int c1 = indexes[1];
 		final int c2 = indexes[2];
@@ -436,12 +455,6 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 		backgroundColor = c0;
 		borderColor = c1;
 		auxiliaryColor = c3;
-
-		final int locPalette[][] = new int[][] {
-				{ foregroundPalette[c0][0], foregroundPalette[c0][1], foregroundPalette[c0][2] },
-				{ foregroundPalette[c1][0], foregroundPalette[c1][1], foregroundPalette[c1][2] },
-				{ foregroundPalette[c2][0], foregroundPalette[c2][1], foregroundPalette[c2][2] },
-				{ foregroundPalette[c3][0], foregroundPalette[c3][1], foregroundPalette[c3][2] } };
 
 		final float vec[] = new float[32];
 		int index = 0;
@@ -454,11 +467,16 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 					for (int x0 = 0; x0 < 4; x0++) {
 						final int py0x0 = offset + 3 * (y0 * 88 + x0);
 
-						final int r = newPixels[py0x0 + 0];
-						final int g = newPixels[py0x0 + 1];
-						final int b = newPixels[py0x0 + 2];
+						final int r = newPixels88[py0x0 + 0];
+						final int g = newPixels88[py0x0 + 1];
+						final int b = newPixels88[py0x0 + 2];
 
-						final int color = Gfx.getColorIndex(colorAlg, locPalette, r, g, b);
+						final int color;
+						if (colorAlg == NEAREST_COLOR.MAHALANOBIS)
+							color = Gfx.getMahalanobisColorIndex(locPalette, coefficients, r, g, b);
+						else
+							color = Gfx.getColorIndex(colorAlg, locPalette, r, g, b);
+
 						vec[y0 * 4 + x0] = color & 0x3;
 					}
 

@@ -13,6 +13,7 @@ public class ZXConfig extends Config {
 		window_size = 30;
 		
 		allow_luminance = false;
+		allow_palette = true;
 	}
 
 	@Override

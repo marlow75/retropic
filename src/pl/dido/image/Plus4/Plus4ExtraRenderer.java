@@ -100,6 +100,8 @@ public class Plus4ExtraRenderer extends AbstractRenderer {
 		// shrink palette to actual size
 		palette = Arrays.copyOf(palette, index);
 		blend = Arrays.copyOf(blend, index);
+		
+		super.setupPalette();
 	}
 
 	@Override
@@ -382,13 +384,11 @@ public class Plus4ExtraRenderer extends AbstractRenderer {
 		int r = 0, g = 0, b = 0;
 		final int background[][] = new int[2][3];
 		
-		background[0][0] = (int) (Math.random() * 255);
-		background[0][1] = (int) (Math.random() * 255);
-		background[0][2] = (int) (Math.random() * 255);
+		background[0][0] = 0;
+		background[0][1] = 0;
+		background[0][2] = 0;
 		
-		background[1][0] = (int) (Math.random() * 255);
-		background[1][1] = (int) (Math.random() * 255);
-		background[1][2] = (int) (Math.random() * 255);
+		final int occurrence[] = new int[machinePalette.length];
 		
 		// calculate average color
 		for (int y = 0; y < 200; y++) {
@@ -401,34 +401,36 @@ public class Plus4ExtraRenderer extends AbstractRenderer {
 				g = work[position + 1];
 				b = work[position + 2];
 				
-				final int color = Gfx.getColorIndex(colorAlg, background, r, g, b);
-				background[color][0] += (int)(0.6f * (r - background[color][0]));
+				background[0][0] += r;
+				background[0][1] += g; 
+				background[0][2] += b;
 				
-				background[color][1] += (int)(0.6f * (g - background[color][1])); 
-				background[color][2] += (int)(0.6f * (b - background[color][2]));
+				occurrence[Gfx.getColorIndex(colorAlg, machinePalette, r, g, b)]++;
 			}
 		}
 		
-		int br1 = background[0][0];
-		int br2 = background[1][0];
+		int br1 = background[0][0] / 64000;
+		int bg1 = background[0][1] / 64000;
+		int bb1 = background[0][2] / 64000;
 		
-		int bg1 = background[0][1];
-		int bg2 = background[1][1];
-
-		int bb1 = background[0][2];
-		int bb2 = background[1][2];
-
 		// background - common color
-		backgroundColor1 = Gfx.getColorIndex(colorAlg, machinePalette, br1, bg1, bb1);
-		backgroundColor2 = Gfx.getColorIndex(colorAlg, machinePalette, br2, bg2, bb2);
-
+		backgroundColor1 = Gfx.getColorIndex(colorAlg, machinePalette, br1, bg1, bb1);		
+		backgroundColor2 = backgroundColor1;
+		
+		int max = 0;
+		for (int i = 0; i < machinePalette.length; i++)
+			if (backgroundColor1 != i && max < occurrence[i]) {
+				max = occurrence[i];
+				backgroundColor2 = i;
+			}
+		
+		final int br2 = machinePalette[backgroundColor2][0]; 
+		final int bg2 = machinePalette[backgroundColor2][1];
+		final int bb2 = machinePalette[backgroundColor2][2];
+		
 		br1 = machinePalette[backgroundColor1][0];
 		bg1 = machinePalette[backgroundColor1][1];
 		bb1 = machinePalette[backgroundColor1][2];
-
-		br2 = machinePalette[backgroundColor2][0];
-		bg2 = machinePalette[backgroundColor2][1];
-		bb2 = machinePalette[backgroundColor2][2];
 
 		final byte trainData1[] = new byte[64 * 3];
 		final byte trainData2[] = new byte[32 * 3];

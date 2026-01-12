@@ -15,6 +15,8 @@ public class Vic20Config extends PetsciiConfig {
 		
 		filter = FILTER.SHARPEN;
 		high_contrast = HIGH_CONTRAST.SWAHE;
+		
+		allow_palette = true;
 	}
 		
 	@Override

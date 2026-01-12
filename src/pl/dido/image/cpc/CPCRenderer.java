@@ -5,6 +5,7 @@ import java.util.HashSet;
 
 import pl.dido.image.renderer.AbstractRenderer;
 import pl.dido.image.utils.Config.DITHERING;
+import pl.dido.image.utils.Config.NEAREST_COLOR;
 import pl.dido.image.utils.Gfx;
 import pl.dido.image.utils.neural.SOMFixedPalette;
 import pl.dido.image.utils.neural.SOMWinnerFixedPalette;
@@ -19,7 +20,7 @@ public class CPCRenderer extends AbstractRenderer {
 
 	protected int bitmap[] = new int[16384];
 	protected int pictureColors[][];
-	
+
 	protected int firmwareIndexes[];
 	protected int colorMapping[] = new int[] { 0x54, 0x44, 0x55, 0x5C, 0x58, 0x5D, 0x4C, 0x45, 0x4D, 0x56, 0x46, 0x57,
 			0x5E, 0x40, 0x5F, 0x4E, 0x47, 0x4F, 0x52, 0x42, 0x53, 0x5A, 0x59, 0x5B, 0x4A, 0x43, 0x4B };
@@ -38,6 +39,8 @@ public class CPCRenderer extends AbstractRenderer {
 			pixel[1] = (colors[i] & 0x00ff00) >> 8; // green
 			pixel[2] = (colors[i] & 0xff0000) >> 16; // red
 		}
+		
+		super.setupPalette();
 	}
 
 	@Override
@@ -84,13 +87,13 @@ public class CPCRenderer extends AbstractRenderer {
 
 		switch (mode) {
 		case MODE0:
-			//som = new SOMWinnerFixedPalette(4, 4, 2);
+			// som = new SOMWinnerFixedPalette(4, 4, 2);
 			som = new SOMFixedPalette(4, 4, 2);
 			p = som.train(pixels);
 
 			break;
 		default:
-			//som = new SOMWinnerFixedPalette(2, 2, 2);
+			// som = new SOMWinnerFixedPalette(2, 2, 2);
 			som = new SOMWinnerFixedPalette(2, 2, 3);
 			p = som.train(pixels);
 
@@ -106,8 +109,23 @@ public class CPCRenderer extends AbstractRenderer {
 			final int pixel[] = p[i];
 
 			int index = getColorIndex(pixel[0], pixel[1], pixel[2]); // color
-			while (colors.contains(index))
-				index = (index + 1) % 27;
+			if (colors.contains(index)) {
+
+				float min = Float.MAX_VALUE;
+				int m = 0;
+
+				for (int k = 0; k < palette.length; k++)
+					if (!colors.contains(k)) {
+						final float dist = getDistance(pixel[0], pixel[1], pixel[2], palette[k][0], palette[k][1], palette[k][2]);
+						if (dist < min) {
+
+							min = dist;
+							m = k;
+						}
+					}
+
+				index = m;
+			}
 
 			pixel[0] = palette[index][0];
 			pixel[1] = palette[index][1];
@@ -179,8 +197,13 @@ public class CPCRenderer extends AbstractRenderer {
 				r0 = work[pyx];
 				g0 = work[pyx + 1];
 				b0 = work[pyx + 2];
-
-				final int color = Gfx.getColorIndex(colorAlg, pictureColors, r0, g0, b0);
+				
+				final int color;
+				if (colorAlg == NEAREST_COLOR.MAHALANOBIS)
+					color = Gfx.getColorIndex(colorAlg, pictureColors, r0, g0, b0);
+				else
+					color = Gfx.getMahalanobisColorIndex(pictureColors, coefficients, r0, g0, b0);
+				
 				final int c[] = pictureColors[color];
 
 				final int r = c[0];
@@ -225,10 +248,12 @@ public class CPCRenderer extends AbstractRenderer {
 						}
 					}
 					if (y < (screenHeight - 1)) {
-						work[py1x - 3] += r_error >> 3;
-						work[py1x - 3 + 1] += g_error >> 3;
-						work[py1x - 3 + 2] += b_error >> 3;
-
+						if (x < screenWidth - 1) {
+							work[py1x - 3] += r_error >> 3;
+							work[py1x - 3 + 1] += g_error >> 3;
+							work[py1x - 3 + 2] += b_error >> 3;
+						}
+						
 						work[py1x] += r_error >> 3;
 						work[py1x + 1] += g_error >> 3;
 						work[py1x + 2] += b_error >> 3;
@@ -288,15 +313,25 @@ public class CPCRenderer extends AbstractRenderer {
 					final float l2 = Gfx.getLuma(r2, g2, b2) / 255;
 
 					final float sum = (l1 + l2);
-
-					r = (int) ((r1 * l1 + r2 * l2) / sum);
-					g = (int) ((g1 * l1 + g2 * l2) / sum);
-					b = (int) ((b1 * l1 + b2 * l2) / sum);
+					if (sum <= 1e-6) {
+						r = ((r1 + r2) >> 1);
+						g = ((g1 + g2) >> 1);
+						b = ((b1 + b2) >> 1);
+					} else {
+						r = (int) ((r1 * l1 + r2 * l2) / sum);
+						g = (int) ((g1 * l1 + g2 * l2) / sum);
+						b = (int) ((b1 * l1 + b2 * l2) / sum);
+					}
 
 					break;
 				}
 
-				final int color = Gfx.getColorIndex(colorAlg, pictureColors, r, g, b);
+				final int color;
+				if (colorAlg == NEAREST_COLOR.MAHALANOBIS)
+					color = Gfx.getMahalanobisColorIndex(pictureColors, coefficients, r, g, b);
+				else
+					color = Gfx.getColorIndex(colorAlg, pictureColors, r, g, b);
+				
 				final int data = ((color & 1) != 0 ? bit0 : 0) | ((color & 2) != 0 ? bit1 : 0)
 						| ((color & 4) != 0 ? bit2 : 0) | ((color & 8) != 0 ? bit3 : 0);
 
@@ -353,8 +388,12 @@ public class CPCRenderer extends AbstractRenderer {
 				g0 = pixels[pyx + 1] & 0xff;
 				b0 = pixels[pyx + 2] & 0xff;
 
-				final int color = Gfx.getColorIndex(colorAlg, pictureColors, r0, g0, b0);
-
+				final int color;
+				if (colorAlg == NEAREST_COLOR.MAHALANOBIS)
+					color = Gfx.getMahalanobisColorIndex(pictureColors, coefficients, r0, g0, b0);
+				else
+					color = Gfx.getColorIndex(colorAlg, pictureColors, r0, g0, b0);				
+				
 				final int r = pictureColors[color][0];
 				final int g = pictureColors[color][1];
 				final int b = pictureColors[color][2];
@@ -415,9 +454,15 @@ public class CPCRenderer extends AbstractRenderer {
 
 					final float sum = (l1 + l2);
 
-					r = (int) ((r1 * l1 + r2 * l2) / sum);
-					g = (int) ((g1 * l1 + g2 * l2) / sum);
-					b = (int) ((b1 * l1 + b2 * l2) / sum);
+					if (sum > 0) {
+						r = (int) ((r1 * l1 + r2 * l2) / sum);
+						g = (int) ((g1 * l1 + g2 * l2) / sum);
+						b = (int) ((b1 * l1 + b2 * l2) / sum);
+					} else {
+						r = ((r1 + r2) >> 1);
+						g = ((g1 + g2) >> 1);
+						b = ((b1 + b2) >> 1);
+					}
 
 					break;
 				}
@@ -444,7 +489,12 @@ public class CPCRenderer extends AbstractRenderer {
 				int g = newPixels[pl + 1];
 				int b = newPixels[pl + 2];
 
-				final int color = Gfx.getColorIndex(colorAlg, pictureColors, r, g, b);
+				final int color;
+				if (colorAlg == NEAREST_COLOR.MAHALANOBIS)
+					color = Gfx.getMahalanobisColorIndex(pictureColors, coefficients, r, g, b);
+				else
+					color = Gfx.getColorIndex(colorAlg, pictureColors, r, g, b);
+				
 				r = pictureColors[color][0];
 				g = pictureColors[color][1];
 				b = pictureColors[color][2];

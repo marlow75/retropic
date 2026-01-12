@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import pl.dido.image.renderer.AbstractRenderer;
 import pl.dido.image.utils.Config;
+import pl.dido.image.utils.Config.NEAREST_COLOR;
 import pl.dido.image.utils.Gfx;
 import pl.dido.image.utils.Utils;
 import pl.dido.image.utils.neural.FastAutoencoder;
@@ -95,6 +96,8 @@ public class PCRenderer extends AbstractRenderer {
 			background[i][1] = (cgaColors[i] & 0x00ff00) >> 8; // green
 			background[i][2] = (cgaColors[i] & 0xff0000) >> 16; // red
 		}
+		
+		super.setupPalette();
 	}
 
 	@Override
@@ -132,12 +135,16 @@ public class PCRenderer extends AbstractRenderer {
 						final float luma = Gfx.getLuma(r, g, b);
 						if (luma > mf) {
 							mf = luma;
-							f = Gfx.getColorIndex(colorAlg, palette, r, g, b);
+							f = getColorIndex(r, g, b);
 						}
 
 						if (luma < mn) {
 							mn = luma;
-							n = Gfx.getColorIndex(colorAlg, background, r, g, b);
+							
+							if (colorAlg == NEAREST_COLOR.MAHALANOBIS)
+								n = Gfx.getMahalanobisColorIndex(background, coefficients, r, g, b);
+							else
+								n = Gfx.getColorIndex(colorAlg, background, r, g, b);
 						}
 					}
 				}
@@ -165,8 +172,8 @@ public class PCRenderer extends AbstractRenderer {
 						final int b = work[pyx0 + 2];
 
 						// fore or background color?
-						final float df = Gfx.getDistance(colorAlg, r, g, b, fr, fg, fb);
-						final float db = Gfx.getDistance(colorAlg, r, g, b, nr, ng, nb);
+						final float df = getDistance(r, g, b, fr, fg, fb);
+						final float db = getDistance(r, g, b, nr, ng, nb);
 
 						// ones as color of the bright pixels
 						tile[(y0 << 3) + x0] = (df <= db) ? 1 : 0;

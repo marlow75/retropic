@@ -13,6 +13,7 @@ public class PetsciiConfig extends Config {
 		filter = FILTER.NONE;
 		
 		filter = FILTER.LOWPASS;
+		allow_palette = true;
 	}
 	
 	@Override

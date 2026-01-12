@@ -23,27 +23,29 @@ public class GuiUtils {
 
 	public final static Font std = new Font("Tahoma", Font.BOLD, 10);
 	public final static Font title = new Font("Tahoma", Font.PLAIN, 12);
-	
+
 	public final static Font bold = new Font("Tahoma", Font.BOLD, 10);
 	public final static Font options = new Font("Tahoma", Font.BOLD, 8);
 
 	public static final JPanel addDASControls(final JPanel panel, final Config config) {
 		return addDASControls(panel, config, null, true);
 	}
-	
+
 	public static final JPanel addDASControls(final JPanel panel, final Config config, final boolean ditherOptions[]) {
 		return addDASControls(panel, config, ditherOptions, true);
 	}
 
-	public static final JPanel addDASControls(final JPanel panel, final Config config, final boolean ditherOptions[], final boolean pal) {
+	public static final JPanel addDASControls(final JPanel panel, final Config config, final boolean ditherOptions[],
+			final boolean pal) {
 		final JLabel lblDitherLabel = new JLabel("Dithering & aspect & pal & bw:");
 		lblDitherLabel.setFont(bold);
 		lblDitherLabel.setBounds(20, 8, 200, 20);
 		panel.add(lblDitherLabel);
 
 		final JSlider sldError = new JSlider(JSlider.HORIZONTAL, 0, 4, config.error_threshold);
-		final DitheringComboBox cmbDithering = ditherOptions != null ? new DitheringComboBox(config, ditherOptions) : new DitheringComboBox(config);
-		
+		final DitheringComboBox cmbDithering = ditherOptions != null ? new DitheringComboBox(config, ditherOptions)
+				: new DitheringComboBox(config);
+
 		cmbDithering.setToolTipText("Dithering options");
 		cmbDithering.setFont(std);
 		cmbDithering.setBounds(46, 30, 100, 20);
@@ -76,7 +78,7 @@ public class GuiUtils {
 		sldError.setMajorTickSpacing(2);
 		sldError.setPaintLabels(true);
 		panel.add(sldError);
-		
+
 		final JCheckBox chckbxAspectCheckBox = new JCheckBox("asp");
 		chckbxAspectCheckBox.setToolTipText("Preserve orginal image aspect ratio");
 		chckbxAspectCheckBox.setFont(GuiUtils.std);
@@ -107,7 +109,7 @@ public class GuiUtils {
 			panel.add(chckbxBWCheckBox);
 
 			final JCheckBox chckbxPALCheckBox = new JCheckBox("pal");
-			chckbxPALCheckBox.setToolTipText("Simple PAL emulation");
+			chckbxPALCheckBox.setToolTipText("PAL emulation");
 			chckbxPALCheckBox.setFont(GuiUtils.std);
 			chckbxPALCheckBox.setBounds(96, 60, 40, 20);
 			chckbxPALCheckBox.setSelected(config.pal_view);
@@ -282,10 +284,10 @@ public class GuiUtils {
 		lblColorLabel.setBounds(20, 300, 198, 16);
 		panel.add(lblColorLabel);
 
-		final JRadioButton rdbtnEuclideanButton = new JRadioButton("simple euclidean");
+		final JRadioButton rdbtnEuclideanButton = new JRadioButton("euclidean");
 		rdbtnEuclideanButton.setToolTipText("Simple euclidean distance");
 		rdbtnEuclideanButton.setFont(std);
-		rdbtnEuclideanButton.setBounds(46, 320, 150, 18);
+		rdbtnEuclideanButton.setBounds(46, 320, 80, 18);
 		rdbtnEuclideanButton.setSelected(config.color_alg == NEAREST_COLOR.EUCLIDEAN);
 		rdbtnEuclideanButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
@@ -297,7 +299,7 @@ public class GuiUtils {
 		final JRadioButton rdbtnPerceptedButton = new JRadioButton("percepted");
 		rdbtnPerceptedButton.setToolTipText("Perception weighted distance");
 		rdbtnPerceptedButton.setFont(std);
-		rdbtnPerceptedButton.setBounds(202, 320, 113, 18);
+		rdbtnPerceptedButton.setBounds(126, 320, 80, 18);
 		rdbtnPerceptedButton.setSelected(config.color_alg == NEAREST_COLOR.PERCEPTED);
 		rdbtnPerceptedButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
@@ -310,12 +312,14 @@ public class GuiUtils {
 		final ButtonGroup groupDistance = new ButtonGroup();
 		groupDistance.add(rdbtnEuclideanButton);
 		groupDistance.add(rdbtnPerceptedButton);
+		
+		int pos = 206;
 
 		if (config.allow_luminance) {
-			final JRadioButton rdbtnLumaButton = new JRadioButton("luminance");
+			final JRadioButton rdbtnLumaButton = new JRadioButton("luma");
 			rdbtnLumaButton.setToolTipText("Luminance distance for BW screens");
 			rdbtnLumaButton.setFont(std);
-			rdbtnLumaButton.setBounds(347, 320, 139, 18);
+			rdbtnLumaButton.setBounds(pos + 20, 320, 80, 18);
 			rdbtnLumaButton.setSelected(config.color_alg == NEAREST_COLOR.LUMA_WEIGHTED);
 			rdbtnLumaButton.addActionListener(new ActionListener() {
 				public void actionPerformed(final ActionEvent e) {
@@ -325,9 +329,41 @@ public class GuiUtils {
 
 			panel.add(rdbtnLumaButton);
 			groupDistance.add(rdbtnLumaButton);
+
+			final JRadioButton rdbtnChromaButton = new JRadioButton("chroma");
+			rdbtnChromaButton.setToolTipText("Chrominance prioritized distance");
+			rdbtnChromaButton.setFont(std);
+			rdbtnChromaButton.setBounds(pos + 80, 320, 80, 18);
+			rdbtnChromaButton.setSelected(config.color_alg == NEAREST_COLOR.CHROMA_WEIGHTED);
+			rdbtnChromaButton.addActionListener(new ActionListener() {
+				public void actionPerformed(final ActionEvent e) {
+					config.color_alg = NEAREST_COLOR.CHROMA_WEIGHTED;
+				}
+			});
+
+			panel.add(rdbtnChromaButton);
+			groupDistance.add(rdbtnChromaButton);
+			
+			pos += 160;
+		}
+
+		if (config.allow_palette) {
+			final JRadioButton rdbtnMahalanobisButton = new JRadioButton("palette");
+			rdbtnMahalanobisButton.setToolTipText("Mahalanobis distance computed on palette");
+			rdbtnMahalanobisButton.setFont(std);
+			rdbtnMahalanobisButton.setBounds(pos, 320, 80, 18);
+			rdbtnMahalanobisButton.setSelected(config.color_alg == NEAREST_COLOR.MAHALANOBIS);
+			rdbtnMahalanobisButton.addActionListener(new ActionListener() {
+				public void actionPerformed(final ActionEvent e) {
+					config.color_alg = NEAREST_COLOR.MAHALANOBIS;
+				}
+			});
+
+			panel.add(rdbtnMahalanobisButton);
+			groupDistance.add(rdbtnMahalanobisButton);
 		}
 	}
-	
+
 	public static final void addFiltersControls(final JPanel panel, final Config config) {
 		final JLabel lblFilterLabel = new JLabel("Image filters:");
 		lblFilterLabel.setFont(bold);
@@ -370,7 +406,7 @@ public class GuiUtils {
 			}
 		});
 
-		panel.add(rdbtnSharpenButton);	
+		panel.add(rdbtnSharpenButton);
 
 		final JRadioButton rdbtnEmbossButton = new JRadioButton("emboss");
 		rdbtnEmbossButton.setToolTipText("Simple emboss filter");
@@ -383,7 +419,7 @@ public class GuiUtils {
 			}
 		});
 
-		panel.add(rdbtnEmbossButton);	
+		panel.add(rdbtnEmbossButton);
 
 		final JRadioButton rdbtnEdgeButton = new JRadioButton("edge");
 		rdbtnEdgeButton.setToolTipText("More details less color, try with HE");
@@ -396,14 +432,14 @@ public class GuiUtils {
 			}
 		});
 
-		panel.add(rdbtnEdgeButton);	
-		
+		panel.add(rdbtnEdgeButton);
+
 		final ButtonGroup filterDistance = new ButtonGroup();
 		filterDistance.add(rdbtnNoneButton);
-		
+
 		filterDistance.add(rdbtnLowpassButton);
 		filterDistance.add(rdbtnSharpenButton);
-		
+
 		filterDistance.add(rdbtnEmbossButton);
 		filterDistance.add(rdbtnEdgeButton);
 	}

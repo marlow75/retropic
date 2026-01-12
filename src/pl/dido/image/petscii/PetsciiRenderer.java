@@ -69,7 +69,7 @@ public class PetsciiRenderer extends AbstractRenderer {
 			nb = pixels[i + 2] & 0xff;
 
 			// dimmer better
-			occurrence[Gfx.getColorIndex(colorAlg, palette, nr, ng, nb)] += (255 - Gfx.getLuma(nr, ng, nb));
+			occurrence[getColorIndex(nr, ng, nb)] += (255 - Gfx.getLuma(nr, ng, nb));
 		}
 
 		// get background color with maximum occurrence
@@ -115,7 +115,7 @@ public class PetsciiRenderer extends AbstractRenderer {
 						final float distance = Gfx.getLuma(r, g, b) - back_luma;
 						if (max_distance < distance) {
 							max_distance = distance;
-							f = Gfx.getColorIndex(colorAlg, palette, r, g, b);
+							f = getColorIndex(r, g, b);
 						}
 					}
 				}
@@ -135,8 +135,8 @@ public class PetsciiRenderer extends AbstractRenderer {
 						final int b = work[pyx0 + 2];
 
 						// fore or background color?
-						final float df = Gfx.getDistance(colorAlg, r, g, b, fr, fg, fb);
-						final float db = Gfx.getDistance(colorAlg, r, g, b, nr, ng, nb);
+						final float df = getDistance(r, g, b, fr, fg, fb);
+						final float db = getDistance(r, g, b, nr, ng, nb);
 
 						// ones as color of the bright pixels
 						tile[(y0 << 3) + x0] = (df <= db) ? 1 : 0;
@@ -215,6 +215,7 @@ public class PetsciiRenderer extends AbstractRenderer {
 	@Override
 	protected void setupPalette() {
 		palette = C64PaletteCalculator.getCalculatedPalette();
+		super.setupPalette();
 	}
 
 	@Override

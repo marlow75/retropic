@@ -8,6 +8,8 @@ public class C128Config extends Config {
 		super();
 		pal_view = false;
 		dither_alg = DITHERING.NOISE;
+		
+		allow_palette = true;
 	}
 	
 	@Override

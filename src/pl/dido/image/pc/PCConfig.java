@@ -20,6 +20,8 @@ public class PCConfig extends Config {
 		
 		pal_view = false;
 		filter = FILTER.LOWPASS;
+		
+		allow_palette = true;
 	}
 	
 	@Override

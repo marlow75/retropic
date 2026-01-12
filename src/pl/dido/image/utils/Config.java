@@ -15,7 +15,7 @@ abstract public class Config implements Cloneable {
 	};
 
 	public enum NEAREST_COLOR {
-		EUCLIDEAN, PERCEPTED, LUMA_WEIGHTED
+		EUCLIDEAN, PERCEPTED, LUMA_WEIGHTED, CHROMA_WEIGHTED, MAHALANOBIS
 	};
 
 	public boolean preserve_aspect;
@@ -37,9 +37,11 @@ abstract public class Config implements Cloneable {
 	public NEAREST_COLOR color_alg;
 
 	public boolean black_white;
-	public boolean allow_luminance;
-
 	public boolean predithering;
+	
+	public boolean allow_luminance;
+	public boolean allow_palette;
+
 
 	public Config() {
 		dither_alg = DITHERING.ATKINSON;
@@ -59,6 +61,8 @@ abstract public class Config implements Cloneable {
 
 		error_threshold = 0;
 		allow_luminance = true;
+		
+		allow_palette = false;
 
 		lowpass_gain = 1.1f;
 		denoise = false;
@@ -124,6 +128,14 @@ abstract public class Config implements Cloneable {
 			break;
 		case PERCEPTED:
 			configString += "percepted ";
+			break;
+		case CHROMA_WEIGHTED:
+			configString += "chroma ";
+			break;
+		case MAHALANOBIS:
+			configString += "palette ";
+			break;
+		default:
 			break;
 		}
 

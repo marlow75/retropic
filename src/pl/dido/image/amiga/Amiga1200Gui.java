@@ -106,7 +106,7 @@ public class Amiga1200Gui {
 		panel.add(chckbxBWCheckBox);
 
 		final JCheckBox chckbxPALCheckBox = new JCheckBox("pal");
-		chckbxPALCheckBox.setToolTipText("Simple PAL emulation");
+		chckbxPALCheckBox.setToolTipText("PAL emulation");
 		chckbxPALCheckBox.setFont(GuiUtils.std);
 		chckbxPALCheckBox.setBounds(96, 60, 40, 20);
 		chckbxPALCheckBox.setSelected(config.pal_view);

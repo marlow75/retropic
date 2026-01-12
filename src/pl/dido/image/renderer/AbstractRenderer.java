@@ -22,6 +22,7 @@ public abstract class AbstractRenderer {
 	protected int screenHeight;
 
 	protected int[] work = null;
+	protected float coefficients[];
 
 	protected BufferedImage image;
 	protected NEAREST_COLOR colorAlg;
@@ -122,21 +123,12 @@ public abstract class AbstractRenderer {
 			image = Gfx.byteArrayToBGRImage(data, PALcodec.WIDTH, PALcodec.HEIGHT);
 		}
 	}
-	
-//	protected void generatePALView() {
-//		if (config.pal_view) {
-//			final BufferedImage crt = new BufferedImage(SimplePALcodec.WIDTH, SimplePALcodec.HEIGHT, BufferedImage.TYPE_3BYTE_BGR);
-//			final byte[] data = ((DataBufferByte) crt.getRaster().getDataBuffer()).getData();
-//
-//			SimplePALcodec.encodeYC(image.getWidth(), image.getHeight(), pixels, config.black_white);
-//			SimplePALcodec.decodeYC(data, config.black_white);
-//
-//			image = Gfx.byteArrayToBGRImage(data, SimplePALcodec.WIDTH, SimplePALcodec.HEIGHT);
-//		}
-//	}
 
 	protected abstract void imagePostproces();
-	protected abstract void setupPalette();
+	protected void setupPalette() {
+		if (colorAlg == NEAREST_COLOR.MAHALANOBIS)
+			coefficients = Gfx.buildPaletteMahalanobisMetric(palette);
+	}
 
 	protected void imageDithering() {
 		switch (config.dither_alg) {
@@ -156,7 +148,17 @@ public abstract class AbstractRenderer {
 	}
 
 	protected final int getColorIndex(final int r, final int g, final int b) {
-		return Gfx.getColorIndex(colorAlg, palette, r, g, b);
+		if (colorAlg == NEAREST_COLOR.MAHALANOBIS)
+			return Gfx.getMahalanobisColorIndex(palette, coefficients, r, g, b);
+		else
+			return Gfx.getColorIndex(colorAlg, palette, r, g, b);
+	}
+	
+	protected final float getDistance(final int r0, final int g0, final int b0, final int r1, final int g1, final int b1) {
+		if (colorAlg == NEAREST_COLOR.MAHALANOBIS)
+			return Gfx.getMahalanobisDistance(b0, g0, r0, b1, g1, r1, coefficients);
+		else
+			return Gfx.getDistance(colorAlg, b0, g0, r0, b1, g1, r1);
 	}
 
 	public void savePreview(final String exportFileName) {

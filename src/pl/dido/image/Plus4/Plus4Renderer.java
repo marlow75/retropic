@@ -5,35 +5,35 @@ import java.util.Arrays;
 
 import pl.dido.image.renderer.AbstractRenderer;
 import pl.dido.image.utils.Config.DITHERING;
+import pl.dido.image.utils.Config.NEAREST_COLOR;
 import pl.dido.image.utils.Gfx;
 
 public class Plus4Renderer extends AbstractRenderer {
 
 	// plus4 palette
-	private final static int colors[] = new int[] { 
-			0x000000, 0x171717, 0x46070a, 0x002a26, 0x3e0246, 0x003300, 0x0f0d70, 0x1f2100, 
-			0x3e0e00, 0x301700, 0x0f2b00, 0x460326, 0x00310a, 0x031761, 0x1f0770, 0x033100,
-			
-			0x000000, 0x262626, 0x591417, 0x013b37, 0x510c59, 0x054501, 0x1e1c85, 0x303200, 
-			0x511c01, 0x422700, 0x1e3c00, 0x590e37, 0x014217, 0x0f2675, 0x301385, 0x0f4300, 
-			
-			0x000000, 0x373737, 0x6d2327, 0x0c4e49, 0x641b6d, 0x12580c, 0x2e2c9b, 0x414400, 
-			0x642c0c, 0x553800, 0x2e4e00, 0x6d1d49, 0x0c5527, 0x1d378a, 0x41229b, 0x1d5600, 
-			
-			0x000000, 0x4a4a4a, 0x813338, 0x1a615d, 0x792a82, 0x206c1a, 0x3f3db1, 0x545700,
-			0x793d1a, 0x684a07, 0x3f6200, 0x812d5d, 0x1a6938, 0x2d49a0, 0x5433b1, 0x2d6907, 
-			
-			0x000000, 0x7b7b7b, 0xb86267, 0x449690, 0xaf58b9, 0x4ca144, 0x706deb, 0x878a1f, 
-			0xaf6e44, 0x9d7c2b, 0x70961f, 0xb85a90, 0x449e67, 0x5b7bd9, 0x8762eb, 0x5b9e2b, 
-			
-			0x000000, 0x9b9b9b, 0xdb8186, 0x61b7b1, 0xd176dc, 0x69c360, 0x8f8cff, 0xa8ab38, 
-			0xd18d60, 0xbf9c45, 0x8fb738, 0xdb79b1, 0x61c086, 0x799bfd, 0xa880ff, 0x79c045,
-			
-			0x000000, 0xe0e0e0, 0xffc3c9, 0xa0fef8, 0xffb7ff, 0xa9ff9f, 0xd3d0ff, 0xedf171, 
-			0xffd19f, 0xffe081, 0xd3fe71, 0xffbaf8, 0xa0ffc9, 0xbbe0ff, 0xedc3ff, 0xbbff81, 
-			
-			0x000000, 0xffffff, 0xffffff, 0xfdffff, 0xffffff, 0xfffffd, 0xffffff, 0xffffc9, 
-			0xfffffd, 0xffffdb, 0xffffc9, 0xffffff, 0xfdffff, 0xffffff, 0xffffff, 0xffffdb };
+	private final static int colors[] = new int[] { 0x000000, 0x171717, 0x46070a, 0x002a26, 0x3e0246, 0x003300,
+			0x0f0d70, 0x1f2100, 0x3e0e00, 0x301700, 0x0f2b00, 0x460326, 0x00310a, 0x031761, 0x1f0770, 0x033100,
+
+			0x000000, 0x262626, 0x591417, 0x013b37, 0x510c59, 0x054501, 0x1e1c85, 0x303200, 0x511c01, 0x422700,
+			0x1e3c00, 0x590e37, 0x014217, 0x0f2675, 0x301385, 0x0f4300,
+
+			0x000000, 0x373737, 0x6d2327, 0x0c4e49, 0x641b6d, 0x12580c, 0x2e2c9b, 0x414400, 0x642c0c, 0x553800,
+			0x2e4e00, 0x6d1d49, 0x0c5527, 0x1d378a, 0x41229b, 0x1d5600,
+
+			0x000000, 0x4a4a4a, 0x813338, 0x1a615d, 0x792a82, 0x206c1a, 0x3f3db1, 0x545700, 0x793d1a, 0x684a07,
+			0x3f6200, 0x812d5d, 0x1a6938, 0x2d49a0, 0x5433b1, 0x2d6907,
+
+			0x000000, 0x7b7b7b, 0xb86267, 0x449690, 0xaf58b9, 0x4ca144, 0x706deb, 0x878a1f, 0xaf6e44, 0x9d7c2b,
+			0x70961f, 0xb85a90, 0x449e67, 0x5b7bd9, 0x8762eb, 0x5b9e2b,
+
+			0x000000, 0x9b9b9b, 0xdb8186, 0x61b7b1, 0xd176dc, 0x69c360, 0x8f8cff, 0xa8ab38, 0xd18d60, 0xbf9c45,
+			0x8fb738, 0xdb79b1, 0x61c086, 0x799bfd, 0xa880ff, 0x79c045,
+
+			0x000000, 0xe0e0e0, 0xffc3c9, 0xa0fef8, 0xffb7ff, 0xa9ff9f, 0xd3d0ff, 0xedf171, 0xffd19f, 0xffe081,
+			0xd3fe71, 0xffbaf8, 0xa0ffc9, 0xbbe0ff, 0xedc3ff, 0xbbff81,
+
+			0x000000, 0xffffff, 0xffffff, 0xfdffff, 0xffffff, 0xfffffd, 0xffffff, 0xffffc9, 0xfffffd, 0xffffdb,
+			0xffffc9, 0xffffff, 0xfdffff, 0xffffff, 0xffffff, 0xffffdb };
 
 	protected int bitmap[] = new int[8000];
 	protected int screen[] = new int[1000];
@@ -55,6 +55,8 @@ public class Plus4Renderer extends AbstractRenderer {
 			palette[i][1] = (colors[i] & 0x00ff00) >> 8; // green
 			palette[i][2] = (colors[i] & 0xff0000) >> 16; // red
 		}
+
+		super.setupPalette();
 	}
 
 	@Override
@@ -72,7 +74,7 @@ public class Plus4Renderer extends AbstractRenderer {
 				hires();
 				break;
 			}
-			
+
 			break;
 		case MULTICOLOR:
 			switch (config.dither_alg) {
@@ -86,7 +88,7 @@ public class Plus4Renderer extends AbstractRenderer {
 				lowres();
 				break;
 			}
-			
+
 			break;
 		}
 	}
@@ -144,7 +146,7 @@ public class Plus4Renderer extends AbstractRenderer {
 						}
 					}
 				}
-				
+
 				final int lf = f / 16;
 				final int ln = n / 16;
 
@@ -183,8 +185,8 @@ public class Plus4Renderer extends AbstractRenderer {
 						int ng = cn[1];
 						int nb = cn[2];
 
-						final float d1 = Gfx.getDistance(colorAlg, r, g, b, fr, fg, fb);
-						final float d2 = Gfx.getDistance(colorAlg, r, g, b, nr, ng, nb);
+						final float d1 = getDistance(r, g, b, fr, fg, fb);
+						final float d2 = getDistance(r, g, b, nr, ng, nb);
 
 						if (d1 < d2) {
 							nr = fr;
@@ -221,9 +223,11 @@ public class Plus4Renderer extends AbstractRenderer {
 								}
 
 								if (y0 < 7) {
-									work[py1x0 - 3] += (r_error * 3) / 16;
-									work[py1x0 - 3 + 1] += (g_error * 3) / 16;
-									work[py1x0 - 3 + 2] += (b_error * 3) / 16;
+									if (x0 > 0) {
+										work[py1x0 - 3] += (r_error * 3) / 16;
+										work[py1x0 - 3 + 1] += (g_error * 3) / 16;
+										work[py1x0 - 3 + 2] += (b_error * 3) / 16;
+									}
 
 									work[py1x0] += (r_error * 5) / 16;
 									work[py1x0 + 1] += (g_error * 5) / 16;
@@ -249,9 +253,11 @@ public class Plus4Renderer extends AbstractRenderer {
 									}
 								}
 								if (y0 < 7) {
-									work[py1x0 - 3] += r_error >> 3;
-									work[py1x0 - 3 + 1] += g_error >> 3;
-									work[py1x0 - 3 + 2] += b_error >> 3;
+									if (x0 > 0) {
+										work[py1x0 - 3] += r_error >> 3;
+										work[py1x0 - 3 + 1] += g_error >> 3;
+										work[py1x0 - 3 + 2] += b_error >> 3;
+									}
 
 									work[py1x0] += r_error >> 3;
 									work[py1x0 + 1] += g_error >> 3;
@@ -279,7 +285,7 @@ public class Plus4Renderer extends AbstractRenderer {
 				}
 			}
 		}
-		
+
 		System.out.println();
 	}
 
@@ -322,7 +328,7 @@ public class Plus4Renderer extends AbstractRenderer {
 							break;
 						}
 
-						occurrence[Gfx.getColorIndex(colorAlg, palette, r, g, b)]++;
+						occurrence[getColorIndex(r, g, b)]++;
 					}
 				}
 
@@ -366,7 +372,12 @@ public class Plus4Renderer extends AbstractRenderer {
 						final int g = work[pyx0 + 1];
 						final int b = work[pyx0 + 2];
 
-						final int color = Gfx.getColorIndex(colorAlg, localPalette, r, g, b);
+						final int color;
+						if (colorAlg == NEAREST_COLOR.MAHALANOBIS)
+							color = Gfx.getColorIndex(colorAlg, localPalette, r, g, b);
+						else
+							color = Gfx.getMahalanobisColorIndex(localPalette, coefficients, r, g, b);
+
 						if (color == 1)
 							value = (value << 1) | 1;
 						else
@@ -433,9 +444,15 @@ public class Plus4Renderer extends AbstractRenderer {
 
 							final float sum = l1 + l2;
 
-							r = (int) ((r1 * l1 + r2 * l2) / sum);
-							g = (int) ((g1 * l1 + g2 * l2) / sum);
-							b = (int) ((b1 * l1 + b2 * l2) / sum);
+							if (sum <= 1e6) {
+								r = ((r1 + r2) >> 1);
+								g = ((g1 + g2) >> 1);
+								b = ((b1 + b2) >> 1);
+							} else {
+								r = (int) ((r1 * l1 + r2 * l2) / sum);
+								g = (int) ((g1 * l1 + g2 * l2) / sum);
+								b = (int) ((b1 * l1 + b2 * l2) / sum);
+							}
 
 							break;
 						}
@@ -555,7 +572,11 @@ public class Plus4Renderer extends AbstractRenderer {
 						final int g = work[pyx0 + 1];
 						final int b = work[pyx0 + 2];
 
-						index = Gfx.getColorIndex(colorAlg, tilePalette, r, g, b);
+						if (colorAlg == NEAREST_COLOR.MAHALANOBIS)
+							index = Gfx.getMahalanobisColorIndex(tilePalette, coefficients, r, g, b);
+						else
+							index = Gfx.getColorIndex(colorAlg, tilePalette, r, g, b);
+
 						final int c[] = tilePalette[index];
 
 						final int nr = c[0];
@@ -587,9 +608,11 @@ public class Plus4Renderer extends AbstractRenderer {
 									work[pyx0 + 3 + 2] += b_error * 7 / 16;
 								}
 								if (y0 < 7) {
-									work[py1x0 - 3] += r_error * 3 / 16;
-									work[py1x0 - 3 + 1] += g_error * 3 / 16;
-									work[py1x0 - 3 + 2] += b_error * 3 / 16;
+									if (x0 > 0) {
+										work[py1x0 - 3] += r_error * 3 / 16;
+										work[py1x0 - 3 + 1] += g_error * 3 / 16;
+										work[py1x0 - 3 + 2] += b_error * 3 / 16;
+									}
 
 									work[py1x0] += r_error * 5 / 16;
 									work[py1x0 + 1] += g_error * 5 / 16;
@@ -615,9 +638,11 @@ public class Plus4Renderer extends AbstractRenderer {
 									}
 								}
 								if (y0 < 7) {
-									work[py1x0 - 3] += r_error * 1 / 8;
-									work[py1x0 - 3 + 1] += g_error * 1 / 8;
-									work[py1x0 - 3 + 2] += b_error * 1 / 8;
+									if (x0 > 0) {
+										work[py1x0 - 3] += r_error * 1 / 8;
+										work[py1x0 - 3 + 1] += g_error * 1 / 8;
+										work[py1x0 - 3 + 2] += b_error * 1 / 8;
+									}
 
 									work[py1x0] += r_error * 1 / 8;
 									work[py1x0 + 1] += g_error * 1 / 8;
@@ -710,10 +735,15 @@ public class Plus4Renderer extends AbstractRenderer {
 							final float l2 = Gfx.getLuma(r2, g2, b2);
 
 							final float sum = l1 + l2;
-
-							r = (int) ((r1 * l1 + r2 * l2) / sum);
-							g = (int) ((g1 * l1 + g2 * l2) / sum);
-							b = (int) ((b1 * l1 + b2 * l2) / sum);
+							if (sum > 0) {
+								r = (int) ((r1 * l1 + r2 * l2) / sum);
+								g = (int) ((g1 * l1 + g2 * l2) / sum);
+								b = (int) ((b1 * l1 + b2 * l2) / sum);
+							} else {
+								r = ((r1 + r2) >> 1);
+								g = ((g1 + g2) >> 1);
+								b = ((b1 + b2) >> 1);
+							}
 
 							break;
 						}
@@ -830,7 +860,11 @@ public class Plus4Renderer extends AbstractRenderer {
 						int g = work[pyx0 + 1];
 						int b = work[pyx0 + 2];
 
-						index = Gfx.getColorIndex(colorAlg, tilePalette, r, g, b);
+						if (colorAlg == NEAREST_COLOR.MAHALANOBIS)
+							index = Gfx.getMahalanobisColorIndex(tilePalette, coefficients, r, g, b);
+						else
+							index = Gfx.getColorIndex(colorAlg, tilePalette, r, g, b);
+
 						final int c[] = tilePalette[index];
 
 						final int nr = c[0];
@@ -883,6 +917,6 @@ public class Plus4Renderer extends AbstractRenderer {
 			return 3;
 		default:
 			return 3;
-		} 
+		}
 	}
 }

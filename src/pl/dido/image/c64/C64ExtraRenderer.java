@@ -103,6 +103,8 @@ public class C64ExtraRenderer extends AbstractRenderer {
 		// shrink palette to actual size
 		palette = Arrays.copyOf(palette, index);
 		blend = Arrays.copyOf(blend, index);
+		
+		super.setupPalette();
 	}
 
 	@Override
@@ -187,9 +189,9 @@ public class C64ExtraRenderer extends AbstractRenderer {
 		
 		final int m[] = machinePalette[prevColorIndex];
 
-		final int r0 = 2 * r - m[0];
-		final int g0 = 2 * g - m[1];
-		final int b0 = 2 * b - m[2];
+		final int r0 = Gfx.saturate(2 * r - m[0]);
+		final int g0 = Gfx.saturate(2 * g - m[1]);
+		final int b0 = Gfx.saturate(2 * b - m[2]);
 
 		return Gfx.getColorIndex(NEAREST_COLOR.EUCLIDEAN, tilePalette, r0, g0, b0);
 	}
@@ -399,9 +401,9 @@ public class C64ExtraRenderer extends AbstractRenderer {
 		int g = work[1];
 		int b = work[2];
 		
-		int br = (int) (Math.random() * 256);
-		int bg = (int) (Math.random() * 256);
-		int bb = (int) (Math.random() * 256);
+		int br = 0;
+		int bg = 0;
+		int bb = 0;
 		
 		// calculate average color
 		for (int y = 0; y < 200; y++) {
@@ -414,12 +416,16 @@ public class C64ExtraRenderer extends AbstractRenderer {
 				g = work[position + 1];
 				b = work[position + 2];
 				
-				br += (int)(0.6f * (r - br));
-				bg += (int)(0.6f * (g - bg));
-				bb += (int)(0.6f * (b - bb));
+				br += r;
+				bg += g;
+				bb += b;
 			}
 		}
 
+		br /= 64000;
+		bg /= 64000;
+		bb /= 64000;
+		
 		// average as background - common color
 		backgroundColor = Gfx.getColorIndex(colorAlg, machinePalette, br, bg, bb);
 
@@ -545,9 +551,6 @@ public class C64ExtraRenderer extends AbstractRenderer {
 						prevColorIndex[y0] = color;
 					}
 				}
-
-//				if (checkColors(buf))
-//					System.out.println((y / 8) + ":" + (x / 8));
 				
 				if (((C64ExtraConfig)config).flickering_filter)
 					unflicker(buf);

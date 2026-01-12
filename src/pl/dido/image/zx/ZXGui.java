@@ -26,7 +26,7 @@ public class ZXGui {
 		panelZX.add(lblAspectLabel);
 		
 		final JCheckBox chckbxRasterCheckBox = new JCheckBox("pal");
-		chckbxRasterCheckBox.setToolTipText("Simple PAL emulation");
+		chckbxRasterCheckBox.setToolTipText("PAL emulation");
 		chckbxRasterCheckBox.setFont(GuiUtils.std);
 		chckbxRasterCheckBox.setBounds(20, 43, 50, 20);
 		chckbxRasterCheckBox.setSelected(config.pal_view);
