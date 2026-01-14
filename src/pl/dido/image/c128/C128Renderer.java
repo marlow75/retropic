@@ -156,11 +156,11 @@ public class C128Renderer extends AbstractRenderer {
 	protected int getColorBitDepth() {
 		switch (config.dither_alg) {
 		case BLUE16x16, BLUE8x8:
-			return 7;
+			return 28;
 		case NOISE:
-			return 3;
+			return 4;
 		default:
-			return 8;
+			return 16;
 		}
 	}
 }

@@ -319,7 +319,7 @@ public class GuiUtils {
 			final JRadioButton rdbtnLumaButton = new JRadioButton("luma");
 			rdbtnLumaButton.setToolTipText("Luminance distance for BW screens");
 			rdbtnLumaButton.setFont(std);
-			rdbtnLumaButton.setBounds(pos + 20, 320, 80, 18);
+			rdbtnLumaButton.setBounds(pos + 20, 320, 60, 18);
 			rdbtnLumaButton.setSelected(config.color_alg == NEAREST_COLOR.LUMA_WEIGHTED);
 			rdbtnLumaButton.addActionListener(new ActionListener() {
 				public void actionPerformed(final ActionEvent e) {

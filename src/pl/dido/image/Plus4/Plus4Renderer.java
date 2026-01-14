@@ -374,9 +374,9 @@ public class Plus4Renderer extends AbstractRenderer {
 
 						final int color;
 						if (colorAlg == NEAREST_COLOR.MAHALANOBIS)
-							color = Gfx.getColorIndex(colorAlg, localPalette, r, g, b);
-						else
 							color = Gfx.getMahalanobisColorIndex(localPalette, coefficients, r, g, b);
+						else
+							color = Gfx.getColorIndex(colorAlg, localPalette, r, g, b);
 
 						if (color == 1)
 							value = (value << 1) | 1;
@@ -916,7 +916,7 @@ public class Plus4Renderer extends AbstractRenderer {
 		case NOISE:
 			return 3;
 		default:
-			return 3;
+			return 4;
 		}
 	}
 }

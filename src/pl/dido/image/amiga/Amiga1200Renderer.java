@@ -472,6 +472,13 @@ public class Amiga1200Renderer extends AbstractPictureColorsRenderer {
 
 	@Override
 	protected int getColorBitDepth() {
-		return 8;
+		switch (config.dither_alg) {
+		case BLUE16x16, BLUE8x8:
+			return 28;
+		case NOISE:
+			return 4;
+		default:
+			return 16;
+		}
 	}
 }

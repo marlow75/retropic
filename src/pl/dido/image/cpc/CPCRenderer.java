@@ -200,9 +200,9 @@ public class CPCRenderer extends AbstractRenderer {
 				
 				final int color;
 				if (colorAlg == NEAREST_COLOR.MAHALANOBIS)
-					color = Gfx.getColorIndex(colorAlg, pictureColors, r0, g0, b0);
-				else
 					color = Gfx.getMahalanobisColorIndex(pictureColors, coefficients, r0, g0, b0);
+				else
+					color = Gfx.getColorIndex(colorAlg, pictureColors, r0, g0, b0);
 				
 				final int c[] = pictureColors[color];
 
