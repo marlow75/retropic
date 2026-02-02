@@ -10,7 +10,7 @@
 
 ## Version History
 
-- **1.18c** - New Color distance - Mahalonobis (palette) metric for machines with arbitrary palette, minor bug fixes
+- **1.18c** - New color distance - Mahalonobis (palette) metric for machines with arbitrary palette, minor bug fixes
 - **1.18b** – Reworked Lanchos scaling, minor bug fixes in charset generator, advanced PAL simulation with bloom, moire, scanlines, viniete
 - **1.18** – Added Lanchos scaling, minor bug fixes
 - **1.17** – Improved neural algorithms, faster and more robust; reworked VIC-20 charset modes; minor bug fixes; removed third-party libraries
