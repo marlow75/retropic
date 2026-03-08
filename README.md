@@ -48,7 +48,7 @@
 - **Amiga 500/1000:** PAL 320x256 and 320x512, 32 colors or HAM6 (4096 colors)
 - **Amiga 1200/4000:** PAL 320x256, 320x512, 640x512, 256 colors or HAM8 (16 million colors)
 - **PC:** CGA & VESA 10bh text modes
-- **VIC-20:** Text (unexpanded), hires 176x184, lowres 88x184 (with 8kB expansion)
+- **VIC-20:** hires 176x184, lowres 88x184 (with 8kB expansion)
 - **C128:** VDC 640x200 (16 colors, 64kB)
 
 ---
