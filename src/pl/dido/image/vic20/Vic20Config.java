@@ -21,12 +21,21 @@ public class Vic20Config extends PetsciiConfig {
 		
 	@Override
 	public String getConfigString() {
+		String configString;
+		
 		switch (mode) {
 		default:
-			return "176x184x2 ";
+			configString = "176x184x2 ";
+			break;
 		case LOWRES:
-			return "88x184x4 ";
+			configString = "88x184x4 ";
+			break;
 		}
+		
+		if (posterize_level > 0)
+			configString += "P" + posterize_level + " ";
+		
+		return configString;
 	}
 
 	@Override

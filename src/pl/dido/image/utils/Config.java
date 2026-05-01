@@ -26,6 +26,8 @@ abstract public class Config implements Cloneable {
 
 	public int details;
 	public int error_threshold;
+	
+	public int posterize_level;
 
 	public static String export_path;
 	public FILTER filter;
@@ -41,7 +43,6 @@ abstract public class Config implements Cloneable {
 	
 	public boolean allow_luminance;
 	public boolean allow_palette;
-
 
 	public Config() {
 		dither_alg = DITHERING.ATKINSON;
@@ -63,6 +64,7 @@ abstract public class Config implements Cloneable {
 		allow_luminance = true;
 		
 		allow_palette = false;
+		posterize_level = 0;
 
 		lowpass_gain = 1.1f;
 		denoise = false;
@@ -155,7 +157,10 @@ abstract public class Config implements Cloneable {
 			configString += "sharpen ";
 			break;
 		}
-
+		
+		if (posterize_level > 0)
+			configString += "P" + posterize_level + " ";
+	
 		configString += denoise ? "denoiser " : "";
 		return configString;
 	}

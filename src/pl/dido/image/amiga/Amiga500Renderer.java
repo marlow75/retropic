@@ -494,7 +494,7 @@ public class Amiga500Renderer extends AbstractPictureColorsRenderer {
 		case BLUE16x16, BLUE8x8:
 			return 28;
 		case NOISE:
-			return 4;
+			return 2;
 		default:
 			return 16;
 		}

@@ -30,6 +30,7 @@ public class ZXRenderer extends AbstractRenderer {
 		}
 		
 		super.setupPalette();
+		palette = getPictureColors(8);
 	}
 
 	@Override

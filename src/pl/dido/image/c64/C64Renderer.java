@@ -25,6 +25,8 @@ public class C64Renderer extends AbstractRenderer {
 	protected void setupPalette() {
 		palette = C64PaletteCalculator.getCalculatedPalette();
 		super.setupPalette();
+		
+		palette = getPictureColors(8);
 	}
 
 	@Override
@@ -94,19 +96,19 @@ public class C64Renderer extends AbstractRenderer {
 								continue;
 							break;
 						}
-						
+
 						final int color = getColorIndex(r, g, b);
 
 						r = palette[color][0];
 						g = palette[color][1];
 						b = palette[color][2];
-						
+
 						final float luma = Gfx.getLuma(r, g, b);
 						if (luma > max) {
 							max = luma;
 							f = color;
 						}
-						
+
 						if (luma < min) {
 							min = luma;
 							n = color;
@@ -248,6 +250,23 @@ public class C64Renderer extends AbstractRenderer {
 		final int work[] = new int[64 * 3];
 		int bitmapIndex = 0;
 
+		final int N = palette.length;
+		final float dists[][] = new float[N][N];
+
+		float max = 0;
+		for (int i = 0; i < N; i++)
+			for (int j = 0; j < N; j++) {
+
+				final float m = Gfx.getDistance(colorAlg, palette[i][0], palette[i][1], palette[i][2], palette[j][0],
+						palette[j][1], palette[j][2]);
+				if (m > max)
+					max = m;
+
+				dists[i][j] = m;
+			}
+
+		final float occurrence[] = new float[N];
+
 		for (int y = 0; y < 200; y += 8) {
 			final int p = y * 320 * 3;
 
@@ -257,7 +276,7 @@ public class C64Renderer extends AbstractRenderer {
 				int index = 0;
 				int f = 0, n = 0;
 
-				final int occurrence[] = new int[16];
+				Arrays.fill(occurrence, 0f);
 
 				// 8x8 tile
 				for (int y0 = 0; y0 < 8; y0++) {
@@ -287,17 +306,38 @@ public class C64Renderer extends AbstractRenderer {
 					}
 				}
 
-				int max = 0, min = 0;
-				for (int i = 0; i < palette.length; i++)
-					if (occurrence[i] > max) {
+				for (int i = 0; i < N; i++)
+					for (int j = 0; j < N; j++) {
+						final float a = dists[i][j] / max;
+
+						if (a < 1e-6f)
+							dists[i][j] = 0f;
+						else
+							dists[i][j] = a;
+					}
+
+				for (int i = 0; i < N; i++) {
+					float sum = 0;
+					final float a = occurrence[i];
+
+					if (a > 0)
+						for (int j = 0; j < N; j++)
+							sum += (occurrence[j] > 0 ? 1f : 0f) * (1f - dists[i][j]);
+
+					occurrence[i] = sum * a;
+				}
+
+				float max0 = 0, min0 = 0;
+				for (int i = 0; i < N; i++)
+					if (occurrence[i] > max0) {
 						n = f;
-						min = max;
+						min0 = max0;
 
 						f = i;
-						max = occurrence[i];
-					} else if (occurrence[i] > min) {
+						max0 = occurrence[i];
+					} else if (occurrence[i] > min0) {
 						n = i;
-						min = occurrence[i];
+						min0 = occurrence[i];
 					}
 
 				screen[(y >> 3) * 40 + (x >> 3)] = ((f & 0xf) << 4) | (n & 0xf);
@@ -518,7 +558,7 @@ public class C64Renderer extends AbstractRenderer {
 						final int r = work[pyx0];
 						final int g = work[pyx0 + 1];
 						final int b = work[pyx0 + 2];
-						
+
 						index = Gfx.getColorIndex(colorAlg, tilePalette, r, g, b);
 						final int c[] = tilePalette[index];
 
@@ -838,14 +878,14 @@ public class C64Renderer extends AbstractRenderer {
 					for (int tx = 0; tx < 24; tx += 6) {
 						position = o2 + ty * 320 * 3 + tx;
 
-						pixels[position + 0] = (byte) work[index]; 
-						pixels[position + 1] = (byte) work[index + 1]; 
+						pixels[position + 0] = (byte) work[index];
+						pixels[position + 1] = (byte) work[index + 1];
 						pixels[position + 2] = (byte) work[index + 2];
 
-						pixels[position + 3] = (byte) work[index]; 
-						pixels[position + 4] = (byte) work[index + 1]; 
+						pixels[position + 3] = (byte) work[index];
+						pixels[position + 4] = (byte) work[index + 1];
 						pixels[position + 5] = (byte) work[index + 2];
-						
+
 						index += 3;
 					}
 			}
@@ -858,7 +898,7 @@ public class C64Renderer extends AbstractRenderer {
 		case BLUE16x16, BLUE8x8:
 			return 16;
 		case NOISE:
-			return 4;
+			return 3;
 		default:
 			return 8;
 		}

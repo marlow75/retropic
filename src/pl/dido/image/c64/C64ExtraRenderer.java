@@ -557,10 +557,10 @@ public class C64ExtraRenderer extends AbstractRenderer {
 				
 				int even = 0, value1 = 0, value2 = 0, bitcount = 0;
 				for (int y0 = 0; y0 < 8; y0++) {
-					final int line[] = buf[y0].getBuffer();
+					final int flickered[] = buf[y0].getBuffer();
 
 					for (int x0 = 0; x0 < 8; x0++) {
-						colorIndex = line[x0];
+						colorIndex = flickered[x0];
 						colorIndex = Gfx.getColorIndex(colorAlg, tilePalette, machinePalette[colorIndex][0],
 								machinePalette[colorIndex][1], machinePalette[colorIndex][2]);
 

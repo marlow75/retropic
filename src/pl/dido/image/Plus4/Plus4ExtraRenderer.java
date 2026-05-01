@@ -32,20 +32,20 @@ public class Plus4ExtraRenderer extends AbstractRenderer {
 	protected int lumaThreshold;
 
 	// plus4 palette
-	private final static int colors[] = new int[] { 0x000000, 0x171717, 0x46070a, 0x002a26, 0x3e0246, 0x003300,
-			0x0f0d70, 0x1f2100, 0x3e0e00, 0x301700, 0x0f2b00, 0x460326, 0x00310a, 0x031761, 0x1f0770, 0x033100,
-			0x000000, 0x262626, 0x591417, 0x013b37, 0x510c59, 0x054501, 0x1e1c85, 0x303200, 0x511c01, 0x422700,
-			0x1e3c00, 0x590e37, 0x014217, 0x0f2675, 0x301385, 0x0f4300, 0x000000, 0x373737, 0x6d2327, 0x0c4e49,
-			0x641b6d, 0x12580c, 0x2e2c9b, 0x414400, 0x642c0c, 0x553800, 0x2e4e00, 0x6d1d49, 0x0c5527, 0x1d378a,
-			0x41229b, 0x1d5600, 0x000000, 0x4a4a4a, 0x813338, 0x1a615d, 0x792a82, 0x206c1a, 0x3f3db1, 0x545700,
-			0x793d1a, 0x684a07, 0x3f6200, 0x812d5d, 0x1a6938, 0x2d49a0, 0x5433b1, 0x2d6907, 0x000000, 0x7b7b7b,
-			0xb86267, 0x449690, 0xaf58b9, 0x4ca144, 0x706deb, 0x878a1f, 0xaf6e44, 0x9d7c2b, 0x70961f, 0xb85a90,
-			0x449e67, 0x5b7bd9, 0x8762eb, 0x5b9e2b, 0x000000, 0x9b9b9b, 0xdb8186, 0x61b7b1, 0xd176dc, 0x69c360,
-			0x8f8cff, 0xa8ab38, 0xd18d60, 0xbf9c45, 0x8fb738, 0xdb79b1, 0x61c086, 0x799bfd, 0xa880ff, 0x79c045,
-			0x000000, 0xe0e0e0, 0xffc3c9, 0xa0fef8, 0xffb7ff, 0xa9ff9f, 0xd3d0ff, 0xedf171, 0xffd19f, 0xffe081,
-			0xd3fe71, 0xffbaf8, 0xa0ffc9, 0xbbe0ff, 0xedc3ff, 0xbbff81, 0x000000, 0xffffff, 0xffffff, 0xfdffff,
-			0xffffff, 0xfffffd, 0xffffff, 0xffffc9, 0xfffffd, 0xffffdb, 0xffffc9, 0xffffff, 0xfdffff, 0xffffff,
-			0xffffff, 0xffffdb };
+	private final static int colors[] = new int[] { 
+			0x000000, 0x171717, 0x46070a, 0x002a26, 0x3e0246, 0x003300, 0x0f0d70, 0x1f2100, 0x3e0e00, 0x301700, 
+			0x0f2b00, 0x460326, 0x00310a, 0x031761, 0x1f0770, 0x033100, 0x000000, 0x262626, 0x591417, 0x013b37, 
+			0x510c59, 0x054501, 0x1e1c85, 0x303200, 0x511c01, 0x422700, 0x1e3c00, 0x590e37, 0x014217, 0x0f2675, 
+			0x301385, 0x0f4300, 0x000000, 0x373737, 0x6d2327, 0x0c4e49, 0x641b6d, 0x12580c, 0x2e2c9b, 0x414400, 
+			0x642c0c, 0x553800, 0x2e4e00, 0x6d1d49, 0x0c5527, 0x1d378a, 0x41229b, 0x1d5600, 0x000000, 0x4a4a4a, 
+			0x813338, 0x1a615d, 0x792a82, 0x206c1a, 0x3f3db1, 0x545700, 0x793d1a, 0x684a07, 0x3f6200, 0x812d5d, 
+			0x1a6938, 0x2d49a0, 0x5433b1, 0x2d6907, 0x000000, 0x7b7b7b, 0xb86267, 0x449690, 0xaf58b9, 0x4ca144, 
+			0x706deb, 0x878a1f, 0xaf6e44, 0x9d7c2b, 0x70961f, 0xb85a90, 0x449e67, 0x5b7bd9, 0x8762eb, 0x5b9e2b, 
+			0x000000, 0x9b9b9b, 0xdb8186, 0x61b7b1, 0xd176dc, 0x69c360, 0x8f8cff, 0xa8ab38, 0xd18d60, 0xbf9c45, 
+			0x8fb738, 0xdb79b1, 0x61c086, 0x799bfd, 0xa880ff, 0x79c045, 0x000000, 0xe0e0e0, 0xffc3c9, 0xa0fef8, 
+			0xffb7ff, 0xa9ff9f, 0xd3d0ff, 0xedf171, 0xffd19f, 0xffe081, 0xd3fe71, 0xffbaf8, 0xa0ffc9, 0xbbe0ff, 
+			0xedc3ff, 0xbbff81, 0x000000, 0xffffff, 0xffffff, 0xfdffff, 0xffffff, 0xfffffd, 0xffffff, 0xffffc9, 
+			0xfffffd, 0xffffdb, 0xffffc9, 0xffffff, 0xfdffff, 0xffffff, 0xffffff, 0xffffdb };
 
 	public Plus4ExtraRenderer(final BufferedImage image, final Plus4ExtraConfig config) {
 		super(image, config);
@@ -61,11 +61,12 @@ public class Plus4ExtraRenderer extends AbstractRenderer {
 		blend = new int[16384][2];
 
 		final int lumas[] = new int[len];
-
 		for (int i = 0; i < colors.length; i++) {
+			
 			machinePalette[i][0] = (colors[i] & 0x0000ff); // blue
 			machinePalette[i][1] = (colors[i] & 0x00ff00) >> 8; // green
-			machinePalette[i][2] = (colors[i] & 0xff0000) >> 16; // red
+		    machinePalette[i][2] = (colors[i] & 0xff0000) >> 16; // red
+		    
 			lumas[i] = (int) Gfx.getLuma(machinePalette[i][0], machinePalette[i][1], machinePalette[i][2]);
 		}
 
@@ -116,37 +117,17 @@ public class Plus4ExtraRenderer extends AbstractRenderer {
 			break;
 		}
 	}
-		
+	
 	protected int getBlendedColorIndex(final int tilePalette[][], final int tileColors[], final int r, final int g,
 			final int b, final int prevColorIndex) {
-		float min = Float.MAX_VALUE;
-		int mp[] = machinePalette[prevColorIndex];
 
-		final int r0 = mp[0];
-		final int g0 = mp[1];
-		final int b0 = mp[2];
+		final int m[] = machinePalette[prevColorIndex];
 
-		int index = -1, len = tilePalette.length;
-		for (int i = 0; i < len; i++) {
-			final int color = tileColors[i];
-			final int c[] = machinePalette[color];
+		final int r0 = Gfx.saturate(2 * r - m[0]);
+		final int g0 = Gfx.saturate(2 * g - m[1]);
+		final int b0 = Gfx.saturate(2 * b - m[2]);
 
-			final int r1 = (c[0] + r0) >> 1;
-			final int g1 = (c[1] + g0) >> 1;
-			final int b1 = (c[2] + b0) >> 1;
-
-			final float dist = Gfx.euclideanDistance(r, g, b, r1, g1, b1);
-
-			if (dist < min) {
-				min = dist;
-				index = i;
-			}
-		}
-
-		if (index == -1)
-			return Gfx.getColorIndex(NEAREST_COLOR.EUCLIDEAN, tilePalette, r0, g0, b0);
-
-		return index;
+		return Gfx.getColorIndex(NEAREST_COLOR.EUCLIDEAN, tilePalette, r0, g0, b0);
 	}
 
 	protected void hires() {
@@ -380,6 +361,20 @@ public class Plus4ExtraRenderer extends AbstractRenderer {
 	protected void multicolor() {
 		int bitmapIndex = 0;
 		final int work[] = Gfx.copy2Int(pixels);
+		
+		final int N = machinePalette.length;
+		final float dists[][] = new float[N][N];
+		
+		float max = 0;
+		for (int i = 0; i < N; i++)
+			for (int j = 0; j < N; j++) {
+				
+				final float m = Gfx.getDistance(colorAlg, palette[i][0], palette[i][1], palette[i][2], palette[j][0], palette[j][1], palette[j][2]);
+				if (m > max)
+					max = m;
+				
+				dists[i][j] = m;
+			}
 
 		int r = 0, g = 0, b = 0;
 		final int background[][] = new int[2][3];
@@ -388,7 +383,7 @@ public class Plus4ExtraRenderer extends AbstractRenderer {
 		background[0][1] = 0;
 		background[0][2] = 0;
 		
-		final int occurrence[] = new int[machinePalette.length];
+		final float occurrence[] = new float[N];
 		
 		// calculate average color
 		for (int y = 0; y < 200; y++) {
@@ -405,32 +400,62 @@ public class Plus4ExtraRenderer extends AbstractRenderer {
 				background[0][1] += g; 
 				background[0][2] += b;
 				
-				occurrence[Gfx.getColorIndex(colorAlg, machinePalette, r, g, b)]++;
+				final int i = Gfx.getColorIndex(colorAlg, machinePalette, r, g, b);
+				occurrence[i]++;
 			}
 		}
 		
-		int br1 = background[0][0] / 64000;
-		int bg1 = background[0][1] / 64000;
-		int bb1 = background[0][2] / 64000;
-		
-		// background - common color
-		backgroundColor1 = Gfx.getColorIndex(colorAlg, machinePalette, br1, bg1, bb1);		
-		backgroundColor2 = backgroundColor1;
-		
-		int max = 0;
-		for (int i = 0; i < machinePalette.length; i++)
-			if (backgroundColor1 != i && max < occurrence[i]) {
-				max = occurrence[i];
-				backgroundColor2 = i;
+		for (int i = 0; i < N; i++)
+			for (int j = 0; j < N; j++) {
+				final float a = dists[i][j] / max;
+				
+				if (a < 1e-6f)
+					dists[i][j] = 0f;
+				else
+					dists[i][j] = a;
 			}
+		
+		for (int i = 0; i < N; i++) {
+			float sum = 0;
+			final float a = occurrence[i];
+			
+			if (a > 0)
+				for (int j = 0; j < N; j++)
+					sum += (occurrence[j] > 0 ? 1f : 0f) * (dists[i][j]);
+			
+			occurrence[i] = sum * a;
+		}
+		
+		float m1 = 0, m2 = 0;
+		int i1 = 0, i2 = 0;
+
+		// 2 most popular colors
+		for (int i = 0; i < N; i++) {
+			final float k = occurrence[i];
+			if (k > m1) {
+				i2 = i1;
+				m2 = m1;
+
+				i1 = i;
+				m1 = k;
+			} else 
+			if (k > m2) {
+				i2 = i;
+				m2 = k;
+			}
+		}
+		
+		// background1 - common color
+		backgroundColor1 = i1;
+		backgroundColor2 = i2;
 		
 		final int br2 = machinePalette[backgroundColor2][0]; 
 		final int bg2 = machinePalette[backgroundColor2][1];
 		final int bb2 = machinePalette[backgroundColor2][2];
 		
-		br1 = machinePalette[backgroundColor1][0];
-		bg1 = machinePalette[backgroundColor1][1];
-		bb1 = machinePalette[backgroundColor1][2];
+		final int br1 = machinePalette[backgroundColor1][0];
+		final int bg1 = machinePalette[backgroundColor1][1];
+		final int bb1 = machinePalette[backgroundColor1][2];
 
 		final byte trainData1[] = new byte[64 * 3];
 		final byte trainData2[] = new byte[32 * 3];
@@ -476,8 +501,8 @@ public class Plus4ExtraRenderer extends AbstractRenderer {
 				}
 
 				// map all 4 colors to extra palette
-				SOMPalette som = new SOMPalette(4, 4, 0.8f, 1f, 30);
-				int tilePalette[][] = som.train(trainData1);
+				final SOMPalette som44 = new SOMPalette(4, 4, 0.8f, 1f, 30);
+				int tilePalette[][] = som44.train(trainData1);
 
 				// get blend colors
 				for (int i = 0; i < 16; i++) {
@@ -498,8 +523,8 @@ public class Plus4ExtraRenderer extends AbstractRenderer {
 				}
 
 				// get machine colors
-				som = new SOMPalette(2, 2, 0.8f, 1f, 30);
-				tilePalette = som.train(trainData2);
+				final SOMPalette som22 = new SOMPalette(2, 2, 0.8f, 1f, 30);
+				tilePalette = som22.train(trainData2);
 
 				for (int i = 0; i < 4; i++) {
 					final int c[] = tilePalette[i];
@@ -517,8 +542,8 @@ public class Plus4ExtraRenderer extends AbstractRenderer {
 				if (colorIndex != 0) {
 					tilePalette[colorIndex][0] = tilePalette[0][0]; // first entry = background color
 					tilePalette[colorIndex][1] = tilePalette[0][1];
+					
 					tilePalette[colorIndex][2] = tilePalette[0][2];
-
 					tileColors[colorIndex] = tileColors[0];
 				}
 
@@ -550,7 +575,7 @@ public class Plus4ExtraRenderer extends AbstractRenderer {
 						final int position = k + x0;
 
 						// get current picture color
-						r = Gfx.saturate(work[position]);
+						r = Gfx.saturate(work[position + 0]);
 						g = Gfx.saturate(work[position + 1]);
 						b = Gfx.saturate(work[position + 2]);
 
@@ -565,14 +590,10 @@ public class Plus4ExtraRenderer extends AbstractRenderer {
 					}
 				}
 				
-//				if (checkColors(buf))
-//					System.out.println((y / 8) + ":" + (x / 8));
-				
 				if (((C64ExtraConfig)config).flickering_filter)
 					unflicker(buf);
 				
 				int even = 0, value1 = 0, value2 = 0, bitcount = 0;
-
 				for (int y0 = 0; y0 < 8; y0++) {
 					int flickered[] = buf[y0].getBuffer();
 

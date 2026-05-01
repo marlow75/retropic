@@ -57,6 +57,7 @@ public class Plus4Renderer extends AbstractRenderer {
 		}
 
 		super.setupPalette();
+		palette = getPictureColors(8);
 	}
 
 	@Override
@@ -403,10 +404,24 @@ public class Plus4Renderer extends AbstractRenderer {
 	protected void lowres() {
 		final int[] newPixels = new int[160 * 200 * 3]; // 160x200
 		int bitmapIndex = 0;
-
-		final int occurrence[] = new int[128];
+		
+		final int N = palette.length;
+		final float dists[][] = new float[N][N];
+		
+		float max = 0;
+		for (int i = 0; i < N; i++)
+			for (int j = 0; j < N; j++) {
+				
+				final float m = Gfx.getDistance(colorAlg, palette[i][0], palette[i][1], palette[i][2], palette[j][0], palette[j][1], palette[j][2]);
+				if (m > max)
+					max = m;
+				
+				dists[i][j] = m;
+			}
+		
+		final float occurrence[] = new float[N];
 		work = new int[64 * 3];
-
+		
 		// shrinking 320x200 -> 160x200
 		for (int y = 0; y < 200; y += 8) {
 			final int p1 = y * 320 * 3;
@@ -443,7 +458,6 @@ public class Plus4Renderer extends AbstractRenderer {
 							final float l2 = Gfx.getLuma(r2, g2, b2);
 
 							final float sum = l1 + l2;
-
 							if (sum <= 1e6) {
 								r = ((r1 + r2) >> 1);
 								g = ((g1 + g2) >> 1);
@@ -468,23 +482,42 @@ public class Plus4Renderer extends AbstractRenderer {
 				}
 			}
 		}
-
-		int m1 = 0, m2 = 0;
+		
+		for (int i = 0; i < N; i++)
+			for (int j = 0; j < N; j++) {
+				final float a = dists[i][j] / max;
+				
+				if (a < 1e-6f)
+					dists[i][j] = 0f;
+				else
+					dists[i][j] = a;
+			}
+		
+		for (int i = 0; i < N; i++) {
+			float sum = 0;
+			final float a = occurrence[i];
+			
+			if (a > 0)
+				for (int j = 0; j < N; j++)
+					sum += (occurrence[j] > 0 ? 1f : 0f) * (1f - dists[i][j]);
+			
+			occurrence[i] = sum * a;
+		}
+		
+		float m1 = 0, m2 = 0;
 		int i1 = 0, i2 = 0;
 
-		// 4x8 tile palette
-		final int tilePalette[][] = new int[4][3];
-
 		// 2 most popular colors
-		for (int i = 0; i < 128; i++) {
-			final int k = occurrence[i];
+		for (int i = 0; i < N; i++) {
+			final float k = occurrence[i];
 			if (k > m1) {
 				i2 = i1;
 				m2 = m1;
 
 				i1 = i;
 				m1 = k;
-			} else if (k > m2) {
+			} else 
+			if (k > m2) {
 				i2 = i;
 				m2 = k;
 			}
@@ -493,6 +526,9 @@ public class Plus4Renderer extends AbstractRenderer {
 		backgroundColor1 = i1;
 		backgroundColor2 = i2;
 
+		// 4x8 tile palette
+		final int tilePalette[][] = new int[4][3];
+		
 		// common colors
 		tilePalette[0] = Arrays.copyOf(palette[i1], 3);
 		tilePalette[3] = Arrays.copyOf(palette[i2], 3);
@@ -528,8 +564,8 @@ public class Plus4Renderer extends AbstractRenderer {
 				i2 = 0;
 
 				// 2 most popular colors
-				for (int i = 0; i < 128; i++) {
-					final int k = occurrence[i];
+				for (int i = 0; i < N; i++) {
+					final float k = occurrence[i];
 					if (k > m1) {
 						i2 = i1;
 						m2 = m1;
@@ -696,7 +732,21 @@ public class Plus4Renderer extends AbstractRenderer {
 		final int[] newPixels = new int[160 * 200 * 3]; // 160x200
 		int bitmapIndex = 0;
 
-		final int occurrence[] = new int[128];
+		final int N = palette.length;
+		final float dists[][] = new float[N][N];
+		
+		float max = 0;
+		for (int i = 0; i < N; i++)
+			for (int j = 0; j < N; j++) {
+				
+				final float m = Gfx.getDistance(colorAlg, palette[i][0], palette[i][1], palette[i][2], palette[j][0], palette[j][1], palette[j][2]);
+				if (m > max)
+					max = m;
+				
+				dists[i][j] = m;
+			}
+		
+		final float occurrence[] = new float[N];
 		work = new int[64 * 3];
 
 		// shrinking 320x200 -> 160x200
@@ -760,29 +810,52 @@ public class Plus4Renderer extends AbstractRenderer {
 			}
 		}
 
-		int m1 = 0, m2 = 0;
+
+		for (int i = 0; i < N; i++)
+			for (int j = 0; j < N; j++) {
+				final float a = dists[i][j] / max;
+				
+				if (a < 1e-6f)
+					dists[i][j] = 0f;
+				else
+					dists[i][j] = a;
+			}
+		
+		for (int i = 0; i < N; i++) {
+			float sum = 0;
+			final float a = occurrence[i];
+			
+			if (a > 0)
+				for (int j = 0; j < N; j++)
+					sum += (occurrence[j] > 0 ? 1f : 0f) * (1f - dists[i][j]);
+			
+			occurrence[i] = sum * a;
+		}
+		
+		float m1 = 0, m2 = 0;
 		int i1 = 0, i2 = 0;
 
 		// 2 most popular colors
-		for (int i = 0; i < 128; i++) {
-			final int k = occurrence[i];
+		for (int i = 0; i < N; i++) {
+			final float k = occurrence[i];
 			if (k > m1) {
 				i2 = i1;
 				m2 = m1;
 
 				i1 = i;
 				m1 = k;
-			} else if (k > m2) {
+			} else 
+			if (k > m2) {
 				i2 = i;
 				m2 = k;
 			}
 		}
 
-		// 4x8 tile palette
-		final int tilePalette[][] = new int[4][3];
-
 		backgroundColor1 = i1;
 		backgroundColor2 = i2;
+
+		// 4x8 tile palette
+		final int tilePalette[][] = new int[4][3];
 
 		// common colors
 		tilePalette[0] = Arrays.copyOf(palette[i1], 3);
@@ -821,7 +894,7 @@ public class Plus4Renderer extends AbstractRenderer {
 
 				// 3 most popular colors
 				for (int i = 0; i < 128; i++) {
-					final int k = occurrence[i];
+					final float k = occurrence[i];
 					if (k > m1) {
 						i2 = i1;
 						m2 = m1;

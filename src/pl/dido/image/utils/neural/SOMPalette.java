@@ -27,8 +27,10 @@ public class SOMPalette {
 	public SOMPalette(final int width, final int height, final float rate, final float radius, int epoch) {
 		this.width = width;
 		this.height = height;
+		
 		this.rate = rate;
 		this.radius = radius;
+		
 		this.epoch = epoch;
 	}
 

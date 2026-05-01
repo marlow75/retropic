@@ -8,6 +8,9 @@ import javax.swing.ButtonGroup;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JRadioButton;
+import javax.swing.JSlider;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.JPanel;
 
 import pl.dido.image.GuiUtils;
@@ -19,6 +22,8 @@ public class ZXGui {
 	public static JPanel zxTab(final ZXConfig config) {
 		final JPanel panelZX = new JPanel();
 		panelZX.setLayout(null);
+		
+		final JSlider sldPoster = new JSlider(JSlider.HORIZONTAL, 0, 4, GuiUtils.level2position[config.posterize_level]);
 		
 		final JLabel lblAspectLabel = new JLabel("Aspect & scanline:");
 		lblAspectLabel.setFont(GuiUtils.bold);
@@ -101,6 +106,28 @@ public class ZXGui {
 		groupDither.add(rdbtnNoDitherButton);
 		groupDither.add(rdbtnBayerButton);
 		groupDither.add(rdbtnAtkinsonButton);
+		
+		final JLabel posterLabel = new JLabel("poster:");
+		posterLabel.setFont(GuiUtils.bold);
+		posterLabel.setBounds(240, 100, 50, 20);
+		panelZX.add(posterLabel);
+
+		sldPoster.setBounds(280, 100, 80, 30);
+		sldPoster.setFont(GuiUtils.std);
+		sldPoster.addChangeListener(new ChangeListener() {
+			public void stateChanged(final ChangeEvent e) {
+				final JSlider source = (JSlider) e.getSource();
+
+				if (!source.getValueIsAdjusting()) {
+					final int position = source.getValue();
+					config.posterize_level = GuiUtils.position2level[position];
+				}
+			}
+		});
+
+		sldPoster.setMajorTickSpacing(1);
+		sldPoster.setPaintLabels(true);
+		panelZX.add(sldPoster);
 		
 		final Canvas zxLogo = new ImageCanvas("sinclair.png");
 		zxLogo.setBounds(230, 7, 252, 65);

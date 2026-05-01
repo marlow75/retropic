@@ -215,20 +215,20 @@ public class Gfx {
 		return w < c ? w : c;
 	}
 
-	private static final Map<Float, Float> lanczosCache = new HashMap<>();
+	private static final Map<Double, Double> lanczosCache = new HashMap<>();
 
-	private final static float lanczos(final float x) {
+	private final static double lanczos(final double x) {
 		if (lanczosCache.containsKey(x))
 			return lanczosCache.get(x);
 
-		final float result;
-		if (x == 0f)
-			result = 1f;
-		else if (Math.abs(x) >= 2f)
-			result = 0f;
+		final double result;
+		if (x == 0.0)
+			result = 1.0;
+		else if (Math.abs(x) >= 2.0)
+			result = 0.0;
 		else {
-			final float pix = (float) (Math.PI * x);
-			result = (2f * (float) Math.sin(pix) * (float) Math.sin(pix / 2f)) / (pix * pix);
+			final double pix = Math.PI * x;
+			result = (2.0 * Math.sin(pix) * Math.sin(pix / 2.0)) / (pix * pix);
 		}
 
 		lanczosCache.put(x, result);
@@ -262,7 +262,7 @@ public class Gfx {
 					if (j < 0 || j >= srcMaxY)
 						continue;
 
-					final float wy = lanczos(srcY - j);
+					final double wy = lanczos(srcY - j);
 					final int jwidth = j * srcMaxX * 3;
 
 					final int startI = (int) (srcX - 2 + 1);
@@ -272,8 +272,8 @@ public class Gfx {
 						if (i < 0 || i >= srcMaxX)
 							continue;
 
-						final float wx = lanczos(srcX - i);
-						final float w = wx * wy;
+						final double wx = lanczos(srcX - i);
+						final double w = wx * wy;
 
 						final int address = jwidth + i * 3;
 
@@ -1112,7 +1112,7 @@ public class Gfx {
 			pixels1[i + 2] = (byte) Gfx.saturate(b1 - b2 / 4);
 		}
 	}
-
+	
 	protected static void filter(final byte pixels[], final int kernel[][], final int width, final int height) {
 		final byte work[] = new byte[pixels.length];
 		final int width3 = width * 3;
@@ -1534,10 +1534,7 @@ public class Gfx {
 			powB += vectorB[i] * vectorB[i];
 		}
 
-		if (powA * powB > 0)
-			return sum / (float) (Math.sqrt(powA) * Math.sqrt(powB));
-		else
-			return -1f;
+		return (powA * powB > 0) ? sum / (float) (Math.sqrt(powA) * Math.sqrt(powB)) : -1f;
 	}
 
 	public static void mono(final byte[] pixels) {
@@ -1549,6 +1546,24 @@ public class Gfx {
 			r = (int) Gfx.getLuma(b, g, r);
 			g = r;
 			b = r;
+
+			pixels[i + 0] = (byte) r;
+			pixels[i + 1] = (byte) g;
+			pixels[i + 2] = (byte) b;
+		}
+	}
+
+	public static void posterize(final byte[] pixels, final int level) {
+		final int v = level - 1;
+		
+		for (int i = 0; i < pixels.length; i += 3) {
+			int r = pixels[i + 0] & 0xff;
+			int g = pixels[i + 1] & 0xff;
+			int b = pixels[i + 2] & 0xff;
+			
+			r = Math.round((r * v) / 255f) * 255 / v;
+			g = Math.round((g * v) / 255f) * 255 / v;
+			b = Math.round((b * v) / 255f) * 255 / v;
 
 			pixels[i + 0] = (byte) r;
 			pixels[i + 1] = (byte) g;
@@ -1581,27 +1596,26 @@ public class Gfx {
 		return buildPaletteMahalanobisMetric(p, false); // ustaw na true, jeśli chcesz linearyzację sRGB
 	}
 
-	public static float[] buildPaletteMahalanobisMetric(final int[][] p, boolean linearizeSRGB) {
-		final int n = p.length; // 16
-		
+	public static float[] buildPaletteMahalanobisMetric(final int[][] p, final boolean linearizeSRGB) {
+		final int n = p.length;
+
 		// 1) Przygotuj paletę w wybranej przestrzeni (float)
 		final float[] Bv = new float[n];
 		final float[] Gv = new float[n];
 		final float[] Rv = new float[n];
-		
-		if (linearizeSRGB) {
+
+		if (linearizeSRGB)
 			for (int i = 0; i < n; i++) {
 				Bv[i] = toLin(p[i][0]); // 0..1
 				Gv[i] = toLin(p[i][1]);
 				Rv[i] = toLin(p[i][2]);
 			}
-		} else {
+		else
 			for (int i = 0; i < n; i++) {
 				Bv[i] = p[i][0]; // 0..255
 				Gv[i] = p[i][1];
 				Rv[i] = p[i][2];
 			}
-		}
 
 		// 2) Średnie (double dla stabilności)
 		double meanB = 0, meanG = 0, meanR = 0;
@@ -1610,34 +1624,34 @@ public class Gfx {
 			meanG += Gv[i];
 			meanR += Rv[i];
 		}
-		
+
 		meanB /= n;
 		meanG /= n;
 		meanR /= n;
 
 		// 3) Kowariancja Σ (symetryczna)
-		double a = 0, d = 0, f = 0, b = 0, c = 0, e = 0; 
-		
+		double a = 0, d = 0, f = 0, b = 0, c = 0, e = 0;
+
 		// a=var(B), d=var(G), f=var(R), b=cov(B,G), c=cov(B,R), e=cov(G,R)
 		for (int i = 0; i < n; i++) {
 			final double dB = Bv[i] - meanB;
 			final double dG = Gv[i] - meanG;
 			final double dR = Rv[i] - meanR;
-			
+
 			a += dB * dB;
 			d += dG * dG;
 			f += dR * dR;
-			
+
 			b += dB * dG;
 			c += dB * dR;
 			e += dG * dR;
 		}
-		
+
 		final double invN = 1.0 / (n - 1.0);
 		a *= invN;
 		d *= invN;
 		f *= invN;
-		
+
 		b *= invN;
 		c *= invN;
 		e *= invN;
@@ -1645,7 +1659,7 @@ public class Gfx {
 		// 4) Regularizacja (relatywna do skali danych)
 		final double maxDiag = Math.max(Math.max(a, d), f);
 		final double eps = Math.max(1e-6, 1e-3 * maxDiag);
-		
+
 		a += eps;
 		d += eps;
 		f += eps;
@@ -1653,15 +1667,15 @@ public class Gfx {
 		// 5) Odwrócenie Σ
 		double det = a * (d * f - e * e) - b * (b * f - c * e) + c * (b * e - c * d);
 		if (Math.abs(det) < 1e-12) {
-			
+
 			final double add = 10 * eps;
 			a += add;
 			d += add;
-			
+
 			f += add;
 			det = a * (d * f - e * e) - b * (b * f - c * e) + c * (b * e - c * d);
 		}
-		
+
 		final double invDet = 1.0 / det;
 
 		final double gBB = (d * f - e * e) * invDet;

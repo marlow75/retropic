@@ -18,6 +18,7 @@ public class C128Renderer extends AbstractRenderer {
 
 	public C128Renderer(final BufferedImage image, final C128Config config) {
 		super(image, config);
+		
 		palette = new int[16][3];
 	}
 
@@ -80,7 +81,9 @@ public class C128Renderer extends AbstractRenderer {
 						if (luma > max) {
 							max = luma;
 							f = color;
-						} else if (luma < min) {
+						} 
+						
+						if (luma < min) {
 							min = luma;
 							n = color;
 						}

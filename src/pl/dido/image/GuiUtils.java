@@ -26,6 +26,9 @@ public class GuiUtils {
 
 	public final static Font bold = new Font("Tahoma", Font.BOLD, 10);
 	public final static Font options = new Font("Tahoma", Font.BOLD, 8);
+	
+	public final static int position2level[] = new int[] {0, 2, 4, 8, 16};
+	public final static int level2position[] = new int[] {0, 0, 1, 0, 2, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 4};
 
 	public static final JPanel addDASControls(final JPanel panel, final Config config) {
 		return addDASControls(panel, config, null, true);
@@ -43,6 +46,8 @@ public class GuiUtils {
 		panel.add(lblDitherLabel);
 
 		final JSlider sldError = new JSlider(JSlider.HORIZONTAL, 0, 4, config.error_threshold);
+		final JSlider sldPoster = new JSlider(JSlider.HORIZONTAL, 0, 4, level2position[config.posterize_level]);
+		
 		final DitheringComboBox cmbDithering = ditherOptions != null ? new DitheringComboBox(config, ditherOptions)
 				: new DitheringComboBox(config);
 
@@ -78,6 +83,26 @@ public class GuiUtils {
 		sldError.setMajorTickSpacing(2);
 		sldError.setPaintLabels(true);
 		panel.add(sldError);
+		
+		final JLabel posterLabel = new JLabel("poster:");
+		posterLabel.setFont(GuiUtils.bold);
+		posterLabel.setBounds(205, 70, 50, 20);
+		panel.add(posterLabel);
+
+		sldPoster.setBounds(240, 70, 80, 30);
+		sldPoster.setFont(GuiUtils.std);
+		sldPoster.addChangeListener(new ChangeListener() {
+			public void stateChanged(final ChangeEvent e) {
+				final JSlider source = (JSlider) e.getSource();
+
+				if (!source.getValueIsAdjusting())
+					config.posterize_level = position2level[source.getValue()];
+			}
+		});
+
+		sldPoster.setMajorTickSpacing(1);
+		sldPoster.setPaintLabels(true);
+		panel.add(sldPoster);
 
 		final JCheckBox chckbxAspectCheckBox = new JCheckBox("asp");
 		chckbxAspectCheckBox.setToolTipText("Preserve orginal image aspect ratio");

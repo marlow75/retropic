@@ -10,28 +10,29 @@
 
 ## Version History
 
+- **1.19** - Added posterizer, minor bug fixes
 - **1.18c** - New color distance - Mahalonobis (palette) metric for machines with arbitrary palette, minor bug fixes
 - **1.18b** – Reworked Lanchos scaling, minor bug fixes in charset generator, advanced PAL simulation with bloom, moire, scanlines, viniete
 - **1.18** – Added Lanchos scaling, minor bug fixes
-- **1.17** – Improved neural algorithms, faster and more robust; reworked VIC-20 charset modes; minor bug fixes; removed third-party libraries
-- **1.16** – New noise dithering; added C128 VDC machine (640x200, 2 colors in 8x2 tile mode); improved MCI modes and edge filter
-- **1.15** – Autoencoder denoiser for charset modes; improved neural network matchers; disabled unproductive dithering modes for certain machines
+- **1.17** – Improved neural algorithms, faster and more robust; reworked VIC-20 charset modes, minor bug fixes; removed third-party libraries
+- **1.16** – New noise dithering; added C128 VDC machine (640x200, 2 colors in 8x2 tile mode), improved MCI modes and edge filter
+- **1.15** – Autoencoder denoiser for charset modes, improved neural network matchers, disabled unproductive dithering modes for certain machines
 - **1.14** – Bug fixes; blue noise dithering for all machines
 - **1.12b** – Minor bug fixes
-- **1.12** – New filters: lowpass, sharpen, emboss, edge (HE); faster neural character matcher
-- **1.11b** – Bug fixes; charset renderers fixed
+- **1.12** – New filters: lowpass, sharpen, emboss, edge (HE), faster neural character matcher
+- **1.11b** – Bug fixes, charset renderers fixed
 - **1.11a** – Luminance mode for monochrome displays
 - **1.11** – Added hires and lowres modes for VIC-20
 - **1.10** – Added PC and VIC-20 machines
-- **1.9a** – Improved PAL viewer; fixed IFF file issues from version 1.7; experimental CGA text mode
-- **1.9** – Improvements to MCI modes; low pass filter for 8-bit machines
-- **1.8** – Reworked MCI mode for C64; new modes for TED machines (hires & MCI)
-- **1.7** – New PAL preview for all machines; support for Commodore TED machines (Plus4, C16, C116); scanlines removed
+- **1.9a** – Improved PAL viewer, fixed IFF file issues from version 1.7, experimental CGA text mode
+- **1.9** – Improvements to MCI modes, low pass filter for 8-bit machines
+- **1.8** – Reworked MCI mode for C64, new modes for TED machines (hires & MCI)
+- **1.7** – New PAL preview for all machines, support for Commodore TED machines (Plus4, C16, C116), scanlines removed
 - **1.6** – Bayer dithering for all machines
-- **1.5** – New hires interlace and noisy MCI for C64; screenshots for 8-bit machines
+- **1.5** – New hires interlace and noisy MCI for C64, screenshots for 8-bit machines
 - **1.4** – Refactoring; new pixel formats
-- **1.3** – Scanline view for C64, ZX, CPC, ST; bug fixes
-- **1.2** – Improved palette and color handling for C64, CPC, Amiga 500; experimental C64 extra mode
+- **1.3** – Scanline view for C64, ZX, CPC, ST, bug fixes
+- **1.2** – Improved palette and color handling for C64, CPC, Amiga 500, experimental C64 extra mode
 - **1.1** – Minor bug fixes; new CPC palette
 - **1.0** – Initial versioning
 - **0.1** – First release; bug fixes
@@ -71,6 +72,7 @@
 
 Explore all available options to get the best results:
 
+- **Poster:** Instead of smooth tonal transitions, you get distinct, "flat" patches of color. The image looks like a poster with a limited palette 
 - **Dithering:** Choose from Bayer, Blue Noise, Floyd-Steinberg, Noise, or Atkinson algorithms
 - **Error:** Set error tolerance for algorithms
 - **Color Distance:** Select how color distance is measured (Euclidean, Redmean, Mahalonobis, or nearest luminance)

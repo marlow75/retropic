@@ -85,6 +85,7 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 		}
 
 		super.setupPalette();
+		palette = getPictureColors(8);
 	}
 
 	@Override
@@ -139,10 +140,10 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 
 		// get background color with maximum occurrence
 		int k = 0;
-		float count = occurrence[0] * 256;
+		float count = occurrence[0];
 		
 		for (int i = 1; i < 16; i++) {
-			final float o = occurrence[i] * (255f - Gfx.getLuma(palette[i][0], palette[i][1], palette[2][2]));
+			final float o = occurrence[i];
 			if (count < o) {
 				count = o;
 				k = i;
@@ -153,8 +154,8 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 		nr = palette[k][0];
 		ng = palette[k][1];
 		nb = palette[k][2];
-
-		final float backLuma = Gfx.getLuma(nr, ng, nb);
+		
+		final float bkgLuma = Gfx.getLuma(nb, ng, nr);
 
 		for (int y = 0; y < 184; y += 8) {
 			final int p = y * 176 * 3;
@@ -163,7 +164,7 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 				final int offset = p + x * 3;
 
 				int index = 0, f = 0;
-				float maxDistance = 0;
+				float maxLuma = 0f;
 
 				// pickup most distant color in 8x8 tile
 				for (int y0 = 0; y0 < 8; y0++) {
@@ -178,9 +179,9 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 						work[index++] = g;
 						work[index++] = b;
 
-						final float distance = Math.abs(Gfx.getLuma(r, g, b) - backLuma);
-						if (maxDistance < distance) {
-							maxDistance = distance;
+						final float distance = Math.abs(Gfx.getLuma(b, g, r) - bkgLuma);
+						if (maxLuma < distance) {
+							maxLuma = distance;
 
 							if (colorAlg == NEAREST_COLOR.MAHALANOBIS)
 								f = Gfx.getMahalanobisColorIndex(foregroundPalette, coefficients, r, g, b);
@@ -238,7 +239,7 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 			nb = pixels[i + 2] & 0xff;
 
 			// dimmer better
-			occurrence[getColorIndex(nr, ng, nb)] += (int) Math.round(255f - Gfx.getLuma(nr, ng, nb));
+			occurrence[getColorIndex(nr, ng, nb)]++;
 		}
 
 		// get background color with maximum occurrence
@@ -258,7 +259,7 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 		ng = palette[backgroundColor][1];
 		nb = palette[backgroundColor][2];
 
-		final float backLuma = Gfx.getLuma(nr, ng, nb);
+		final float bkgLuma = Gfx.getLuma(nr, ng, nb);
 		final BitVector vec = new BitVector(64);
 
 		for (int y = 0; y < 184; y += 8) {
@@ -283,7 +284,7 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 						work[index++] = g;
 						work[index++] = b;
 
-						final float distance = Math.abs(Gfx.getLuma(r, g, b) - backLuma);
+						final float distance = Math.abs(Gfx.getLuma(r, g, b) - bkgLuma);
 						if (maxDistance < distance) {
 							maxDistance = distance;
 
