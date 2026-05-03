@@ -16,7 +16,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 
-import pl.dido.image.c64.C64ExtraConfig.EXTRA_MODE;
 import pl.dido.image.renderer.AbstractRenderer;
 import pl.dido.image.renderer.AbstractRendererRunner;
 import pl.dido.image.utils.Config;
@@ -179,68 +178,7 @@ public class C64ExtraRunner extends AbstractRendererRunner {
 			e.printStackTrace();
 		}
 	}
-
-	private void mciExportTruePaint(final String fileName) {
-		try {
-			final BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(new File(fileName)), 8192);
-
-			// True Paint File Format
-			// $0000 - $03E8 Screen RAM 1
-			// $03E9 - Background
-			// $0400 - $2340 Bitmap 1
-			// $2400 - $4340 Bitmap 2
-			// $4400 - $47E8 Screen RAM 2
-			// $4800 - $4BE8 Color RAM
-
-			// loading address
-			out.write(0x00);
-			out.write(0x00);
-
-			// attributes 1
-			for (int i = 0; i < 1000; i++)
-				out.write(c64Extra.screen1[i] & 0xff);
-
-			out.write(c64Extra.backgroundColor & 0xff);
-
-			// fill the gap
-			for (int i = 0; i < 23; i++)
-				out.write(0xff);
-
-			// bitmap 1
-			for (int i = 0; i < 8000; i++)
-				out.write(c64Extra.bitmap1[i] & 0xff);
-
-			// trim to kb
-			for (int i = 0; i < 192; i++)
-				out.write(0xff);
-
-			// bitmap 2
-			for (int i = 0; i < 8000; i++)
-				out.write(c64Extra.bitmap2[i] & 0xff);
-
-			// trim to kb
-			for (int i = 0; i < 192; i++)
-				out.write(0xff);
-
-			// attributes 2
-			for (int i = 0; i < 1000; i++)
-				out.write(c64Extra.screen2[i] & 0xff);
-
-			// fill the gap
-			for (int i = 0; i < 24; i++)
-				out.write(0xff);
-
-			// nibbles
-			for (int i = 0; i < 1000; i++)
-				out.write(c64Extra.nibbles[i] & 0xff);
-
-			out.close();
-			frame.setTitle(frame.getTitle() + " SAVED");
-		} catch (final IOException e) {
-			e.printStackTrace();
-		}
-	}
-
+	
 	@Override
 	protected JMenuBar getMenuBar() {
 		final JMenu menuFile = new JMenu("File");
@@ -274,34 +212,9 @@ public class C64ExtraRunner extends AbstractRendererRunner {
 		});
 
 		menuFile.add(miExecutable);
-
-		if (((C64ExtraConfig) c64Extra.config).extra_mode == EXTRA_MODE.MULTI_COLOR_INTERLACED) {
-			final JMenuItem miTruePaint = new JMenuItem("Export as True Paint MCI ... ");
-			miTruePaint.setMnemonic(KeyEvent.VK_T);
-			miTruePaint.setAccelerator(
-					KeyStroke.getKeyStroke(KeyEvent.VK_T, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
-			miTruePaint.addActionListener(new ActionListener() {
-				public void actionPerformed(final ActionEvent e) {
-					try {
-						final String exportFileName = Utils.createDirectory(Config.export_path) + "/" + fileName
-								+ ".prg";
-						final int result = JOptionPane.showConfirmDialog(null, "Export " + exportFileName + "?",
-								"Confirm", JOptionPane.YES_NO_OPTION);
-
-						if (result == 0)
-							mciExportTruePaint(exportFileName);
-
-					} catch (final IOException ex) {
-						JOptionPane.showMessageDialog(null, "Error", ex.getMessage(), JOptionPane.ERROR_MESSAGE);
-					}
-				}
-			});
-			menuFile.add(miTruePaint);
-		}
-
 		final JMenuBar menuBar = new JMenuBar();
+		
 		menuBar.add(menuFile);
-
 		return menuBar;
 	}
 

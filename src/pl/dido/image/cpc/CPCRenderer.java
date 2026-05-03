@@ -56,7 +56,7 @@ public class CPCRenderer extends AbstractRenderer {
 			case BAYER16x16:
 			case BLUE8x8:
 			case BLUE16x16:
-				mode1Bayer();
+				mode1Ordered();
 				break;
 			default:
 				mode1();
@@ -71,7 +71,7 @@ public class CPCRenderer extends AbstractRenderer {
 			case BAYER16x16:
 			case BLUE8x8:
 			case BLUE16x16:
-				mode0Bayer();
+				mode0Ordered();
 				break;
 			default:
 				mode0();
@@ -247,8 +247,9 @@ public class CPCRenderer extends AbstractRenderer {
 							work[pyx + 6 + 2] += b_error >> 3;
 						}
 					}
+					
 					if (y < (screenHeight - 1)) {
-						if (x < screenWidth - 1) {
+						if (x > 0) {
 							work[py1x - 3] += r_error >> 3;
 							work[py1x - 3 + 1] += g_error >> 3;
 							work[py1x - 3 + 2] += b_error >> 3;
@@ -368,7 +369,7 @@ public class CPCRenderer extends AbstractRenderer {
 		}
 	}
 
-	protected void mode1Bayer() {
+	protected void mode1Ordered() {
 		int r0, g0, b0;
 		int bit0 = 128, bit1 = 8;
 
@@ -418,7 +419,7 @@ public class CPCRenderer extends AbstractRenderer {
 		}
 	}
 
-	protected void mode0Bayer() {
+	protected void mode0Ordered() {
 		final int[] newPixels = new int[160 * 200 * 3]; // 160x200
 		int bit0 = 128, bit1 = 8, bit2 = 0, bit3 = 0;
 

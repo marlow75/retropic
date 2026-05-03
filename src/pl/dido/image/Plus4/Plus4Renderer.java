@@ -57,7 +57,6 @@ public class Plus4Renderer extends AbstractRenderer {
 		}
 
 		super.setupPalette();
-		palette = getPictureColors(8);
 	}
 
 	@Override
@@ -69,7 +68,7 @@ public class Plus4Renderer extends AbstractRenderer {
 			case BAYER4x4:
 			case BAYER8x8:
 			case BAYER16x16:
-				hiresBayer();
+				hiresOrdered();
 				break;
 			default:
 				hires();
@@ -83,7 +82,7 @@ public class Plus4Renderer extends AbstractRenderer {
 			case BAYER4x4:
 			case BAYER8x8:
 			case BAYER16x16:
-				lowresBayer();
+				lowresOrdered();
 				break;
 			default:
 				lowres();
@@ -159,13 +158,13 @@ public class Plus4Renderer extends AbstractRenderer {
 				// color
 				screen[position] = ((pf & 0xf) << 4) | (pn & 0xf);
 				// luminance
-				nibble[position] = ((ln & 0xf) << 4) | (lf & 0xf);
-
-				int value = 0, bitcount = 0;
+				nibble[position] = ((ln & 0x7) << 4) | (lf & 0x7);
 
 				for (int y0 = 0; y0 < 8; y0++) {
 					final int k1 = (y0 + 1) * 24;
 					final int k2 = (y0 + 2) * 24;
+
+					int value = 0;
 
 					for (int x0 = 0; x0 < 24; x0 += 3) {
 						final int pyx0 = y0 * 24 + x0;
@@ -198,12 +197,6 @@ public class Plus4Renderer extends AbstractRenderer {
 						} else
 							value <<= 1;
 
-						if (bitcount % 8 == 7) {
-							bitmap[bitmapIndex++] = value;
-							value = 0;
-						}
-
-						bitcount += 1;
 						position = offset + y0 * 320 * 3 + x0;
 
 						pixels[position] = (byte) nr;
@@ -283,16 +276,19 @@ public class Plus4Renderer extends AbstractRenderer {
 							}
 						}
 					}
+					
+					bitmap[bitmapIndex++] = value;
 				}
 			}
 		}
-
-		System.out.println();
 	}
 
-	protected void hiresBayer() {
+	protected void hiresOrdered() {
 		work = new int[64 * 3];
 		int bitmapIndex = 0;
+				
+		final int occurrence[] = new int[128];
+		final int localPalette[][] = new int[2][3];
 
 		for (int y = 0; y < 200; y += 8) {
 			final int p = y * 320 * 3;
@@ -303,7 +299,7 @@ public class Plus4Renderer extends AbstractRenderer {
 				int index = 0;
 				int f = 0, n = 0;
 
-				final int occurrence[] = new int[128];
+				Arrays.fill(occurrence, 0);
 
 				// 8x8 tile
 				for (int y0 = 0; y0 < 8; y0++) {
@@ -360,9 +356,10 @@ public class Plus4Renderer extends AbstractRenderer {
 				nibble[position] = ((ln & 0x7) << 4) | (lf & 0x7);
 
 				int value = 0, bitcount = 0;
-				final int localPalette[][] = new int[][] { { palette[n][0], palette[n][1], palette[n][2] },
-						{ palette[f][0], palette[f][1], palette[f][2] } };
-
+				
+				System.arraycopy(palette[n], 0, localPalette[0], 0, 3);
+				System.arraycopy(palette[f], 0, localPalette[1], 0, 3);
+				
 				for (int y0 = 0; y0 < 8; y0++) {
 					final int k = y0 * 24;
 
@@ -420,7 +417,11 @@ public class Plus4Renderer extends AbstractRenderer {
 			}
 		
 		final float occurrence[] = new float[N];
+		final float score[] = new float[N];
 		work = new int[64 * 3];
+		
+		// 4x8 tile palette
+		final int tilePalette[][] = new int[4][3];
 		
 		// shrinking 320x200 -> 160x200
 		for (int y = 0; y < 200; y += 8) {
@@ -458,14 +459,15 @@ public class Plus4Renderer extends AbstractRenderer {
 							final float l2 = Gfx.getLuma(r2, g2, b2);
 
 							final float sum = l1 + l2;
-							if (sum <= 1e6) {
-								r = ((r1 + r2) >> 1);
-								g = ((g1 + g2) >> 1);
-								b = ((b1 + b2) >> 1);
-							} else {
+							if (sum > 0) {
 								r = (int) ((r1 * l1 + r2 * l2) / sum);
 								g = (int) ((g1 * l1 + g2 * l2) / sum);
 								b = (int) ((b1 * l1 + b2 * l2) / sum);
+								
+							} else {
+								r = ((r1 + r2) >> 1);
+								g = ((g1 + g2) >> 1);
+								b = ((b1 + b2) >> 1);
 							}
 
 							break;
@@ -501,7 +503,7 @@ public class Plus4Renderer extends AbstractRenderer {
 				for (int j = 0; j < N; j++)
 					sum += (occurrence[j] > 0 ? 1f : 0f) * (1f - dists[i][j]);
 			
-			occurrence[i] = sum * a;
+			score[i] = sum * a;
 		}
 		
 		float m1 = 0, m2 = 0;
@@ -509,7 +511,7 @@ public class Plus4Renderer extends AbstractRenderer {
 
 		// 2 most popular colors
 		for (int i = 0; i < N; i++) {
-			final float k = occurrence[i];
+			final float k = score[i];
 			if (k > m1) {
 				i2 = i1;
 				m2 = m1;
@@ -525,14 +527,11 @@ public class Plus4Renderer extends AbstractRenderer {
 
 		backgroundColor1 = i1;
 		backgroundColor2 = i2;
-
-		// 4x8 tile palette
-		final int tilePalette[][] = new int[4][3];
-		
+	
 		// common colors
-		tilePalette[0] = Arrays.copyOf(palette[i1], 3);
-		tilePalette[3] = Arrays.copyOf(palette[i2], 3);
-
+		System.arraycopy(palette[i1], 0, tilePalette[0], 0, 3);
+		System.arraycopy(palette[i2], 0, tilePalette[3], 0, 3);
+		
 		for (int y = 0; y < 200; y += 8) {
 			final int p1 = y * 160 * 3;
 
@@ -578,9 +577,9 @@ public class Plus4Renderer extends AbstractRenderer {
 					}
 				}
 
-				tilePalette[1] = Arrays.copyOf(palette[i1], 3);
-				tilePalette[2] = Arrays.copyOf(palette[i2], 3);
-
+				System.arraycopy(palette[i1], 0, tilePalette[1], 0, 3);
+				System.arraycopy(palette[i2], 0, tilePalette[2], 0, 3);
+				
 				int position = (y >> 3) * 40 + x;
 
 				final int l1 = i1 / 16;
@@ -592,7 +591,7 @@ public class Plus4Renderer extends AbstractRenderer {
 				// colors
 				screen[position] = ((q1 & 0xf) << 4) | (q2 & 0xf);
 				// luminance
-				nibble[position] = ((l2 & 0xf) << 4) | (l1 & 0xf);
+				nibble[position] = ((l2 & 0x7) << 4) | (l1 & 0x7);
 
 				int value = 0, bitcount = 0;
 				for (int y0 = 0; y0 < 8; y0++) {
@@ -728,7 +727,7 @@ public class Plus4Renderer extends AbstractRenderer {
 		}
 	}
 
-	protected void lowresBayer() {
+	protected void lowresOrdered() {
 		final int[] newPixels = new int[160 * 200 * 3]; // 160x200
 		int bitmapIndex = 0;
 
@@ -747,6 +746,7 @@ public class Plus4Renderer extends AbstractRenderer {
 			}
 		
 		final float occurrence[] = new float[N];
+		final float score[] = new float[N];
 		work = new int[64 * 3];
 
 		// shrinking 320x200 -> 160x200
@@ -829,7 +829,7 @@ public class Plus4Renderer extends AbstractRenderer {
 				for (int j = 0; j < N; j++)
 					sum += (occurrence[j] > 0 ? 1f : 0f) * (1f - dists[i][j]);
 			
-			occurrence[i] = sum * a;
+			score[i] = sum * a;
 		}
 		
 		float m1 = 0, m2 = 0;
@@ -837,7 +837,7 @@ public class Plus4Renderer extends AbstractRenderer {
 
 		// 2 most popular colors
 		for (int i = 0; i < N; i++) {
-			final float k = occurrence[i];
+			final float k = score[i];
 			if (k > m1) {
 				i2 = i1;
 				m2 = m1;
@@ -858,9 +858,9 @@ public class Plus4Renderer extends AbstractRenderer {
 		final int tilePalette[][] = new int[4][3];
 
 		// common colors
-		tilePalette[0] = Arrays.copyOf(palette[i1], 3);
-		tilePalette[3] = Arrays.copyOf(palette[i2], 3);
-
+		System.arraycopy(palette[i1], 0, tilePalette[0], 0, 3);
+		System.arraycopy(palette[i2], 0, tilePalette[3], 0, 3);
+		
 		for (int y = 0; y < 200; y += 8) {
 			final int p1 = y * 160 * 3;
 
@@ -906,9 +906,9 @@ public class Plus4Renderer extends AbstractRenderer {
 						m2 = k;
 					}
 				}
-
-				tilePalette[1] = Arrays.copyOf(palette[i1], 3);
-				tilePalette[2] = Arrays.copyOf(palette[i2], 3);
+				
+				System.arraycopy(palette[i1], 0, tilePalette[1], 0, 3);
+				System.arraycopy(palette[i2], 0, tilePalette[2], 0, 3);
 
 				int position = (y >> 3) * 40 + x;
 
@@ -921,7 +921,7 @@ public class Plus4Renderer extends AbstractRenderer {
 				// colors
 				screen[position] = ((q1 & 0xf) << 4) | (q2 & 0xf);
 				// luminance
-				nibble[position] = ((l2 & 0xf) << 4) | (l1 & 0xf);
+				nibble[position] = ((l2 & 0x7) << 4) | (l1 & 0x7);
 
 				int value = 0, bitcount = 0;
 				for (int y0 = 0; y0 < 8; y0++) {

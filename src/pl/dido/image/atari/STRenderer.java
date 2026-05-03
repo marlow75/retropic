@@ -110,11 +110,14 @@ public class STRenderer extends AbstractPictureColorsRenderer {
 							work[pyx + 3 + 1] += (g_error * 7) / 16;
 							work[pyx + 3 + 2] += (b_error * 7) / 16;
 						}
+						
 						if (y < screenHeight - 1) {
-							work[py1x - 3] += (r_error * 3) / 16;
-							work[py1x - 3 + 1] += (g_error * 3) / 16;
-							work[py1x - 3 + 2] += (b_error * 3) / 16;
-
+							if (x > 0) {
+								work[py1x - 3] += (r_error * 3) / 16;
+								work[py1x - 3 + 1] += (g_error * 3) / 16;
+								work[py1x - 3 + 2] += (b_error * 3) / 16;
+							}
+							
 							work[py1x] += (r_error * 5) / 16;
 							work[py1x + 1] += (g_error * 5) / 16;
 							work[py1x + 2] += (b_error * 5) / 16;
@@ -138,11 +141,14 @@ public class STRenderer extends AbstractPictureColorsRenderer {
 								work[pyx + 6 + 2] += b_error >> 3;
 							}
 						}
+						
 						if (y < screenHeight - 1) {
-							work[py1x - 3] += r_error >> 3;
-							work[py1x - 3 + 1] += g_error >> 3;
-							work[py1x - 3 + 2] += b_error >> 3;
-
+							if (x > 0) {
+								work[py1x - 3] += r_error >> 3;
+								work[py1x - 3 + 1] += g_error >> 3;
+								work[py1x - 3 + 2] += b_error >> 3;
+							}
+							
 							work[py1x] += r_error >> 3;
 							work[py1x + 1] += g_error >> 3;
 							work[py1x + 2] += b_error >> 3;
@@ -159,6 +165,7 @@ public class STRenderer extends AbstractPictureColorsRenderer {
 								work[py2x + 2] += b_error >> 3;
 							}
 						}
+						
 						break;
 					default:
 						break;

@@ -48,7 +48,7 @@ public class Amiga500Renderer extends AbstractPictureColorsRenderer {
 			Gfx.bayerDithering(pixels, palette, 16, config);
 			break;
 		case ATKINSON, FLOYDS:
-			Gfx.errorDiffuseDithering(pixels, palette, config);
+			// do nothing
 			break;
 		case NOISE:
 			Gfx.downsampling(pixels, 4, config.error_threshold);
@@ -147,10 +147,12 @@ public class Amiga500Renderer extends AbstractPictureColorsRenderer {
 							work[pyx + 3 + 2] += (b_error * 7) / 16;
 						}
 						if (y < screenHeight - 1) {
-							work[py1x - 3] += (r_error * 3) / 16;
-							work[py1x - 3 + 1] += (g_error * 3) / 16;
-							work[py1x - 3 + 2] += (b_error * 3) / 16;
-
+							if (x > 0) {
+								work[py1x - 3] += (r_error * 3) / 16;
+								work[py1x - 3 + 1] += (g_error * 3) / 16;
+								work[py1x - 3 + 2] += (b_error * 3) / 16;
+							}
+							
 							work[py1x] += (r_error * 5) / 16;
 							work[py1x + 1] += (g_error * 5) / 16;
 							work[py1x + 2] += (b_error * 5) / 16;
@@ -175,10 +177,12 @@ public class Amiga500Renderer extends AbstractPictureColorsRenderer {
 							}
 						}
 						if (y < screenHeight - 1) {
-							work[py1x - 3] += r_error >> 3;
-							work[py1x - 3 + 1] += g_error >> 3;
-							work[py1x - 3 + 2] += b_error >> 3;
-
+						    if (x > 0) {
+								work[py1x - 3] += r_error >> 3;
+								work[py1x - 3 + 1] += g_error >> 3;
+								work[py1x - 3 + 2] += b_error >> 3;
+						    }
+							
 							work[py1x] += r_error >> 3;
 							work[py1x + 1] += g_error >> 3;
 							work[py1x + 2] += b_error >> 3;

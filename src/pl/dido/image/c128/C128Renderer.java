@@ -11,6 +11,7 @@ public class C128Renderer extends AbstractRenderer {
 	protected int attribs[] = new int[2000 * 4];
 
 	protected float coefficients[];
+	protected final float[] dBaseArr = new float[16];
 
 	// VDC palette 16 colors
 	private final static int colors[] = new int[] { 0x010101, 0x555555, 0x0000aa, 0x5555ff, 0x00aa00, 0x55ff55,
@@ -18,7 +19,7 @@ public class C128Renderer extends AbstractRenderer {
 
 	public C128Renderer(final BufferedImage image, final C128Config config) {
 		super(image, config);
-		
+
 		palette = new int[16][3];
 	}
 
@@ -39,7 +40,52 @@ public class C128Renderer extends AbstractRenderer {
 	protected void imagePostproces() {
 		hires640x200();
 	}
-	
+
+	protected int secondColorMinError(final int[] work, final int baseIndex) {
+		final int[] base = palette[baseIndex];
+		final int br = base[0], bg = base[1], bb = base[2];
+
+		final float[] dBaseArr = new float[16]; // albo pole klasy, żeby nie alokować
+		int p = 0;
+		
+		for (int i = 0; i < 16; i++) {
+			final int r = work[p++], g = work[p++], b = work[p++];
+			dBaseArr[i] = getDistance(r, g, b, br, bg, bb);
+		}
+
+		int best = baseIndex;
+		float bestCost = Float.MAX_VALUE;
+
+		for (int c = 0; c < palette.length; c++) {
+			if (c == baseIndex)
+				continue;
+
+			final int[] alt = palette[c];
+			final int ar = alt[0], ag = alt[1], ab = alt[2];
+
+			float cost = 0f;
+			p = 0;
+			
+			for (int i = 0; i < 16; i++) {
+				final int r = work[p++], g = work[p++], b = work[p++];
+
+				float dAlt = getDistance(r, g, b, ar, ag, ab);
+				float dMin = dBaseArr[i] < dAlt ? dBaseArr[i] : dAlt;
+				
+				cost += dMin;
+				if (cost >= bestCost)
+					break;
+			}
+
+			if (cost < bestCost) {
+				bestCost = cost;
+				best = c;
+			}
+		}
+		
+		return best;
+	}
+
 	protected void hires640x200() {
 		final int work[] = new int[16 * 3];
 		final int bytes[] = new int[2];
@@ -71,18 +117,14 @@ public class C128Renderer extends AbstractRenderer {
 						work[index++] = g;
 						work[index++] = b;
 
-						final int color = getColorIndex(r,g,b);
-						
-						r = palette[color][0];
-						g = palette[color][1];
-						b = palette[color][2];
-						
+						final int color = getColorIndex(r, g, b);
 						final float luma = Gfx.getLuma(r, g, b);
+
 						if (luma > max) {
 							max = luma;
 							f = color;
-						} 
-						
+						}
+
 						if (luma < min) {
 							min = luma;
 							n = color;
@@ -90,11 +132,18 @@ public class C128Renderer extends AbstractRenderer {
 					}
 				}
 
+				if (f == n) {
+					final int base = n;
+					final int second = secondColorMinError(work, base);
+
+					n = base;
+					f = second;
+				}
+
 				final int address1 = (y >> 1) * 80 + (x >> 3);
 				final int address2 = y * 80 + (x >> 3);
 
 				attribs[address1] = ((n & 0xf) << 4) | (f & 0xf);
-				int value = 0, bitcount = 0;
 
 				final int cf[] = palette[f];
 				final int fr = cf[0];
@@ -106,48 +155,25 @@ public class C128Renderer extends AbstractRenderer {
 				final int bg = cn[1];
 				final int bb = cn[2];
 
-				for (int y0 = 0; y0 < 2; y0++)
-					for (int x0 = 0; x0 < 24; x0 += 3) {
-						final int pyx0 = y0 * 24 + x0;
+				for (int y0 = 0; y0 < 2; y0++) {
+				    int v = 0;
+				    final int basePos = offset + y0 * rowStride;
 
-						final int r = work[pyx0];
-						final int g = work[pyx0 + 1];
-						final int b = work[pyx0 + 2];
+				    for (int x0 = 0; x0 < 24; x0 += 3) {
+				        final int i = y0 * 24 + x0;
+				        final int r = work[i], g = work[i+1], b = work[i+2];
 
-						int nr = cn[0];
-						int ng = cn[1];
-						int nb = cn[2];
-						
-						final float d1, d2;
-						d1 = getDistance(r, g, b, fr, fg, fb);
-						d2 = getDistance(r, g, b, nr, ng, nb);
-						
-						if (d1 < d2) {
-							nr = fr;
-							ng = fg;
-							nb = fb;
+				        final boolean useF = getDistance(r,g,b, fr,fg,fb) < getDistance(r,g,b, br,bg,bb);
+				        v = (v << 1) | (useF ? 1 : 0);
 
-							value = (value << 1) | 1;
-						} else {
-							nr = br;
-							ng = bg;
-							nb = bb;
-
-							value <<= 1;
-						}
-
-						if (bitcount % 8 == 7) {
-							bytes[y0] = value;
-							value = 0;
-						}
-
-						bitcount += 1;
-						final int position = offset + y0 * rowStride + x0;
-
-						pixels[position] = (byte) nr;
-						pixels[position + 1] = (byte) ng;
-						pixels[position + 2] = (byte) nb;
-					}
+				        int pos = basePos + x0;
+				        pixels[pos]     = (byte)(useF ? fr : br);
+				        pixels[pos + 1] = (byte)(useF ? fg : bg);
+				        pixels[pos + 2] = (byte)(useF ? fb : bb);
+				    }
+				    
+				    bytes[y0] = v;
+				}
 
 				bitmap[address2] = bytes[0];
 				bitmap[address2 + 80] = bytes[1];
@@ -161,9 +187,9 @@ public class C128Renderer extends AbstractRenderer {
 		case BLUE16x16, BLUE8x8:
 			return 28;
 		case NOISE:
-			return 4;
+			return 3;
 		default:
-			return 16;
+			return 8;
 		}
 	}
 }

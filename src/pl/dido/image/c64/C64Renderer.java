@@ -16,6 +16,8 @@ public class C64Renderer extends AbstractRenderer {
 	protected int nibbles[] = new int[1000];
 	protected int backgroundColor = 0;
 
+	protected int avgPalette[][];
+
 	public C64Renderer(final BufferedImage image, final C64Config config) {
 		super(image, config);
 		palette = new int[16][3];
@@ -25,8 +27,8 @@ public class C64Renderer extends AbstractRenderer {
 	protected void setupPalette() {
 		palette = C64PaletteCalculator.getCalculatedPalette();
 		super.setupPalette();
-		
-		palette = getPictureColors(8);
+
+		avgPalette = getPictureColors(8);
 	}
 
 	@Override
@@ -35,7 +37,7 @@ public class C64Renderer extends AbstractRenderer {
 		case HIRES:
 			switch (config.dither_alg) {
 			case BAYER2x2, BAYER4x4, BAYER8x8, BAYER16x16, BLUE8x8, BLUE16x16:
-				hiresBayer();
+				hiresOrdered();
 				break;
 			default:
 				hires();
@@ -46,7 +48,7 @@ public class C64Renderer extends AbstractRenderer {
 		case MULTICOLOR:
 			switch (config.dither_alg) {
 			case BAYER2x2, BAYER4x4, BAYER8x8, BAYER16x16, BLUE8x8, BLUE16x16:
-				lowresBayer();
+				lowresOrdered();
 				break;
 			default:
 				lowres();
@@ -98,12 +100,8 @@ public class C64Renderer extends AbstractRenderer {
 						}
 
 						final int color = getColorIndex(r, g, b);
-
-						r = palette[color][0];
-						g = palette[color][1];
-						b = palette[color][2];
-
 						final float luma = Gfx.getLuma(r, g, b);
+
 						if (luma > max) {
 							max = luma;
 							f = color;
@@ -117,12 +115,12 @@ public class C64Renderer extends AbstractRenderer {
 				}
 
 				screen[(y >> 3) * 40 + (x >> 3)] = ((f & 0xf) << 4) | (n & 0xf);
-				int value = 0, bitcount = 0;
-
+				
 				for (int y0 = 0; y0 < 8; y0++) {
 					final int k1 = (y0 + 1) * 24;
 					final int k2 = (y0 + 2) * 24;
 
+					int value = 0;
 					for (int x0 = 0; x0 < 24; x0 += 3) {
 						final int pyx0 = y0 * 24 + x0;
 						final int py1x0 = k1 + x0;
@@ -155,12 +153,6 @@ public class C64Renderer extends AbstractRenderer {
 						} else
 							value <<= 1;
 
-						if (bitcount % 8 == 7) {
-							bitmap[bitmapIndex++] = value;
-							value = 0;
-						}
-
-						bitcount += 1;
 						final int position = offset + y0 * 320 * 3 + x0;
 
 						pixels[position] = (byte) nr;
@@ -241,24 +233,27 @@ public class C64Renderer extends AbstractRenderer {
 							}
 						}
 					}
+					
+					bitmap[bitmapIndex++] = value;
 				}
 			}
 		}
 	}
 
-	protected void hiresBayer() {
+	protected void hiresOrdered() {
 		final int work[] = new int[64 * 3];
 		int bitmapIndex = 0;
 
-		final int N = palette.length;
+		final int N = avgPalette.length;
 		final float dists[][] = new float[N][N];
+		final int localPalette[][] = new int[2][3];
 
 		float max = 0;
 		for (int i = 0; i < N; i++)
 			for (int j = 0; j < N; j++) {
 
-				final float m = Gfx.getDistance(colorAlg, palette[i][0], palette[i][1], palette[i][2], palette[j][0],
-						palette[j][1], palette[j][2]);
+				final float m = Gfx.getDistance(colorAlg, avgPalette[i][0], avgPalette[i][1], avgPalette[i][2],
+						avgPalette[j][0], avgPalette[j][1], avgPalette[j][2]);
 				if (m > max)
 					max = m;
 
@@ -266,6 +261,7 @@ public class C64Renderer extends AbstractRenderer {
 			}
 
 		final float occurrence[] = new float[N];
+		final float score[] = new float[N];
 
 		for (int y = 0; y < 200; y += 8) {
 			final int p = y * 320 * 3;
@@ -302,19 +298,9 @@ public class C64Renderer extends AbstractRenderer {
 							break;
 						}
 
-						occurrence[getColorIndex(r, g, b)]++;
+						occurrence[Gfx.getColorIndex(colorAlg, avgPalette, r, g, b)]++;
 					}
 				}
-
-				for (int i = 0; i < N; i++)
-					for (int j = 0; j < N; j++) {
-						final float a = dists[i][j] / max;
-
-						if (a < 1e-6f)
-							dists[i][j] = 0f;
-						else
-							dists[i][j] = a;
-					}
 
 				for (int i = 0; i < N; i++) {
 					float sum = 0;
@@ -322,33 +308,46 @@ public class C64Renderer extends AbstractRenderer {
 
 					if (a > 0)
 						for (int j = 0; j < N; j++)
-							sum += (occurrence[j] > 0 ? 1f : 0f) * (1f - dists[i][j]);
+							sum += (occurrence[j] > 0 ? 1f : 0f) * (1f - dists[i][j] / max);
 
-					occurrence[i] = sum * a;
+					score[i] = sum * a;
 				}
 
-				float max0 = 0, min0 = 0;
+				f = 0;
+				
+				float best = -Float.MAX_VALUE;
 				for (int i = 0; i < N; i++)
-					if (occurrence[i] > max0) {
-						n = f;
-						min0 = max0;
-
+					if (score[i] > best) {
+						best = score[i];
 						f = i;
-						max0 = occurrence[i];
-					} else if (occurrence[i] > min0) {
-						n = i;
-						min0 = occurrence[i];
 					}
 
-				screen[(y >> 3) * 40 + (x >> 3)] = ((f & 0xf) << 4) | (n & 0xf);
-				int value = 0, bitcount = 0;
+				n = (f == 0 ? 1 : 0);
+				
+				float second = -Float.MAX_VALUE;
+				for (int i = 0; i < N; i++)
+					if (i != f && score[i] > second) {
+						second = score[i];
+						n = i;
+					}
 
-				final int localPalette[][] = new int[][] { { palette[n][0], palette[n][1], palette[n][2] },
-						{ palette[f][0], palette[f][1], palette[f][2] } };
+				f = getColorIndex(avgPalette[f][0], avgPalette[f][1], avgPalette[f][2]);
+				n = getColorIndex(avgPalette[n][0], avgPalette[n][1], avgPalette[n][2]);
+
+				screen[(y >> 3) * 40 + (x >> 3)] = ((f & 0xf) << 4) | (n & 0xf);
+				
+				localPalette[0][0] = palette[n][0];
+				localPalette[0][1] = palette[n][1];
+				localPalette[0][2] = palette[n][2];
+
+				localPalette[1][0] = palette[f][0];
+				localPalette[1][1] = palette[f][1];
+				localPalette[1][2] = palette[f][2];
 
 				for (int y0 = 0; y0 < 8; y0++) {
 					final int k = y0 * 24;
 
+					int value = 0;
 					for (int x0 = 0; x0 < 8; x0++) {
 						final int pyx0 = k + x0 * 3;
 
@@ -363,18 +362,14 @@ public class C64Renderer extends AbstractRenderer {
 						else
 							value = value << 1;
 
-						if (bitcount % 8 == 7) {
-							bitmap[bitmapIndex++] = value;
-							value = 0;
-						}
-
-						bitcount += 1;
 						final int position = offset + y0 * 320 * 3 + x0 * 3;
 
 						pixels[position] = (byte) localPalette[color][0];
 						pixels[position + 1] = (byte) localPalette[color][1];
 						pixels[position + 2] = (byte) localPalette[color][2];
 					}
+					
+					bitmap[bitmapIndex++] = value;
 				}
 			}
 		}
@@ -463,11 +458,13 @@ public class C64Renderer extends AbstractRenderer {
 		bg = palette[backgroundColor][1];
 		bb = palette[backgroundColor][2];
 
+		final int occurrence[] = new int[16];
+		
 		for (int y = 0; y < 200; y += 8) {
 			final int p1 = y * 160 * 3;
 
 			for (int x = 0; x < 40; x++) {
-				final int occurrence[] = new int[16];
+				Arrays.fill(occurrence, 0);
 
 				final int o1 = p1 + x * 4 * 3;
 				int index = 0;
@@ -675,9 +672,11 @@ public class C64Renderer extends AbstractRenderer {
 		}
 	}
 
-	protected void lowresBayer() {
+	protected void lowresOrdered() {
 		final int[] newPixels = new int[160 * 200 * 3]; // 160x200
 		int bitmapIndex = 0;
+		
+		final int N = avgPalette.length;
 		int sr = 0, sg = 0, sb = 0;
 
 		// shrinking 320x200 -> 160x200
@@ -729,13 +728,13 @@ public class C64Renderer extends AbstractRenderer {
 							break;
 						}
 
-						final int i = getColorIndex(r, g, b);
+						final int i = Gfx.getColorIndex(colorAlg, avgPalette, r, g, b);
 
 						sr += r;
 						sg += g;
 						sb += b;
 
-						final int c[] = palette[i];
+						final int c[] = avgPalette[i];
 						newPixels[pl] = c[0];
 						newPixels[pl + 1] = c[1];
 						newPixels[pl + 2] = c[2];
@@ -751,9 +750,10 @@ public class C64Renderer extends AbstractRenderer {
 
 		// 4x8 tile palette
 		final int tilePalette[][] = new int[4][3];
-		backgroundColor = getColorIndex(sr, sg, sb);
+		final int bc8 = Gfx.getColorIndex(colorAlg, avgPalette, sr, sg, sb);
+		backgroundColor = getColorIndex(avgPalette[bc8][0], avgPalette[bc8][1], avgPalette[bc8][2]);
 
-		final int occurrence[] = new int[16];
+		final int occurrence[] = new int[N];
 		for (int y = 0; y < 200; y += 8) {
 			final int p1 = y * 160 * 3;
 
@@ -780,7 +780,7 @@ public class C64Renderer extends AbstractRenderer {
 						work[index++] = g;
 						work[index++] = b;
 
-						final int color = getColorIndex(r, g, b);
+						final int color = Gfx.getColorIndex(colorAlg, avgPalette, r, g, b);
 						occurrence[color]++;
 					}
 				}
@@ -789,7 +789,7 @@ public class C64Renderer extends AbstractRenderer {
 				int i1 = 0, i2 = 0, i3 = 0;
 
 				// 3 most popular colors
-				for (int i = 0; i < 16; i++) {
+				for (int i = 0; i < N; i++) {
 					final int k = occurrence[i];
 					if (k > m1) {
 						i3 = i2;
@@ -813,6 +813,8 @@ public class C64Renderer extends AbstractRenderer {
 				}
 
 				int t[] = tilePalette[1];
+				i1 = getColorIndex(avgPalette[i1][0], avgPalette[i1][1], avgPalette[i1][2]);
+
 				int p[] = palette[i1];
 
 				t[0] = p[0];
@@ -820,6 +822,8 @@ public class C64Renderer extends AbstractRenderer {
 				t[2] = p[2];
 
 				t = tilePalette[2];
+
+				i2 = getColorIndex(avgPalette[i2][0], avgPalette[i2][1], avgPalette[i2][2]);
 				p = palette[i2];
 
 				t[0] = p[0];
@@ -827,6 +831,8 @@ public class C64Renderer extends AbstractRenderer {
 				t[2] = p[2];
 
 				t = tilePalette[3];
+				
+				i3 = getColorIndex(avgPalette[i3][0], avgPalette[i3][1], avgPalette[i3][2]);
 				p = palette[i3];
 
 				t[0] = p[0];

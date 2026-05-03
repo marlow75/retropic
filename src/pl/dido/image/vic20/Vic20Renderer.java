@@ -45,7 +45,7 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 
 	protected SOMCharsetNetwork som1;
 	protected SOMMulticolorCharsetNetwork som2;
-
+	
 	protected void initialize() {
 		foregroundPalette = new int[8][3];
 		palette = new int[16][3];
@@ -85,7 +85,6 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 		}
 
 		super.setupPalette();
-		palette = getPictureColors(8);
 	}
 
 	@Override
@@ -125,10 +124,11 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 
 		// tiles screen and pattern
 		final int work[] = new int[64 * 3];
+		final int N = palette.length;
 
 		// calculate average
 		int nr = 0, ng = 0, nb = 0;
-		final int occurrence[] = new int[16];
+		final int occurrence[] = new int[N];
 
 		for (int i = 0; i < pixels.length; i += 3) {
 			nr = pixels[i + 0] & 0xff;
@@ -142,7 +142,7 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 		int k = 0;
 		float count = occurrence[0];
 		
-		for (int i = 1; i < 16; i++) {
+		for (int i = 1; i < N; i++) {
 			final float o = occurrence[i];
 			if (count < o) {
 				count = o;
@@ -259,7 +259,7 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 		ng = palette[backgroundColor][1];
 		nb = palette[backgroundColor][2];
 
-		final float bkgLuma = Gfx.getLuma(nr, ng, nb);
+		final float bkgLuma = Gfx.getLuma(nb, ng, nr);
 		final BitVector vec = new BitVector(64);
 
 		for (int y = 0; y < 184; y += 8) {

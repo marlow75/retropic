@@ -1,6 +1,7 @@
 package pl.dido.image.zx;
 
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
 
 import pl.dido.image.renderer.AbstractRenderer;
 import pl.dido.image.utils.Gfx;
@@ -15,6 +16,7 @@ public class ZXRenderer extends AbstractRenderer {
 	protected int bitmap[] = new int[32 * 192];
 	
 	protected float coefficients[];
+	protected int palette8[][];
 
 	public ZXRenderer(final BufferedImage image, final ZXConfig config) {
 		super(image, config);
@@ -30,15 +32,18 @@ public class ZXRenderer extends AbstractRenderer {
 		}
 		
 		super.setupPalette();
-		palette = getPictureColors(8);
+		palette8 = getPictureColors(8);
 	}
 
 	@Override
 	protected void imagePostproces() {
-		hiresBayer();
+		hires();
 	}
 
-	protected void hiresBayer() {
+	protected void hires() {
+		final int occurrence[] = new int[8];
+		final int localPalette[][] = new int[2][3];
+		
 		for (int y = 0; y < 192; y += 8) { // every 8 line
 			final int p = y * 256 * 3;
 
@@ -46,7 +51,7 @@ public class ZXRenderer extends AbstractRenderer {
 				final int offset = p + x * 3;
 				int f = 0, n = 0;
 
-				final int occurrence[] = new int[16];
+				Arrays.fill(occurrence, 0);
 
 				// get 8x8 tile palette
 				for (int y0 = 0; y0 < 8; y0 += 1) {
@@ -57,13 +62,13 @@ public class ZXRenderer extends AbstractRenderer {
 						final int g = pixels[position + 1] & 0xff;
 						final int b = pixels[position + 2] & 0xff;
 
-						occurrence[getColorIndex(r, g, b)]++;
+						occurrence[Gfx.getColorIndex(colorAlg, palette8, r, g, b)]++;
 					}
 				}
 
 				int m1 = 0, m2 = 0;
 
-				for (int i = 0; i < 16; i++) {
+				for (int i = 0; i < 8; i++) {
 					if (occurrence[i] > m1) {
 						m2 = m1;
 						n = f;
@@ -75,6 +80,9 @@ public class ZXRenderer extends AbstractRenderer {
 						n = i;
 					}
 				}
+				
+				f = getColorIndex(palette8[f][0], palette8[f][1], palette8[f][2]);
+				n = getColorIndex(palette8[n][0], palette8[n][1], palette8[n][2]);
 
 				final int fr = palette[f][0];
 				final int fg = palette[f][1];
@@ -84,12 +92,20 @@ public class ZXRenderer extends AbstractRenderer {
 				final int ng = palette[n][1];
 				final int nb = palette[n][2];
 
-				final int localPalette[][] = new int[][] { { fr, fg, fb }, { nr, ng, nb } };
+				localPalette[0][0] = fr;
+				localPalette[0][1] = fg;
+				localPalette[0][2] = fb;
+				
+				localPalette[1][0] = nr;
+				localPalette[1][1] = ng;
+				localPalette[1][2] = nb;
+				
 				final int address = (y >> 3) * 32 + (x >> 3);
 
 				final int ink = f >> 1;
 				final int paper = n >> 1;
-				final int bright = (f % 1 | n % 1) << 6;
+				
+				final int bright = (((f | n) & 1) << 6);
 
 				attribs[address] = ((paper & 0xf) << 3) | (ink & 0x7) | bright;
 				int value = 0, bitcount = 0;

@@ -744,27 +744,29 @@ public class Gfx {
 		float prvr = 0, prvg = 0, prvb = 0;
 
 		for (int i = 0; i < pixels.length; i += 3) {
-			float or = (pixels[i] & 0xff);
-			float og = (pixels[i + 1] & 0xff);
-			float ob = (pixels[i + 2] & 0xff);
+			final float or = (pixels[i] & 0xff);
+			final float og = (pixels[i + 1] & 0xff);
+			final float ob = (pixels[i + 2] & 0xff);
 
 			// error feedback
-			float r0 = or - error * 0.05f * er;
-			float g0 = og - error * 0.05f * eg;
-			float b0 = ob - error * 0.05f * eb;
+			final float r0 = or - error * 0.05f * er;
+			final float g0 = og - error * 0.05f * eg;
+			final float b0 = ob - error * 0.05f * eb;
 
 			float rnd = (float) (2 * Math.random() - 1);
-			int r = Math.round((r0 + quantStep * (rnd - prvr)) / quantBase) * quantBase;
+			
+			final int r = Math.round((r0 + quantStep * (rnd - prvr)) / quantBase) * quantBase;
 			er = r - or;
 			prvr = rnd;
 
 			rnd = (float) (2 * Math.random() - 1);
-			int g = Math.round((g0 + quantStep * (rnd - prvg)) / quantBase) * quantBase;
+			final int g = Math.round((g0 + quantStep * (rnd - prvg)) / quantBase) * quantBase;
 			eg = g - og;
 			prvg = rnd;
 
 			rnd = (float) (2 * Math.random() - 1);
-			int b = Math.round((b0 + quantStep * (rnd - prvb)) / quantBase) * quantBase;
+			final int b = Math.round((b0 + quantStep * (rnd - prvb)) / quantBase) * quantBase;
+			
 			eb = b - ob;
 			prvb = rnd;
 
@@ -1137,9 +1139,9 @@ public class Gfx {
 						final int p = kernel[yk][xk];
 						final int address = yp * width3 + xp * 3;
 
-						int r = (pixels[address + 0] & 0xff);
-						int g = (pixels[address + 1] & 0xff);
-						int b = (pixels[address + 3] & 0xff);
+						final int r = (pixels[address + 0] & 0xff);
+						final int g = (pixels[address + 1] & 0xff);
+						final int b = (pixels[address + 2] & 0xff);
 
 						Gfx.rgb2YUV(r, g, b, yuv, 0);
 						w += p * yuv[0];
@@ -1386,8 +1388,8 @@ public class Gfx {
 			final int address = i * 3;
 
 			final int r = pixels[i] & 0xff0000;
-			final int g = pixels[i] & 0xff0000;
-			final int b = pixels[i] & 0xff0000;
+			final int g = pixels[i] & 0x00ff00;
+			final int b = pixels[i] & 0x0000ff;
 
 			data[address] = (byte) r;
 			data[address + 1] = (byte) g;
@@ -1422,8 +1424,7 @@ public class Gfx {
 		int r1 = 0, g1 = 0, b1 = 0;
 
 		int len = work.length;
-
-		for (int i = 0; i < len; i += 3) {
+		for (int i = 0;  i < work.length; i += 3) {
 			sr += work[i + 0];
 			sg += work[i + 1];
 			sb += work[i + 2];
@@ -1438,7 +1439,7 @@ public class Gfx {
 
 		float max = -Float.MAX_VALUE;
 
-		for (int i = 0; i < len; i += 3) {
+		for (int i = 0; i < work.length; i += 3) {
 			r = work[i + 0];
 			g = work[i + 1];
 			b = work[i + 2];
@@ -1453,9 +1454,9 @@ public class Gfx {
 			}
 		}
 
-		r1 = 2 * sr - r0;
-		g1 = 2 * sg - g0;
-		b1 = 2 * sb - b0;
+		r1 = saturate(2 * sr - r0);
+		g1 = saturate(2 * sg - g0);
+		b1 = saturate(2 * sb - b0);
 
 		return new int[] { getColorIndex(colorAlg, palette, r0, g0, b0), getColorIndex(colorAlg, palette, r1, g1, b1) };
 	}
@@ -1571,12 +1572,12 @@ public class Gfx {
 		}
 	}
 
-	private static int toLin(final int c) {
+	private static float toLin(final int c) {
 		final float s = c / 255f;
 		if (s <= 0.04045f)
-			return (int) (s / 12.92f);
+			return (s / 12.92f);
 
-		return (int) Math.pow((s + 0.055f) / 1.055f, 2.4);
+		return (float)Math.pow((s + 0.055f) / 1.055f, 2.4);
 	}
 
 	// dystans Mahalanobisa w BGR 0..255 (kwadrat odległości)
