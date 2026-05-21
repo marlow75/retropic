@@ -65,6 +65,9 @@ public abstract class AbstractRenderer {
 	}
 	
 	protected int[][] getPictureColors(final int min) {
+		if (!config.smooth_palette)
+			return palette;
+		
 		final List<int[]> colors = new ArrayList<>();
 		final Set<Integer> indexes = new HashSet<Integer>();
 
@@ -78,17 +81,16 @@ public abstract class AbstractRenderer {
 				indexes.add(color);
 		}
 
-		final int[][] palette = new int[indexes.size()][3];
+		// clear all unused colors in the palette
+		final int[][] palette = new int[this.palette.length][3];
 		final Iterator<Integer> iter = indexes.iterator();
 		
-		int j = 0;
 		while (iter.hasNext()) {
 			final int i = iter.next();
 			
-			palette[j][0] = this.palette[i][0];
-			palette[j][1] = this.palette[i][1];
-			palette[j][2] = this.palette[i][2];
-			j++;
+			palette[i][0] = this.palette[i][0];
+			palette[i][1] = this.palette[i][1];
+			palette[i][2] = this.palette[i][2];
 		}
 		
 		return palette;
@@ -205,8 +207,8 @@ public abstract class AbstractRenderer {
 			final BufferedImage crt = new BufferedImage(PALcodec.WIDTH, PALcodec.HEIGHT, BufferedImage.TYPE_3BYTE_BGR);
 			final byte[] data = ((DataBufferByte) crt.getRaster().getDataBuffer()).getData();
 
-			PALcodec.encodeYC(image.getWidth(), image.getHeight(), pixels, config.black_white);
-			PALcodec.decodeYC(data, config.black_white);
+			PALcodec.encodeYC(image.getWidth(), image.getHeight(), pixels, config.bw);
+			PALcodec.decodeYC(data, config.bw);
 
 			image = Gfx.byteArrayToBGRImage(data, PALcodec.WIDTH, PALcodec.HEIGHT);
 		}

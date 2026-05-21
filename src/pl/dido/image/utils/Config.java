@@ -20,7 +20,10 @@ abstract public class Config implements Cloneable {
 
 	public boolean preserve_aspect;
 	public boolean pal_view;
-
+	
+	public boolean smooth_palette;
+	public boolean bw;
+	
 	public HIGH_CONTRAST high_contrast;
 	public int window_size;
 
@@ -37,19 +40,19 @@ abstract public class Config implements Cloneable {
 
 	public DITHERING dither_alg;
 	public NEAREST_COLOR color_alg;
-
-	public boolean black_white;
+	
 	public boolean predithering;
 	
-	public boolean allow_luminance;
-	public boolean allow_palette;
+	public boolean allow_luminance_distance;
+	public boolean allow_palette_cistance;
 
 	public Config() {
 		dither_alg = DITHERING.ATKINSON;
 		color_alg = NEAREST_COLOR.PERCEPTED;
 
 		preserve_aspect = false;
-		black_white = false;
+		bw = false;
+		smooth_palette = true;
 
 		high_contrast = HIGH_CONTRAST.NONE;
 		window_size = 40;
@@ -61,9 +64,9 @@ abstract public class Config implements Cloneable {
 		filter = FILTER.NONE;
 
 		error_threshold = 0;
-		allow_luminance = true;
+		allow_luminance_distance = true;
 		
-		allow_palette = false;
+		allow_palette_cistance = false;
 		posterize_level = 0;
 
 		lowpass_gain = 1.1f;

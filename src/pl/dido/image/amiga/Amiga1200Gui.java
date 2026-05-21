@@ -95,11 +95,11 @@ public class Amiga1200Gui {
 		chckbxBWCheckBox.setToolTipText("Black/White PAL");
 		chckbxBWCheckBox.setFont(GuiUtils.std);
 		chckbxBWCheckBox.setBounds(146, 60, 40, 20);
-		chckbxBWCheckBox.setSelected(config.black_white);
+		chckbxBWCheckBox.setSelected(config.bw);
 
 		chckbxBWCheckBox.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				config.black_white = !config.black_white;
+				config.bw = !config.bw;
 			}
 		});
 

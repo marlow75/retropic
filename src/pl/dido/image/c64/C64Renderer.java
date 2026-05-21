@@ -16,8 +16,6 @@ public class C64Renderer extends AbstractRenderer {
 	protected int nibbles[] = new int[1000];
 	protected int backgroundColor = 0;
 
-	protected int avgPalette[][];
-
 	public C64Renderer(final BufferedImage image, final C64Config config) {
 		super(image, config);
 		palette = new int[16][3];
@@ -28,7 +26,7 @@ public class C64Renderer extends AbstractRenderer {
 		palette = C64PaletteCalculator.getCalculatedPalette();
 		super.setupPalette();
 
-		avgPalette = getPictureColors(8);
+		palette = getPictureColors(8);
 	}
 
 	@Override
@@ -244,7 +242,7 @@ public class C64Renderer extends AbstractRenderer {
 		final int work[] = new int[64 * 3];
 		int bitmapIndex = 0;
 
-		final int N = avgPalette.length;
+		final int N = palette.length;
 		final float dists[][] = new float[N][N];
 		final int localPalette[][] = new int[2][3];
 
@@ -252,8 +250,8 @@ public class C64Renderer extends AbstractRenderer {
 		for (int i = 0; i < N; i++)
 			for (int j = 0; j < N; j++) {
 
-				final float m = Gfx.getDistance(colorAlg, avgPalette[i][0], avgPalette[i][1], avgPalette[i][2],
-						avgPalette[j][0], avgPalette[j][1], avgPalette[j][2]);
+				final float m = getDistance(palette[i][0], palette[i][1], palette[i][2],
+						palette[j][0], palette[j][1], palette[j][2]);
 				if (m > max)
 					max = m;
 
@@ -298,7 +296,7 @@ public class C64Renderer extends AbstractRenderer {
 							break;
 						}
 
-						occurrence[Gfx.getColorIndex(colorAlg, avgPalette, r, g, b)]++;
+						occurrence[getColorIndex(r, g, b)]++;
 					}
 				}
 
@@ -331,8 +329,8 @@ public class C64Renderer extends AbstractRenderer {
 						n = i;
 					}
 
-				f = getColorIndex(avgPalette[f][0], avgPalette[f][1], avgPalette[f][2]);
-				n = getColorIndex(avgPalette[n][0], avgPalette[n][1], avgPalette[n][2]);
+				f = getColorIndex(palette[f][0], palette[f][1], palette[f][2]);
+				n = getColorIndex(palette[n][0], palette[n][1], palette[n][2]);
 
 				screen[(y >> 3) * 40 + (x >> 3)] = ((f & 0xf) << 4) | (n & 0xf);
 				
@@ -676,7 +674,7 @@ public class C64Renderer extends AbstractRenderer {
 		final int[] newPixels = new int[160 * 200 * 3]; // 160x200
 		int bitmapIndex = 0;
 		
-		final int N = avgPalette.length;
+		final int N = palette.length;
 		int sr = 0, sg = 0, sb = 0;
 
 		// shrinking 320x200 -> 160x200
@@ -728,13 +726,13 @@ public class C64Renderer extends AbstractRenderer {
 							break;
 						}
 
-						final int i = Gfx.getColorIndex(colorAlg, avgPalette, r, g, b);
+						final int i = getColorIndex(r, g, b);
 
 						sr += r;
 						sg += g;
 						sb += b;
 
-						final int c[] = avgPalette[i];
+						final int c[] = palette[i];
 						newPixels[pl] = c[0];
 						newPixels[pl + 1] = c[1];
 						newPixels[pl + 2] = c[2];
@@ -750,8 +748,8 @@ public class C64Renderer extends AbstractRenderer {
 
 		// 4x8 tile palette
 		final int tilePalette[][] = new int[4][3];
-		final int bc8 = Gfx.getColorIndex(colorAlg, avgPalette, sr, sg, sb);
-		backgroundColor = getColorIndex(avgPalette[bc8][0], avgPalette[bc8][1], avgPalette[bc8][2]);
+		final int bc8 = getColorIndex(sr, sg, sb);
+		backgroundColor = getColorIndex(palette[bc8][0], palette[bc8][1], palette[bc8][2]);
 
 		final int occurrence[] = new int[N];
 		for (int y = 0; y < 200; y += 8) {
@@ -780,7 +778,7 @@ public class C64Renderer extends AbstractRenderer {
 						work[index++] = g;
 						work[index++] = b;
 
-						final int color = Gfx.getColorIndex(colorAlg, avgPalette, r, g, b);
+						final int color = getColorIndex(r, g, b);
 						occurrence[color]++;
 					}
 				}
@@ -813,7 +811,7 @@ public class C64Renderer extends AbstractRenderer {
 				}
 
 				int t[] = tilePalette[1];
-				i1 = getColorIndex(avgPalette[i1][0], avgPalette[i1][1], avgPalette[i1][2]);
+				i1 = getColorIndex(palette[i1][0], palette[i1][1], palette[i1][2]);
 
 				int p[] = palette[i1];
 
@@ -823,7 +821,7 @@ public class C64Renderer extends AbstractRenderer {
 
 				t = tilePalette[2];
 
-				i2 = getColorIndex(avgPalette[i2][0], avgPalette[i2][1], avgPalette[i2][2]);
+				i2 = getColorIndex(palette[i2][0], palette[i2][1], palette[i2][2]);
 				p = palette[i2];
 
 				t[0] = p[0];
@@ -832,7 +830,7 @@ public class C64Renderer extends AbstractRenderer {
 
 				t = tilePalette[3];
 				
-				i3 = getColorIndex(avgPalette[i3][0], avgPalette[i3][1], avgPalette[i3][2]);
+				i3 = getColorIndex(palette[i3][0], palette[i3][1], palette[i3][2]);
 				p = palette[i3];
 
 				t[0] = p[0];

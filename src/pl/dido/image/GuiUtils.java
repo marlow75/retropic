@@ -40,9 +40,10 @@ public class GuiUtils {
 
 	public static final JPanel addDASControls(final JPanel panel, final Config config, final boolean ditherOptions[],
 			final boolean pal) {
-		final JLabel lblDitherLabel = new JLabel("Dithering & aspect & pal & bw:");
+		final JLabel lblDitherLabel = new JLabel("Dithering & aspect & pal & bw & smooth palette:");
 		lblDitherLabel.setFont(bold);
-		lblDitherLabel.setBounds(20, 8, 200, 20);
+		
+		lblDitherLabel.setBounds(20, 8, 250, 20);
 		panel.add(lblDitherLabel);
 
 		final JSlider sldError = new JSlider(JSlider.HORIZONTAL, 0, 4, config.error_threshold);
@@ -66,10 +67,10 @@ public class GuiUtils {
 
 		final JLabel errorLabel = new JLabel("error:");
 		errorLabel.setFont(GuiUtils.bold);
-		errorLabel.setBounds(210, 30, 30, 20);
+		errorLabel.setBounds(215, 30, 30, 20);
 		panel.add(errorLabel);
 
-		sldError.setBounds(240, 30, 80, 30);
+		sldError.setBounds(250, 30, 80, 30);
 		sldError.setFont(GuiUtils.std);
 		sldError.addChangeListener(new ChangeListener() {
 			public void stateChanged(final ChangeEvent e) {
@@ -86,10 +87,10 @@ public class GuiUtils {
 		
 		final JLabel posterLabel = new JLabel("poster:");
 		posterLabel.setFont(GuiUtils.bold);
-		posterLabel.setBounds(205, 70, 50, 20);
+		posterLabel.setBounds(215, 70, 50, 20);
 		panel.add(posterLabel);
 
-		sldPoster.setBounds(240, 70, 80, 30);
+		sldPoster.setBounds(250, 70, 80, 30);
 		sldPoster.setFont(GuiUtils.std);
 		sldPoster.addChangeListener(new ChangeListener() {
 			public void stateChanged(final ChangeEvent e) {
@@ -104,10 +105,10 @@ public class GuiUtils {
 		sldPoster.setPaintLabels(true);
 		panel.add(sldPoster);
 
-		final JCheckBox chckbxAspectCheckBox = new JCheckBox("asp");
+		final JCheckBox chckbxAspectCheckBox = new JCheckBox("ASP");
 		chckbxAspectCheckBox.setToolTipText("Preserve orginal image aspect ratio");
 		chckbxAspectCheckBox.setFont(GuiUtils.std);
-		chckbxAspectCheckBox.setBounds(46, 60, 50, 20);
+		chckbxAspectCheckBox.setBounds(20, 60, 50, 20);
 		chckbxAspectCheckBox.setSelected(config.preserve_aspect);
 
 		chckbxAspectCheckBox.addActionListener(new ActionListener() {
@@ -117,26 +118,40 @@ public class GuiUtils {
 		});
 
 		panel.add(chckbxAspectCheckBox);
+		
+		final JCheckBox chckbxPaletteCheckBox = new JCheckBox("SP");
+		chckbxPaletteCheckBox.setToolTipText("Smooth tile palette");
+		chckbxPaletteCheckBox.setFont(GuiUtils.std);
+		chckbxPaletteCheckBox.setBounds(70, 60, 50, 20);
+		chckbxPaletteCheckBox.setSelected(config.smooth_palette);
+
+		chckbxPaletteCheckBox.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				config.smooth_palette = !config.smooth_palette;
+			}
+		});
+
+		panel.add(chckbxPaletteCheckBox);
 
 		if (pal) {
-			final JCheckBox chckbxBWCheckBox = new JCheckBox("bw");
+			final JCheckBox chckbxBWCheckBox = new JCheckBox("BW");
 			chckbxBWCheckBox.setToolTipText("Black/White PAL");
 			chckbxBWCheckBox.setFont(GuiUtils.std);
-			chckbxBWCheckBox.setBounds(146, 60, 40, 20);
-			chckbxBWCheckBox.setSelected(config.black_white);
+			chckbxBWCheckBox.setBounds(120, 60, 50, 20);
+			chckbxBWCheckBox.setSelected(config.bw);
 
 			chckbxBWCheckBox.addActionListener(new ActionListener() {
 				public void actionPerformed(final ActionEvent e) {
-					config.black_white = !config.black_white;
+					config.bw = !config.bw;
 				}
 			});
 
 			panel.add(chckbxBWCheckBox);
 
-			final JCheckBox chckbxPALCheckBox = new JCheckBox("pal");
+			final JCheckBox chckbxPALCheckBox = new JCheckBox("PAL");
 			chckbxPALCheckBox.setToolTipText("PAL emulation");
 			chckbxPALCheckBox.setFont(GuiUtils.std);
-			chckbxPALCheckBox.setBounds(96, 60, 40, 20);
+			chckbxPALCheckBox.setBounds(170, 60, 50, 20);
 			chckbxPALCheckBox.setSelected(config.pal_view);
 
 			chckbxPALCheckBox.addActionListener(new ActionListener() {
@@ -340,7 +355,7 @@ public class GuiUtils {
 		
 		int pos = 206;
 
-		if (config.allow_luminance) {
+		if (config.allow_luminance_distance) {
 			final JRadioButton rdbtnLumaButton = new JRadioButton("luma");
 			rdbtnLumaButton.setToolTipText("Luminance distance for BW screens");
 			rdbtnLumaButton.setFont(std);
@@ -372,7 +387,7 @@ public class GuiUtils {
 			pos += 160;
 		}
 
-		if (config.allow_palette) {
+		if (config.allow_palette_cistance) {
 			final JRadioButton rdbtnMahalanobisButton = new JRadioButton("palette");
 			rdbtnMahalanobisButton.setToolTipText("Mahalanobis distance computed on palette");
 			rdbtnMahalanobisButton.setFont(std);

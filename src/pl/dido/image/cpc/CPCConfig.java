@@ -27,7 +27,7 @@ public class CPCConfig extends Config {
 		color_alg = NEAREST_COLOR.PERCEPTED;
 		
 		pal_view = false;
-		allow_palette = true;
+		allow_palette_cistance = true;
 	}
 	
 	@Override

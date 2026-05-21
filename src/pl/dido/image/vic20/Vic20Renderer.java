@@ -85,6 +85,7 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 		}
 
 		super.setupPalette();
+		palette = getPictureColors(8);
 	}
 
 	@Override
@@ -229,7 +230,8 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 	protected void hires() {
 		// tiles screen and pattern
 		final int work[] = new int[64 * 3];
-
+		final int N = palette.length;
+		
 		int nr = 0, ng = 0, nb = 0, count = 0;
 		final int occurrence[] = new int[16];
 
@@ -244,7 +246,7 @@ public class Vic20Renderer extends AbstractRenderer implements NetworkProgressLi
 
 		// get background color with maximum occurrence
 		int k = 0;
-		for (int i = 0; i < 16; i++) {
+		for (int i = 0; i < N; i++) {
 			final int o = occurrence[i];
 			if (count < o) {
 				count = o;

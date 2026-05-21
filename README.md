@@ -10,6 +10,7 @@
 
 ## Version History
 
+- **1.19a** - Minor bug fixes
 - **1.19** - Added posterizer, minor bug fixes
 - **1.18c** - New color distance - Mahalonobis (palette) metric for machines with arbitrary palette, minor bug fixes
 - **1.18b** – Reworked Lanchos scaling, minor bug fixes in charset generator, advanced PAL simulation with bloom, moire, scanlines, viniete

@@ -12,8 +12,8 @@ public class ZXConfig extends Config {
 		high_contrast = HIGH_CONTRAST.SWAHE;
 		window_size = 30;
 		
-		allow_luminance = false;
-		allow_palette = true;
+		allow_luminance_distance = false;
+		allow_palette_cistance = true;
 	}
 
 	@Override

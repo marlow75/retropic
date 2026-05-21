@@ -9,7 +9,7 @@ public class C128Config extends Config {
 		pal_view = false;
 		dither_alg = DITHERING.NOISE;
 		
-		allow_palette = true;
+		allow_palette_cistance = true;
 	}
 	
 	@Override
