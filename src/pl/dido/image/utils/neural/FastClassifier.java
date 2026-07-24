@@ -313,8 +313,8 @@ public class FastClassifier implements Network {
     	return -1;
     }
 
-    public float trainWithValidation(Vector<Dataset> trainSet, Vector<Dataset> validationSet,
-                                   int validationFrequency, int patience) {
+    public float trainWithValidation(final Vector<Dataset> trainSet, final Vector<Dataset> validationSet,
+                                   final int validationFrequency, final int patience) {
         log.info("Learning with validation...");
 
         float bestError = Float.MAX_VALUE;

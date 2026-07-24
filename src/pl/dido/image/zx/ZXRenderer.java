@@ -14,9 +14,8 @@ public class ZXRenderer extends AbstractRenderer {
 
 	protected int attribs[] = new int[768];
 	protected int bitmap[] = new int[32 * 192];
-	
+
 	protected float coefficients[];
-	protected int palette8[][];
 
 	public ZXRenderer(final BufferedImage image, final ZXConfig config) {
 		super(image, config);
@@ -30,9 +29,8 @@ public class ZXRenderer extends AbstractRenderer {
 			palette[i][1] = (colors[i] & 0x00ff00) >> 8; // green
 			palette[i][2] = (colors[i] & 0xff0000) >> 16; // red
 		}
-		
+
 		super.setupPalette();
-		palette8 = getPictureColors(8);
 	}
 
 	@Override
@@ -41,9 +39,11 @@ public class ZXRenderer extends AbstractRenderer {
 	}
 
 	protected void hires() {
-		final int occurrence[] = new int[8];
-		final int localPalette[][] = new int[2][3];
+		Gfx.gammaCorrection(pixels, 0.85f);
 		
+		final int occurrence[] = new int[16];
+		final int localPalette[][] = new int[2][3];
+
 		for (int y = 0; y < 192; y += 8) { // every 8 line
 			final int p = y * 256 * 3;
 
@@ -62,31 +62,53 @@ public class ZXRenderer extends AbstractRenderer {
 						final int g = pixels[position + 1] & 0xff;
 						final int b = pixels[position + 2] & 0xff;
 
-						occurrence[Gfx.getColorIndex(colorAlg, palette8, r, g, b)]++;
+						occurrence[Gfx.getColorIndex(colorAlg, palette, r, g, b)]++;
 					}
 				}
 
-				int m1 = 0, m2 = 0;
+				int o = 0;
 
-				for (int i = 0; i < 8; i++) {
-					if (occurrence[i] > m1) {
-						m2 = m1;
-						n = f;
-
-						m1 = occurrence[i];
+				for (int i = 0; i < 16; i++)
+					if (occurrence[i] > o) {
+						o = occurrence[i];
 						f = i;
-					} else if (occurrence[i] > m2) {
-						m2 = occurrence[i];
-						n = i;
 					}
-				}
-				
-				f = getColorIndex(palette8[f][0], palette8[f][1], palette8[f][2]);
-				n = getColorIndex(palette8[n][0], palette8[n][1], palette8[n][2]);
 
 				final int fr = palette[f][0];
 				final int fg = palette[f][1];
 				final int fb = palette[f][2];
+				
+				int bestScore = Integer.MIN_VALUE;
+				int bestContrast = Integer.MIN_VALUE;
+				n = f;
+
+				final int fluma = (int) Gfx.getLuma(fr, fg, fb);
+				final int contrastThreshold = 60;
+
+				for (int i = 0; i < 16; i++) {
+				    if (occurrence[i] == 0 || i == f)
+				        continue;
+
+				    final int r2 = palette[i][0];
+				    final int g2 = palette[i][1];
+				    final int b2 = palette[i][2];
+
+				    final int luma2 = (int) Gfx.getLuma(r2, g2, b2);
+				    final int contrast = Math.abs(luma2 - fluma);
+
+				    if (contrast > bestContrast)
+				        bestContrast = contrast;
+
+				    final int score = occurrence[i] * 20 + contrast / 8;
+				    if (score > bestScore) {
+				        bestScore = score;
+				        n = i;
+				    }
+				}
+
+				// jeśli nawet najlepszy kandydat ma za mały kontrast, wymuś czarny
+				if (bestContrast < contrastThreshold)
+				    n = 0;
 
 				final int nr = palette[n][0];
 				final int ng = palette[n][1];
@@ -95,16 +117,16 @@ public class ZXRenderer extends AbstractRenderer {
 				localPalette[0][0] = fr;
 				localPalette[0][1] = fg;
 				localPalette[0][2] = fb;
-				
+
 				localPalette[1][0] = nr;
 				localPalette[1][1] = ng;
 				localPalette[1][2] = nb;
-				
+
 				final int address = (y >> 3) * 32 + (x >> 3);
 
 				final int ink = f >> 1;
 				final int paper = n >> 1;
-				
+
 				final int bright = (((f | n) & 1) << 6);
 
 				attribs[address] = ((paper & 0xf) << 3) | (ink & 0x7) | bright;
@@ -119,14 +141,14 @@ public class ZXRenderer extends AbstractRenderer {
 						final int r = pixels[pyx0 + 0] & 0xff;
 						final int g = pixels[pyx0 + 1] & 0xff;
 						final int b = pixels[pyx0 + 2] & 0xff;
-						
-						final int color = Gfx.getColorIndex(colorAlg, localPalette, r, g, b);	
+
+						final int color = Gfx.getColorIndex(colorAlg, localPalette, r, g, b);
 						value = (color == 0) ? (value << 1) | 1 : value << 1;
-						
+
 						if (bitcount % 8 == 7) {
 							final int zxOffset = (((y + y0) & 0x07) << 8) | (((y + y0) & 0x38) << 2)
 									| (((y + y0) & 0xC0) << 5) | (x >> 3);
-							
+
 							bitmap[zxOffset] = value;
 							value = 0;
 						}
@@ -148,7 +170,7 @@ public class ZXRenderer extends AbstractRenderer {
 		case BAYER2x2:
 			return 3;
 		default:
-			return 4;
+			return 2;
 		}
 	}
 }

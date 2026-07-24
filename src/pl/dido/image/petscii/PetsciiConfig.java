@@ -13,7 +13,7 @@ public class PetsciiConfig extends Config {
 		filter = FILTER.NONE;
 		
 		filter = FILTER.LOWPASS;
-		allow_palette_cistance = true;
+		allow_palette_distance = true;
 	}
 	
 	@Override

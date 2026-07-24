@@ -21,7 +21,7 @@ public class PCConfig extends Config {
 		pal_view = false;
 		filter = FILTER.LOWPASS;
 		
-		allow_palette_cistance = true;
+		allow_palette_distance = true;
 	}
 	
 	@Override

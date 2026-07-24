@@ -31,7 +31,7 @@ public class C64Config extends Config {
 		pixel_merge = PIXEL_MERGE.AVERAGE;
 		
 		predithering = true;
-		allow_palette_cistance = true;
+		allow_palette_distance = true;
 	}
 	
 	public String getColorsNumber() {

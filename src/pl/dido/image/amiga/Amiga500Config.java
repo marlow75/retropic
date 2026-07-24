@@ -20,7 +20,10 @@ public class Amiga500Config extends AmigaConfig {
 		switch (video_mode) {
 		case STD_320x512:
 		case STD_320x256:
-			configString += "x32 ";
+			if (fermionic_quantizer)
+				configString += "x32 quantum ";
+			else
+				configString += "x32 ";
 			break;
 		case HAM6_320x512:
 		case HAM6_320x256:
@@ -41,6 +44,8 @@ public class Amiga500Config extends AmigaConfig {
 		case HAM6_320x512:
 		case STD_320x512:
 			return 512;
+		default:
+			break;
 		}
 
 		return -1;

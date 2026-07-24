@@ -10,10 +10,11 @@
 
 ## Version History
 
+- **1.20** - Added new fast quantum inspired color quantizier, use it when you want to preserve original color space 
 - **1.19a** - Minor bug fixes
 - **1.19** - Added posterizer, minor bug fixes
 - **1.18c** - New color distance - Mahalonobis (palette) metric for machines with arbitrary palette, minor bug fixes
-- **1.18b** – Reworked Lanchos scaling, minor bug fixes in charset generator, advanced PAL simulation with bloom, moire, scanlines, viniete
+- **1.18b** – Reworked Lanchos scaling, minor bug fixes in charset generator, advanced PAL simulation with bloom, moire, scanlines, viniete               
 - **1.18** – Added Lanchos scaling, minor bug fixes
 - **1.17** – Improved neural algorithms, faster and more robust; reworked VIC-20 charset modes, minor bug fixes; removed third-party libraries
 - **1.16** – New noise dithering; added C128 VDC machine (640x200, 2 colors in 8x2 tile mode), improved MCI modes and edge filter

@@ -184,6 +184,27 @@ public class Gfx {
 		return 0.299f * r + 0.587f * g + 0.114f * b;
 	}
 
+	public static void gammaCorrection(final byte[] pixels, final float gamma) {
+		if (gamma <= 0f)
+			return;
+
+		final float invGamma = 1.0f / gamma;
+
+		for (int i = 0; i < pixels.length; i += 3) {
+			int r = pixels[i] & 0xff;
+			int g = pixels[i + 1] & 0xff;
+			int b = pixels[i + 2] & 0xff;
+
+			r = Math.round(255f * (float) Math.pow(r / 255f, invGamma));
+			g = Math.round(255f * (float) Math.pow(g / 255f, invGamma));
+			b = Math.round(255f * (float) Math.pow(b / 255f, invGamma));
+
+			pixels[i] = (byte) saturate(r);
+			pixels[i + 1] = (byte) saturate(g);
+			pixels[i + 2] = (byte) saturate(b);
+		}
+	}
+
 	public static final float euclideanDistance(final float pb, final float pg, final float pr, final float b,
 			final float g, final float r) {
 		final float rpr = r - pr;
@@ -413,7 +434,7 @@ public class Gfx {
 
 		// histogram
 		final int histogram[] = new int[256];
-		brightness *= 3;
+		brightness *= 2;
 
 		int r, g, b, max = 0;
 
@@ -754,7 +775,7 @@ public class Gfx {
 			final float b0 = ob - error * 0.05f * eb;
 
 			float rnd = (float) (2 * Math.random() - 1);
-			
+
 			final int r = Math.round((r0 + quantStep * (rnd - prvr)) / quantBase) * quantBase;
 			er = r - or;
 			prvr = rnd;
@@ -766,7 +787,7 @@ public class Gfx {
 
 			rnd = (float) (2 * Math.random() - 1);
 			final int b = Math.round((b0 + quantStep * (rnd - prvb)) / quantBase) * quantBase;
-			
+
 			eb = b - ob;
 			prvb = rnd;
 
@@ -902,10 +923,10 @@ public class Gfx {
 		bayerByte(M8x8, pixels, palette, colorAlg, width, height, bpp);
 	}
 
-	public static void bayer4x4(final int pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
-			final int width, final int height, final int bpp) {
-		bayerInt(M4x4, pixels, palette, colorAlg, width, height, bpp);
-	}
+//	public static void bayer4x4(final int pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
+//			final int width, final int height, final int bpp) {
+//		bayerInt(M4x4, pixels, palette, colorAlg, width, height, bpp);
+//	}
 
 	public static void bayer4x4(final byte pixels[], final int palette[][], final NEAREST_COLOR colorAlg,
 			final int width, final int height, final int bpp) {
@@ -1114,7 +1135,7 @@ public class Gfx {
 			pixels1[i + 2] = (byte) Gfx.saturate(b1 - b2 / 4);
 		}
 	}
-	
+
 	protected static void filter(final byte pixels[], final int kernel[][], final int width, final int height) {
 		final byte work[] = new byte[pixels.length];
 		final int width3 = width * 3;
@@ -1187,12 +1208,17 @@ public class Gfx {
 		return getLuma(r, g, b) < M2x2[x0 % 2][y0 % 2] ? 0 : 1;
 	}
 
-	public static final int bayer(final int matrix[][], final int x0, final int y0, final int c, final int colors) {
-		final int mod = matrix.length;
-		final float r = 255f / colors;
+	public static final int bayer(final int matrix[][], final int x0, final int y0, final int c, final int levels) {
+		final int n = matrix.length;
+		final float threshold = (matrix[y0 % n][x0 % n] + 0.5f) / (n * n); // 0..1
 
-		final float cp = c + r * (matrix[y0 % mod][x0 % mod] / (mod * mod * 1f) - 0.5f);
-		return (int) (cp > 255f ? 255 : cp < 0 ? 0 : cp);
+		final float normalized = c / 255f;
+		final float adjusted = normalized + (threshold - 0.5f) / levels;
+
+		final int q = Math.round(adjusted * (levels - 1));
+		final int out = Math.round(q * 255f / (levels - 1));
+
+		return saturate(out);
 	}
 
 	public static final int bayer2x2(final int x0, final int y0, final int c, final int colors) {
@@ -1416,39 +1442,39 @@ public class Gfx {
 			return -1f;
 	}
 
-	public static int[] get2RGBCubeColor(final NEAREST_COLOR colorAlg, final int work[], final int palette[][]) {
-		int sr = 0, sg = 0, sb = 0;
+	public static int[] get2RGBCubeColor(final NEAREST_COLOR colorAlg, final int[] work, final int[][] palette) {
+
+		long srSum = 0L, sgSum = 0L, sbSum = 0L;
 		int r = 0, g = 0, b = 0;
 
 		int r0 = 0, g0 = 0, b0 = 0;
-		int r1 = 0, g1 = 0, b1 = 0;
+		int r1, g1, b1;
 
-		int len = work.length;
-		for (int i = 0;  i < work.length; i += 3) {
-			sr += work[i + 0];
-			sg += work[i + 1];
-			sb += work[i + 2];
+		final int pixels = work.length / 3;
+
+		for (int i = 0; i < work.length; i += 3) {
+			srSum += work[i];
+			sgSum += work[i + 1];
+			sbSum += work[i + 2];
 		}
-
-		len /= 3;
-
-		// average color
-		sr /= len;
-		sg /= len;
-		sb /= len;
+		
+		final int sr = (int) (srSum / pixels);
+		final int sg = (int) (sgSum / pixels);
+		final int sb = (int) (sbSum / pixels);
 
 		float max = -Float.MAX_VALUE;
 
 		for (int i = 0; i < work.length; i += 3) {
-			r = work[i + 0];
+			r = work[i];
 			g = work[i + 1];
 			b = work[i + 2];
 
 			final float dist = getDistance(colorAlg, r, g, b, sr, sg, sb);
 			if (dist > max) {
+				
 				max = dist;
-
 				r0 = r;
+				
 				g0 = g;
 				b0 = b;
 			}
@@ -1458,7 +1484,34 @@ public class Gfx {
 		g1 = saturate(2 * sg - g0);
 		b1 = saturate(2 * sb - b0);
 
-		return new int[] { getColorIndex(colorAlg, palette, r0, g0, b0), getColorIndex(colorAlg, palette, r1, g1, b1) };
+		int idx0 = getColorIndex(colorAlg, palette, r0, g0, b0);
+		int idx1 = getColorIndex(colorAlg, palette, r1, g1, b1);
+
+		if (idx0 == idx1) {
+			int bestAlt = -1;
+			float bestDist = Float.MAX_VALUE;
+
+			for (int i = 0; i < palette.length; i++) {
+				if (i == idx0)
+					continue;
+
+				final int pr = palette[i][0];
+				final int pg = palette[i][1];
+				final int pb = palette[i][2];
+
+				final float d = getDistance(colorAlg, pr, pg, pb, r1, g1, b1);
+				if (d < bestDist) {
+					bestDist = d;
+					bestAlt = i;
+				}
+			}
+
+			if (bestAlt >= 0)
+				idx1 = bestAlt;
+
+		}
+
+		return new int[] { idx0, idx1 };
 	}
 
 	public static int[] get2RGBLinearColor(final NEAREST_COLOR colorAlg, final int work[], final int palette[][]) {
@@ -1554,21 +1607,58 @@ public class Gfx {
 		}
 	}
 
-	public static void posterize(final byte[] pixels, final int level) {
-		final int v = level - 1;
-		
-		for (int i = 0; i < pixels.length; i += 3) {
-			int r = pixels[i + 0] & 0xff;
-			int g = pixels[i + 1] & 0xff;
-			int b = pixels[i + 2] & 0xff;
-			
-			r = Math.round((r * v) / 255f) * 255 / v;
-			g = Math.round((g * v) / 255f) * 255 / v;
-			b = Math.round((b * v) / 255f) * 255 / v;
+//	public static void posterize(final byte[] pixels, final int level) {
+//		final int v = level - 1;
+//		
+//		for (int i = 0; i < pixels.length; i += 3) {
+//			int r = pixels[i + 0] & 0xff;
+//			int g = pixels[i + 1] & 0xff;
+//			int b = pixels[i + 2] & 0xff;
+//			
+//			r = Math.round((r * v) / 255f) * 255 / v;
+//			g = Math.round((g * v) / 255f) * 255 / v;
+//			b = Math.round((b * v) / 255f) * 255 / v;
+//
+//			pixels[i + 0] = (byte) r;
+//			pixels[i + 1] = (byte) g;
+//			pixels[i + 2] = (byte) b;
+//		}
+//	}
 
-			pixels[i + 0] = (byte) r;
-			pixels[i + 1] = (byte) g;
-			pixels[i + 2] = (byte) b;
+	public static void posterize(final byte[] pixels, final int level) {
+		if (level <= 1)
+			return;
+
+		final int v = level - 1;
+
+		for (int i = 0; i < pixels.length; i += 3) {
+			final int r = pixels[i + 0] & 0xff;
+			final int g = pixels[i + 1] & 0xff;
+			final int b = pixels[i + 2] & 0xff;
+
+			// Luminancja
+			final int luma = Math.round(0.299f * r + 0.587f * g + 0.114f * b);
+
+			// Kwantyzacja luminancji
+			final int q = Math.round((luma * v) / 255f) * 255 / v;
+
+			if (luma == 0) {
+				pixels[i + 0] = 0;
+				pixels[i + 1] = 0;
+				pixels[i + 2] = 0;
+				continue;
+			}
+
+			// Zachowanie koloru: skaluje RGB proporcjonalnie do nowej jasności
+			final float scale = q / (float) luma;
+
+			int nr = Math.round(r * scale);
+			int ng = Math.round(g * scale);
+			int nb = Math.round(b * scale);
+
+			pixels[i + 0] = (byte) Math.max(0, Math.min(255, nr));
+			pixels[i + 1] = (byte) Math.max(0, Math.min(255, ng));
+			pixels[i + 2] = (byte) Math.max(0, Math.min(255, nb));
 		}
 	}
 
@@ -1577,7 +1667,7 @@ public class Gfx {
 		if (s <= 0.04045f)
 			return (s / 12.92f);
 
-		return (float)Math.pow((s + 0.055f) / 1.055f, 2.4);
+		return (float) Math.pow((s + 0.055f) / 1.055f, 2.4);
 	}
 
 	// dystans Mahalanobisa w BGR 0..255 (kwadrat odległości)

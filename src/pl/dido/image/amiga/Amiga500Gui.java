@@ -17,7 +17,7 @@ public class Amiga500Gui {
 	
 	public static final String PAL320x256x32 = "PAL 320x256x32";
 	public static final String PAL320x512x32 = "PAL 320x512x32";
-	
+		
 	public static final String PAL320x256_HAM = "PAL 320x256 HAM";
 	public static final String PAL320x512_HAM = "PAL 320x512 HAM";
 	
@@ -40,8 +40,10 @@ public class Amiga500Gui {
 		final JComboBox<String> modesList = new JComboBox<String>(modesStrings);
 		modesList.setToolTipText("Choose available video mode");
 		modesList.setFont(GuiUtils.std);
-		modesList.setBounds(46, 130, 250, 20);
+		
+		modesList.setBounds(46, 155, 250, 20);
 		modesList.addActionListener(new ActionListener() {
+		
 			public void actionPerformed(final ActionEvent e) {
 				
 				@SuppressWarnings("unchecked")
@@ -65,6 +67,7 @@ public class Amiga500Gui {
 		}});
 		
 		panelAmiga.add(modesList);
+		panelAmiga.add(getQuantizerCheckBox(config));
 		panelAmiga.add(getRLECheckBox(config));
 		
 		GuiUtils.addContrastControls(panelAmiga, config);
@@ -74,12 +77,28 @@ public class Amiga500Gui {
 		return panelAmiga;
 	}
 	
+	public static Component getQuantizerCheckBox(final AmigaConfig config) {
+		final JCheckBox chckbxQuantizerCheckBox = new JCheckBox("quantum quantizer");
+		
+		chckbxQuantizerCheckBox.setToolTipText("Enables quantum like color quantizer disables SOM");
+		chckbxQuantizerCheckBox.setFont(GuiUtils.std);
+		chckbxQuantizerCheckBox.setBounds(45, 105, 250, 20);
+		chckbxQuantizerCheckBox.setSelected(config.fermionic_quantizer);
+		
+		chckbxQuantizerCheckBox.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				config.fermionic_quantizer = !config.fermionic_quantizer;
+			}});
+		
+		return chckbxQuantizerCheckBox;
+	}
+	
 	public static Component getRLECheckBox(final AmigaConfig config) {
 		final JCheckBox chckbxRLECheckBox = new JCheckBox("export with RLE compression");
 		
 		chckbxRLECheckBox.setToolTipText("Enables RLE compression");
 		chckbxRLECheckBox.setFont(GuiUtils.std);
-		chckbxRLECheckBox.setBounds(45, 105, 250, 20);
+		chckbxRLECheckBox.setBounds(45, 125, 250, 20);
 		chckbxRLECheckBox.setSelected(config.rleCompress);
 		
 		chckbxRLECheckBox.addActionListener(new ActionListener() {

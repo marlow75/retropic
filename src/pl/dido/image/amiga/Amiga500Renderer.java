@@ -4,9 +4,10 @@ import java.awt.image.BufferedImage;
 
 import pl.dido.image.renderer.AbstractPictureColorsRenderer;
 import pl.dido.image.utils.Config;
-import pl.dido.image.utils.Gfx;
 import pl.dido.image.utils.Config.DITHERING;
+import pl.dido.image.utils.Gfx;
 import pl.dido.image.utils.neural.HAMFixedPalette;
+import pl.dido.image.utils.neural.PauliColorQuantizer;
 import pl.dido.image.utils.neural.SOMFixedPalette;
 
 public class Amiga500Renderer extends AbstractPictureColorsRenderer {
@@ -72,8 +73,12 @@ public class Amiga500Renderer extends AbstractPictureColorsRenderer {
 			break;
 		case STD_320x256:
 		case STD_320x512:
-			training = new SOMFixedPalette(8, 4, 5); // 8x4 = 32 colors (5 bits)
-			pictureColors = normalizePalette(training.train(pixels));
+			if (((Amiga500Config) config).fermionic_quantizer)
+				pictureColors = normalizePalette(PauliColorQuantizer.getQuantumPalette(pixels, 32));
+			else {
+				training = new SOMFixedPalette(8, 4, 5); // 8x4 = 32 colors (5 bits)
+				pictureColors = normalizePalette(training.train(pixels));
+			}
 
 			switch (config.dither_alg) {
 			case NONE, ATKINSON, FLOYDS:
@@ -83,6 +88,9 @@ public class Amiga500Renderer extends AbstractPictureColorsRenderer {
 				bayer32();
 				break;
 			}
+
+		default:
+			break;
 		}
 	}
 
@@ -152,7 +160,7 @@ public class Amiga500Renderer extends AbstractPictureColorsRenderer {
 								work[py1x - 3 + 1] += (g_error * 3) / 16;
 								work[py1x - 3 + 2] += (b_error * 3) / 16;
 							}
-							
+
 							work[py1x] += (r_error * 5) / 16;
 							work[py1x + 1] += (g_error * 5) / 16;
 							work[py1x + 2] += (b_error * 5) / 16;
@@ -177,12 +185,12 @@ public class Amiga500Renderer extends AbstractPictureColorsRenderer {
 							}
 						}
 						if (y < screenHeight - 1) {
-						    if (x > 0) {
+							if (x > 0) {
 								work[py1x - 3] += r_error >> 3;
 								work[py1x - 3 + 1] += g_error >> 3;
 								work[py1x - 3 + 2] += b_error >> 3;
-						    }
-							
+							}
+
 							work[py1x] += r_error >> 3;
 							work[py1x + 1] += g_error >> 3;
 							work[py1x + 2] += b_error >> 3;

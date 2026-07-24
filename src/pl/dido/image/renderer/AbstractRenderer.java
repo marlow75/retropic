@@ -164,7 +164,7 @@ public abstract class AbstractRenderer {
 			Gfx.posterize(pixels, config.posterize_level);
 		
 		setupPalette();
-		imageDithering();		
+		imageDithering();
 		
 		switch (config.filter) {
 		case EDGES_BLEND:

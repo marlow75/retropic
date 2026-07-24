@@ -4,12 +4,6 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import pl.dido.image.utils.Gfx;
 
-/**
- * Poprawiona wersja SOMPalette: - matrix jako float[][][] - nie modyfikuje pól
- * instancji epoch/rate/radius podczas trenowania - shuffle próbek w ka¿dej
- * epoce - u¿ycie odleg³oœci kwadratowej (bez sqrt) - inicjalizacja wag próbkami
- * z wejœcia gdy dostêpne
- */
 public class SOMPalette {
 
 	protected float matrix[][][]; // [height][width][3] - float dla precyzji
@@ -35,7 +29,7 @@ public class SOMPalette {
 	}
 
 	/**
-	 * Inicjalizacja losuj¹c kolory z danych wejœciowych (jeœli dostêpne) — szybsza
+	 * Inicjalizacja losujï¿½c kolory z danych wejï¿½ciowych (jeï¿½li dostï¿½pne) ï¿½ szybsza
 	 * konwergencja.
 	 */
 	protected void matrixInitFromSamples(final byte samples[]) {
@@ -66,11 +60,11 @@ public class SOMPalette {
 	}
 
 	/**
-	 * Trenuje sieæ na dostarczonych próbkach (rgb jako bytów: r,g,b,r,g,b,...).
-	 * Zwraca paletê jako tablicê [width*height][3].
+	 * Trenuje sieï¿½ na dostarczonych prï¿½bkach (rgb jako bytï¿½w: r,g,b,r,g,b,...).
+	 * Zwraca paletï¿½ jako tablicï¿½ [width*height][3].
 	 */
 	public int[][] train(final byte rgb[]) {
-		// Inicjalizacja: staraj siê inicjalizowaæ z próbek jeœli s¹ dostêpne
+		// Inicjalizacja: staraj siï¿½ inicjalizowaï¿½ z prï¿½bek jeï¿½li sï¿½ dostï¿½pne
 		matrixInitFromSamples(rgb);
 
 		final int epochs = Math.max(1, this.epoch);
@@ -79,15 +73,15 @@ public class SOMPalette {
 
 		final int sampleCount = (rgb == null) ? 0 : rgb.length / 3;
 
-		// przygotuj tablicê indeksów próbek do shuffle
+		// przygotuj tablicï¿½ indeksï¿½w prï¿½bek do shuffle
 		final int[] order = new int[Math.max(1, sampleCount)];
 		for (int i = 0; i < order.length; i++)
 			order[i] = i;
 
 		final ThreadLocalRandom rnd = ThreadLocalRandom.current();
-		// g³ówna pêtla epok
+		// gï¿½ï¿½wna pï¿½tla epok
 		for (int e = 0; e < epochs; e++) {
-			// shuffle próbek jeœli s¹
+			// shuffle prï¿½bek jeï¿½li sï¿½
 			if (sampleCount > 1) {
 				// Fisher-Yates
 				for (int i = order.length - 1; i > 0; i--) {
@@ -99,14 +93,14 @@ public class SOMPalette {
 				}
 			}
 
-			// wyk³adnicze t³umienie (mo¿na dobraæ wspó³czynnik, tu proste exp(-t/epochs))
+			// wykï¿½adnicze tï¿½umienie (moï¿½na dobraï¿½ wspï¿½czynnik, tu proste exp(-t/epochs))
 			final float t = (float) e / (float) epochs;
 			final float currentRate = initialRate * (float) Math.exp(-t);
 			
 			final float currentRadius = Math.max(0.5f, initialRadius * (float) Math.exp(-t)); // radius nieco trzymamy
 			final float radius = currentRadius * currentRadius;
 
-			// dla ka¿dej próbki (w permutowanej kolejnoœci)
+			// dla kaï¿½dej prï¿½bki (w permutowanej kolejnoï¿½ci)
 			final int limit = (sampleCount > 0) ? sampleCount : 1;
 			for (int si = 0; si < limit; si++) {
 				int sampleIndex = (sampleCount > 0) ? order[si] * 3 : 0;
@@ -118,10 +112,10 @@ public class SOMPalette {
 				final int blue = (sampleCount > 0) ? (rgb[sampleIndex + 2] & 0xff)
 						: ThreadLocalRandom.current().nextInt(256);
 
-				// znajdŸ BMU
+				// znajdï¿½ BMU
 				final Position best = getBMU(red, green, blue);
 
-				// zaktualizuj wagi wokó³ BMU
+				// zaktualizuj wagi wokï¿½ BMU
 				learn(best, red, green, blue, currentRate, radius);
 			}
 		}
@@ -159,7 +153,7 @@ public class SOMPalette {
 				final float dy = by - y;
 				final float d2 = dx * dx + dy * dy;
 
-				// wp³yw gaussowski z odleg³oœci kwadratowej
+				// wpï¿½yw gaussowski z odlegï¿½oï¿½ci kwadratowej
 				final float influence = (float) Math.exp(-d2 / (2f * radius2));
 				final float n = currentRate * influence;
 
@@ -172,8 +166,8 @@ public class SOMPalette {
 	}
 
 	/**
-	 * ZnajdŸ BMU (Best Matching Unit) u¿ywaj¹c odleg³oœci kwadratowej w przestrzeni
-	 * kolorów.
+	 * Znajdï¿½ BMU (Best Matching Unit) uï¿½ywajï¿½c odlegï¿½oï¿½ci kwadratowej w przestrzeni
+	 * kolorï¿½w.
 	 */
 	protected Position getBMU(final int red, final int green, final int blue) {
 		int bx = 0, by = 0;

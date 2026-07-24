@@ -6,6 +6,7 @@ import pl.dido.image.renderer.AbstractPictureColorsRenderer;
 import pl.dido.image.utils.Config;
 import pl.dido.image.utils.Config.DITHERING;
 import pl.dido.image.utils.Gfx;
+import pl.dido.image.utils.neural.PauliColorQuantizer;
 import pl.dido.image.utils.neural.SOMFixedPalette;
 
 public class STRenderer extends AbstractPictureColorsRenderer {
@@ -43,9 +44,13 @@ public class STRenderer extends AbstractPictureColorsRenderer {
 
 	@Override
 	protected void imagePostproces() {
-		final SOMFixedPalette training = new SOMFixedPalette(4, 4, 3); // 4x4 = 16 colors
+		if (((STConfig) config).fermionic_quantizer)
+			pictureColors = normalizePalette(PauliColorQuantizer.getQuantumPalette(pixels, 16));
+		else {
+			final SOMFixedPalette training = new SOMFixedPalette(4, 4, 3); // 4x4 = 16 colors
+			pictureColors = normalizePalette(training.train(pixels));
+		}
 		
-		pictureColors = normalizePalette(training.train(pixels));
 		std16();
 	}
 
@@ -69,9 +74,9 @@ public class STRenderer extends AbstractPictureColorsRenderer {
 				r0 = Gfx.saturate(work[pyx]);
 				g0 = Gfx.saturate(work[pyx + 1]);
 				b0 = Gfx.saturate(work[pyx + 2]);
-				
+
 				final int color = Gfx.getColorIndex(colorAlg, pictureColors, r0, g0, b0);
-				
+
 				final int c[] = pictureColors[color];
 				final int r = c[0];
 				final int g = c[1];
@@ -110,14 +115,14 @@ public class STRenderer extends AbstractPictureColorsRenderer {
 							work[pyx + 3 + 1] += (g_error * 7) / 16;
 							work[pyx + 3 + 2] += (b_error * 7) / 16;
 						}
-						
+
 						if (y < screenHeight - 1) {
 							if (x > 0) {
 								work[py1x - 3] += (r_error * 3) / 16;
 								work[py1x - 3 + 1] += (g_error * 3) / 16;
 								work[py1x - 3 + 2] += (b_error * 3) / 16;
 							}
-							
+
 							work[py1x] += (r_error * 5) / 16;
 							work[py1x + 1] += (g_error * 5) / 16;
 							work[py1x + 2] += (b_error * 5) / 16;
@@ -141,14 +146,14 @@ public class STRenderer extends AbstractPictureColorsRenderer {
 								work[pyx + 6 + 2] += b_error >> 3;
 							}
 						}
-						
+
 						if (y < screenHeight - 1) {
 							if (x > 0) {
 								work[py1x - 3] += r_error >> 3;
 								work[py1x - 3 + 1] += g_error >> 3;
 								work[py1x - 3 + 2] += b_error >> 3;
 							}
-							
+
 							work[py1x] += r_error >> 3;
 							work[py1x + 1] += g_error >> 3;
 							work[py1x + 2] += b_error >> 3;
@@ -165,7 +170,7 @@ public class STRenderer extends AbstractPictureColorsRenderer {
 								work[py2x + 2] += b_error >> 3;
 							}
 						}
-						
+
 						break;
 					default:
 						break;
@@ -184,6 +189,6 @@ public class STRenderer extends AbstractPictureColorsRenderer {
 			return 4;
 		default:
 			return 8;
-		} 
+		}
 	}
 }

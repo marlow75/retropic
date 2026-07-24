@@ -4,9 +4,10 @@ import java.awt.image.BufferedImage;
 
 import pl.dido.image.renderer.AbstractPictureColorsRenderer;
 import pl.dido.image.utils.Config;
-import pl.dido.image.utils.Gfx;
 import pl.dido.image.utils.Config.DITHERING;
+import pl.dido.image.utils.Gfx;
 import pl.dido.image.utils.neural.HAMFixedPalette;
+import pl.dido.image.utils.neural.PauliColorQuantizer;
 import pl.dido.image.utils.neural.SOMFixedPalette;
 
 public class Amiga1200Renderer extends AbstractPictureColorsRenderer {
@@ -44,9 +45,13 @@ public class Amiga1200Renderer extends AbstractPictureColorsRenderer {
 		case STD_320x256:
 		case STD_320x512:
 		case STD_640x512:
-			training = new SOMFixedPalette(16, 16, 8, 4); // 16x16 = 256 colors (8 bits)
-			pictureColors = training.train(pixels);
-
+			if (((Amiga1200Config) config).fermionic_quantizer)
+				pictureColors = PauliColorQuantizer.getQuantumPalette(pixels, 256);
+			else {
+				training = new SOMFixedPalette(16, 16, 8, 4); // 16x16 = 256 colors (8 bits)
+				pictureColors = training.train(pixels);
+			}
+			
 			switch (config.dither_alg) {
 			case BAYER2x2:
 			case BAYER4x4:

@@ -4,7 +4,7 @@ import pl.dido.image.utils.Config;
 
 public class CPCConfig extends Config {
 	public enum SCREEN_MODE {
-		MODE0, MODE1;
+		MODE0, MODE1
 	};
 	
 	public enum PIXEL_MERGE {
@@ -15,6 +15,7 @@ public class CPCConfig extends Config {
 	public PIXEL_MERGE pixel_merge;
 	
 	public boolean replace_white;
+	public boolean fermionic_quantizer;
 	
 	public CPCConfig() {	
 		dither_alg = DITHERING.BAYER2x2;
@@ -27,26 +28,34 @@ public class CPCConfig extends Config {
 		color_alg = NEAREST_COLOR.PERCEPTED;
 		
 		pal_view = false;
-		allow_palette_cistance = true;
+		allow_palette_distance = true;
 	}
 	
 	@Override
 	public String getConfigString() {
 		String configString = "";
+		
 		switch (screen_mode) {
 		case MODE1:
-			configString += "320x200x4 ";
+			if (fermionic_quantizer)
+				configString += "320x200x4 quantum ";
+			else
+				configString += "320x200x4 ";
 			break;
-		default:
-			configString += "160x200x16 ";
+		case MODE0:
+			if (fermionic_quantizer)
+				configString += "160x200x16 quantum ";
+			else
+				configString += "160x200x16 ";
 			switch (pixel_merge) {
 			case AVERAGE:
-				configString += "average pixel ";
+				configString += "average ";
 				break;
 			default:
-				configString += "brightest pixel ";
+				configString += "brightest ";
 				break;
 			}
+			
 			break;
 		}
 		

@@ -1,6 +1,7 @@
 package pl.dido.image.amiga;
 
 import java.awt.Canvas;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -139,7 +140,7 @@ public class Amiga1200Gui {
 		final JComboBox<String> modesList = new JComboBox<String>(modesStrings);
 		modesList.setToolTipText("Choose available video mode");
 		modesList.setFont(GuiUtils.std);
-		modesList.setBounds(46, 130, 250, 20);
+		modesList.setBounds(46, 155, 250, 20);
 		modesList.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				
@@ -176,12 +177,45 @@ public class Amiga1200Gui {
 		}});
 		
 		panelAmiga.add(modesList);
-		panelAmiga.add(Amiga500Gui.getRLECheckBox(config));
+		panelAmiga.add(getQuantizerCheckBox(config));
+		panelAmiga.add(getRLECheckBox(config));
 		
 		GuiUtils.addContrastControls(panelAmiga, config);
 		GuiUtils.addColorControls(panelAmiga, config);
 		GuiUtils.addFiltersControls(panelAmiga, config);
 						
 		return panelAmiga;
+	}
+	
+	public static Component getQuantizerCheckBox(final AmigaConfig config) {
+		final JCheckBox chckbxQuantizerCheckBox = new JCheckBox("quantum quantizer");
+		
+		chckbxQuantizerCheckBox.setToolTipText("Enables quantum like color quantizer disables SOM");
+		chckbxQuantizerCheckBox.setFont(GuiUtils.std);
+		chckbxQuantizerCheckBox.setBounds(45, 105, 250, 20);
+		chckbxQuantizerCheckBox.setSelected(config.fermionic_quantizer);
+		
+		chckbxQuantizerCheckBox.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				config.fermionic_quantizer = !config.fermionic_quantizer;
+			}});
+		
+		return chckbxQuantizerCheckBox;
+	}
+	
+	public static Component getRLECheckBox(final AmigaConfig config) {
+		final JCheckBox chckbxRLECheckBox = new JCheckBox("export with RLE compression");
+		
+		chckbxRLECheckBox.setToolTipText("Enables RLE compression");
+		chckbxRLECheckBox.setFont(GuiUtils.std);
+		chckbxRLECheckBox.setBounds(45, 125, 250, 20);
+		chckbxRLECheckBox.setSelected(config.rleCompress);
+		
+		chckbxRLECheckBox.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				config.rleCompress = !config.rleCompress;
+			}});
+		
+		return chckbxRLECheckBox;
 	}
 }

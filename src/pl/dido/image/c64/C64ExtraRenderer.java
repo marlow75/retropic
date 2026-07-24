@@ -6,7 +6,6 @@ import java.util.Arrays;
 import pl.dido.image.renderer.AbstractRenderer;
 import pl.dido.image.utils.C64PaletteCalculator;
 import pl.dido.image.utils.ColorBuffer;
-import pl.dido.image.utils.Config.NEAREST_COLOR;
 import pl.dido.image.utils.Gfx;
 import pl.dido.image.utils.neural.SOMPalette;
 
@@ -50,6 +49,9 @@ public class C64ExtraRenderer extends AbstractRenderer {
 				final float l1 = lumas[i];
 
 				for (int j = i; j < len; j++) {
+					if (i == j)
+						continue;
+						
 					final float l2 = lumas[j];
 
 					if (Math.abs(l2 - l1) <= lumaThreshold) {
@@ -184,16 +186,31 @@ public class C64ExtraRenderer extends AbstractRenderer {
 		System.arraycopy(screen2buf, 0, screen2, 0, 1000);
 	}
 	
-	protected int getBlendedColorIndex(final int tilePalette[][], final int tileColors[], final int r, final int g,
-			final int b, final int prevColorIndex) {
-		
-		final int m[] = machinePalette[prevColorIndex];
+	protected int getBlendedColorIndex(final int tilePalette[][], final int tileColors[],
+	        final int r, final int g, final int b, final int prevColorIndex) {
 
-		final int r0 = Gfx.saturate(2 * r - m[0]);
-		final int g0 = Gfx.saturate(2 * g - m[1]);
-		final int b0 = Gfx.saturate(2 * b - m[2]);
+	    final int m[] = machinePalette[prevColorIndex];
+	    
+		int r0 = Gfx.saturate(2 * r - m[0]);
+		int g0 = Gfx.saturate(2 * g - m[1]);
+		int b0 = Gfx.saturate(2 * b - m[2]);
+	    
+	    final int dr = Math.abs(r - r0);
+	    final int dg = Math.abs(g - g0);
+	    final int db = Math.abs(b - b0);
+	    
+		final float delta = dr + dg + db;
+		if (delta < 300) {
+			if (delta > 120) {
+				r0 = Gfx.saturate((r * 3 + 2 * r0) / 5);
+				g0 = Gfx.saturate((g * 3 + 2 * g0) / 5);
+				b0 = Gfx.saturate((b * 3 + 2 * b0) / 5);
+			}
 
-		return Gfx.getColorIndex(NEAREST_COLOR.EUCLIDEAN, tilePalette, r0, g0, b0);
+			return Gfx.getColorIndex(colorAlg, tilePalette, r0, g0, b0);
+		}
+
+		return Gfx.getColorIndex(colorAlg, tilePalette, r, g, b);
 	}
 
 	protected void hires() {
@@ -376,7 +393,7 @@ public class C64ExtraRenderer extends AbstractRenderer {
 
 							r = (int) ((r + r1) >> 1);
 							g = (int) ((g + g1) >> 1);
-							b = (int) ((b + b1) >> 1);
+							b = (int) ((b + b1) >> 1);							
 						}
 
 						prevColorIndex[y0] = tileColors[colorIndex];
@@ -479,7 +496,7 @@ public class C64ExtraRenderer extends AbstractRenderer {
 				// map all 4 colors to extra palette
 				final SOMPalette som44 = new SOMPalette(4, 4, 0.8f, 1f, 30);
 				int tilePalette[][] = som44.train(trainData1);
-
+				
 				// get blend colors
 				for (int i = 0; i < 16; i++) {
 					final int c[] = tilePalette[i];
@@ -502,7 +519,7 @@ public class C64ExtraRenderer extends AbstractRenderer {
 				// get machine colors
 				final SOMPalette som22 = new SOMPalette(2, 2, 0.8f, 1f, 30);
 				tilePalette = som22.train(trainData2);
-
+				
 				for (int i = 0; i < 4; i++) {
 					final int c[] = tilePalette[i];
 					colorIndex = Gfx.getColorIndex(colorAlg, machinePalette, c[0], c[1], c[2]);
@@ -686,7 +703,7 @@ public class C64ExtraRenderer extends AbstractRenderer {
 		case BLUE16x16, BLUE8x8:
 			return 32;
 		case NOISE:
-			return 3;
+			return 4;
 		default:
 			return 8;
 		}

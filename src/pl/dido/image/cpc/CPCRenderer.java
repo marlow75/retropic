@@ -3,14 +3,15 @@ package pl.dido.image.cpc;
 import java.awt.image.BufferedImage;
 import java.util.HashSet;
 
-import pl.dido.image.renderer.AbstractRenderer;
+import pl.dido.image.renderer.AbstractPictureColorsRenderer;
 import pl.dido.image.utils.Config.DITHERING;
 import pl.dido.image.utils.Config.NEAREST_COLOR;
 import pl.dido.image.utils.Gfx;
+import pl.dido.image.utils.neural.PauliColorQuantizer;
 import pl.dido.image.utils.neural.SOMFixedPalette;
 import pl.dido.image.utils.neural.SOMWinnerFixedPalette;
 
-public class CPCRenderer extends AbstractRenderer {
+public class CPCRenderer extends AbstractPictureColorsRenderer {
 
 	// CPC palette 27 colors
 	private final static int colors[] = new int[] { 0x000201, 0x00026B, 0x0C02F4, 0x6C0201, 0x690268, 0x6C02F2,
@@ -82,21 +83,25 @@ public class CPCRenderer extends AbstractRenderer {
 	}
 
 	private int[][] modePalette(final CPCConfig.SCREEN_MODE mode) {
-		final int p[][];
+		int p[][] = null;
 		final SOMFixedPalette som;
 
 		switch (mode) {
 		case MODE0:
-			// som = new SOMWinnerFixedPalette(4, 4, 2);
-			som = new SOMFixedPalette(4, 4, 2);
-			p = som.train(pixels);
-
+			if (((CPCConfig)config).fermionic_quantizer)
+				p = normalizePalette(PauliColorQuantizer.getQuantumPalette(pixels, 16));
+			else {
+				som = new SOMFixedPalette(4, 4, 2);
+				p = som.train(pixels);
+			}
 			break;
-		default:
-			// som = new SOMWinnerFixedPalette(2, 2, 2);
-			som = new SOMWinnerFixedPalette(2, 2, 3);
-			p = som.train(pixels);
-
+		case MODE1:
+			if (((CPCConfig)config).fermionic_quantizer)
+				p = normalizePalette(PauliColorQuantizer.getQuantumPalette(pixels, 4));
+			else {
+				som = new SOMWinnerFixedPalette(2, 2, 3);
+				p = som.train(pixels);
+			}
 			break;
 		}
 

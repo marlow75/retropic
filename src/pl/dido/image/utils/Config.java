@@ -44,7 +44,7 @@ abstract public class Config implements Cloneable {
 	public boolean predithering;
 	
 	public boolean allow_luminance_distance;
-	public boolean allow_palette_cistance;
+	public boolean allow_palette_distance;
 
 	public Config() {
 		dither_alg = DITHERING.ATKINSON;
@@ -66,7 +66,7 @@ abstract public class Config implements Cloneable {
 		error_threshold = 0;
 		allow_luminance_distance = true;
 		
-		allow_palette_cistance = false;
+		allow_palette_distance = false;
 		posterize_level = 0;
 
 		lowpass_gain = 1.1f;

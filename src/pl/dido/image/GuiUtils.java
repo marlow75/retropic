@@ -387,7 +387,7 @@ public class GuiUtils {
 			pos += 160;
 		}
 
-		if (config.allow_palette_cistance) {
+		if (config.allow_palette_distance) {
 			final JRadioButton rdbtnMahalanobisButton = new JRadioButton("palette");
 			rdbtnMahalanobisButton.setToolTipText("Mahalanobis distance computed on palette");
 			rdbtnMahalanobisButton.setFont(std);

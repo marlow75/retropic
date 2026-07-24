@@ -13,7 +13,9 @@ public class ZXConfig extends Config {
 		window_size = 30;
 		
 		allow_luminance_distance = false;
-		allow_palette_cistance = true;
+		allow_palette_distance = true;
+		
+		error_threshold = 1;
 	}
 
 	@Override
